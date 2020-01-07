@@ -8,7 +8,7 @@ import static bot1.RobotPlayer.rc;
 public class HQ {
   // used in determining which of 3 directions to send...
   static int rotation = 0;
-  static MapLocation[] possible_enemy_locs = new MapLocation[3];
+  static MapLocation[] possible_enemy_locs = new MapLocation[6];
 
   static void runHQ() throws GameActionException {
 
@@ -25,8 +25,15 @@ public class HQ {
       possible_enemy_locs[0] = new MapLocation(delta_x, delta_y);
       possible_enemy_locs[1] = new MapLocation(delta_x, myLoc.y);
       possible_enemy_locs[2] = new MapLocation(myLoc.x, delta_y);
+      possible_enemy_locs[3] = new MapLocation(delta_x, middle.y);
+      possible_enemy_locs[4] = new MapLocation(middle.x, delta_y);
+      possible_enemy_locs[5] = new MapLocation((myLoc.x / middle.x) * (width-1), (myLoc.y / middle.y) * (height-1));
   	}
-    for (Direction dir : Helper.directions)
+    /*for (int i = 0; i < possible_enemy_locs.length; i++) {
+      System.out.println(possible_enemy_locs[i]);
+    }*/
+    // TODO: spawn in order of distance to destination?
+    for (Direction dir : directions)
       Helper.tryBuild(RobotType.MINER, dir);
   }
 }
