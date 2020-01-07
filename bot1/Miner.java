@@ -11,14 +11,19 @@ import static bot1.Helper.disty_35;
 
 public class Miner {
 
-
-  static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL, RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
   static int turnCount;
   static MapLocation cur_loc;
   static MapLocation target_mine = null;
   static MapLocation target_explore = null;
   static MapLocation hq = null;
   static int target_idx = -1;
+
+  // patches already explored by other miners
+  static MapLocation[] explored = new MapLocation[20];
+  static int explored_count = 0;
+  static boolean check_new_patch = false;
+  static boolean must_reach_dest = false;
+  static boolean first_target = false;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
@@ -27,94 +32,161 @@ public class Miner {
 			hq = find_hq();
 		}
 
-		if (target_mine == null) {
-			target_mine = find_mine();
-			if (target_mine == null) {
-				System.out.println("PENIS NO MINES");
+		Comms.getBlocks();
+
+		if (target_explore != null && must_reach_dest) {
+			greedy_walk(target_explore);
+			find_mine();
+
+			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
+				// broadcast "i explored this location"
+				target_explore = null;
+				must_reach_dest = false;
+
+				if (target_mine == null) {
+					target_explore = get_explore_target();
+				}
+			}
+			return;
+		} else {
+			if (target_mine == null){
+				find_mine();
+			}
+			if (target_mine != null) {
+				do_mine();
+			} else {
+				target_explore = get_explore_target();
+				if (target_explore != null)
+					greedy_walk(target_explore);
+				else
+					System.out.println("Nothing to do");
 			}
 		}
 
-		Comms.getBlocks();
+/*
+		// get target to explore
+		if (target_explore == null && target_mine == null) {
+			target_explore = get_explore_target();
+			System.out.println("New target: " + target_explore.toString());
+			if (target_explore == null) {
+				System.out.println("Done exploring");
+				return;
+			}
+		}
 
-		if (target_explore == null) {
-			if (round == 2) {
-				target_explore = Comms.explore[0];
-				target_idx = 0;
-				System.out.println("Target: " + target_explore.toString());
-			} else if (round == 3) {
-				target_explore = Comms.explore[1];
-				target_idx = 1;
-				System.out.println("Target: " + target_explore.toString());
+		if (target_mine == null && !must_reach_dest) {
+			target_mine = find_mine();
+			if (target_mine == null) {
+				//System.out.println("PENIS NO MINES");
+			} else {
+				check_new_patch = true;
 			}
 		}
 
 		// scan around surroundings for mines
-		if (target_mine != null) {
-			// try mining it lol
-			if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-				if (cur_loc.distanceSquaredTo(hq) <= 2) {
-					// deposit
-					tryDepositSoup(cur_loc.directionTo(hq));
-				} else {
-					int distance = target_mine.distanceSquaredTo(hq);
-					int distance2 = target_mine.distanceSquaredTo(cur_loc);
-					int res = -1;
-					if (distance > 80 && distance2 < 24 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
-						// build refinery
-						hq = cur_loc.add(directions[res]);
-						System.out.println("New HQ: " + hq.toString());
-					} else {
-						System.out.println("Walking Back To HQ");
-						greedy_walk(hq);
-					}
-				}
+		if (target_mine != null && !must_reach_dest) {
+			do_mine();
+		} else if (target_explore != null) {
+			// if i'm at destination
+			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
+				// broadcast "i explored this location"
+				target_mine = find_mine();
+				target_explore = null;
+				must_reach_dest = false;
+				//target_explore = get_explore_target();
+			}
+
+			if (target_mine != null) {
+				do_mine();
+			} else if (target_explore == null) {
+				target_explore = get_explore_target();
+				if (target_explore != null)
+					greedy_walk(target_explore);
+			}
+		} else {
+			System.out.println("WTF NO WHERE TO GO");
+		}*/
+	}
+
+	static void do_mine() throws GameActionException {
+		// try mining it lol
+		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+			if (cur_loc.distanceSquaredTo(hq) <= 2) {
+				// deposit
+				tryDepositSoup(cur_loc.directionTo(hq));
 			} else {
-				if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
-					// mine lmao
-					boolean result = tryMine(cur_loc.directionTo(target_mine));
-					int count = rc.senseSoup(target_mine);
-					if (count == 0) {
-						target_mine = null;
-					}
+				// heuristic for building refinery
+				int distance = target_mine.distanceSquaredTo(hq);
+				int distance2 = target_mine.distanceSquaredTo(cur_loc);
+				int res = -1;
+				if (distance > 80 && distance2 < 24 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
+					// build refinery
+					hq = cur_loc.add(directions[res]);
+					System.out.println("New HQ: " + hq.toString());
 				} else {
-					//walk to mine
-					System.out.println("Walking to " + target_mine);
-					greedy_walk(target_mine);
+					System.out.println("Walking Back To HQ");
+					greedy_walk(hq);
 				}
 			}
 		} else {
-			// if i'm at destination
-			if (rc.canSenseLocation(target_explore)) {
-				if (target_idx == 0) {
-					target_idx = 1;
+			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
+				// mine lmao
+				boolean result = tryMine(cur_loc.directionTo(target_mine));
+				int count = rc.senseSoup(target_mine);
+				if (count == 0) {
+					target_mine = null;
+					check_new_patch = false;
 				}
-				target_idx++;
-				if (target_idx < 6) {
-					target_explore = Comms.explore[target_idx];
+
+				if (check_new_patch) {
+					broadcast_patch();
+					check_new_patch = false;
 				}
+			} else {
+				//walk to mine
+				//System.out.println("Walking to " + target_mine);
+				greedy_walk(target_mine);
 			}
-
-			// explore
-			greedy_walk(target_explore);
 		}
-
-/*
-		if (Helper.tryMove(Helper.randomDirection()))
-			System.out.println("I moved!");
-      // Helper.tryBuild(randomSpawnedByMiner(), Helper.randomDirection());
-		for (Direction dir : directions)
-			Helper.tryBuild(RobotType.FULFILLMENT_CENTER, dir);
-		for (Direction dir : directions)
-			if (tryDepositSoup(dir))
-				System.out.println("I deposited soup! " + rc.getTeamSoup());
-			for (Direction dir : directions)
-				if (tryMine(dir))
-					System.out.println("I mined soup! " + rc.getSoupCarrying());
-					*/
 	}
 
-	static void mine_around_me() throws GameActionException {
+	static void broadcast_patch() throws GameActionException {
+		// 0x00000000
+		//          0 <- broadcast patch
+		//         N  <- number of workers needed
+		//       XY   <- patch location / 4
 
+		// make sure this patch wasn't already broadcasted
+		System.out.println("broadcast patch: " + target_mine.toString());
+		for (int c = 0; c < explored_count; c++) {
+			if (target_mine.distanceSquaredTo(explored[c]) <= 45) {
+				return;
+			}
+		}
+
+		int num = get_num_workers_needed();
+		Comms.broadcast_miner_request(target_mine, num, true);
+		System.out.println("Found patch at: " + target_mine);
+		System.out.println("Workers needed: " + Integer.toString(num));
+	}
+
+	static int get_num_workers_needed() throws GameActionException {
+		int total_soup = 0;
+		for (int i = 0; i < distx_35.length; i++) {
+			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+			if (rc.canSenseLocation(next_loc)) {
+				int count = rc.senseSoup(next_loc);
+				total_soup += count;
+			}
+		}
+		return total_soup / 600;
+	}
+
+	// get next target coordinate to explore to
+	// this gets called when miner is created and there are no patches around miner, or when miner reaches current target and needs a new target
+	static MapLocation get_explore_target() throws GameActionException {
+		must_reach_dest = (Comms.miner_queue_num[Comms.poll_idx] & (1 << 16)) == 1;
+		return Comms.miner_queue_peek();
 	}
 
 	static MapLocation find_hq() throws GameActionException {
@@ -137,6 +209,11 @@ public class Miner {
 				int count = rc.senseSoup(next_loc);
 				if (count > 0) {
 					System.out.println("Found mine at:" + next_loc.toString());
+					check_new_patch = true;
+					target_mine = next_loc;
+					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
+						broadcast_patch();
+					}
 					return next_loc;
 					/*
 					if (rc.isReady()) {
