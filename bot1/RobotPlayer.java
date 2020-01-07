@@ -9,6 +9,7 @@ public strictfp class RobotPlayer {
 
     static int turnCount;
     static int waterLevel;
+    static int round;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -24,6 +25,10 @@ public strictfp class RobotPlayer {
         turnCount = 0;
 
         while (true) {
+            round = rc.getRoundNum();
+            if (round > 10) {
+                rc.resign();
+            }
             waterLevel = Helper.water_levels[turnCount];
             turnCount += 1;
             try {

@@ -3,6 +3,7 @@ import battlecode.common.*;
 
 import static bot1.Helper.directions;
 import static bot1.RobotPlayer.turnCount;
+import static bot1.RobotPlayer.round;
 import static bot1.RobotPlayer.rc;
 import static bot1.RobotPlayer.waterLevel;
 import static bot1.Helper.distx_35;
@@ -15,6 +16,7 @@ public class Miner {
   static int turnCount;
   static MapLocation cur_loc;
   static MapLocation target_mine = null;
+  static MapLocation target_explore = null;
   static MapLocation hq = null;
 
 	static void runMiner() throws GameActionException {
@@ -32,6 +34,16 @@ public class Miner {
 		}
 
 		Comms.getBlocks();
+
+		if (target_explore == null) {
+			if (round == 3) {
+				target_explore = Comms.explore[0];
+				System.out.println("Target: " + target_explore.toString());
+			} else if (round == 4) {
+				target_explore = Comms.explore[1];
+				System.out.println("Target: " + target_explore.toString());
+			}
+		}
 
 		// scan around surroundings for mines
 		if (target_mine != null) {
