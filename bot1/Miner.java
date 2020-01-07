@@ -52,19 +52,19 @@ public class Miner {
 		// build fulfillment center...
 		if (rc.getTeamSoup() >= 150) {
 			RobotInfo[] robots = rc.senseNearbyRobots();
-			boolean nearbyFulfillment = false;
-			int numEnemies = 0;
+			boolean nearby_fulfillment = false;
+			int num_enemies = 0;
 			for (int i = 0; i < robots.length; i++) {
 				if (robots[i].team != rc.getTeam()) {
-					numEnemies++;
+					num_enemies++;
 				}
 				if (robots[i].team == rc.getTeam() && robots[i].type == RobotType.FULFILLMENT_CENTER) {
-					nearbyFulfillment = true;
+					nearby_fulfillment = true;
 				}
 			}
 			// build if none nearby and (nearby enemies or close to hq)
-			if (!nearbyFulfillment) {
-				if (numEnemies != 0 || rc.getLocation().distanceSquaredTo(hq) < 35) {
+			if (!nearby_fulfillment) {
+				if (num_enemies != 0 || rc.getLocation().distanceSquaredTo(hq) < 35) {
 					int res = -1;
 					if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
 						drone_factories_built++;
