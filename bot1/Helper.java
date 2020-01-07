@@ -13,13 +13,6 @@ public class Helper {
     } else return false;
   }
 
-  static boolean tryMove() throws GameActionException {
-    for (Direction dir : directions)
-      if (tryMove(dir))
-        return true;
-    return false;
-  }
-
   static boolean tryMove(Direction dir) throws GameActionException {
     // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
     if (rc.isReady() && rc.canMove(dir)) {

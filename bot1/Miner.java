@@ -3,6 +3,9 @@ import battlecode.common.*;
 
 public class Miner {
 
+	static int[] distx_35 = {0, -1, 0, 0, 1, -1, -1, 1, 1, -2, 0, 0, 2, -2, -2, -1, -1, 1, 1, 2, 2, -2, -2, 2, 2, -3, 0, 0, 3, -3, -3, -1, -1, 1, 1, 3, 3, -3, -3, -2, -2, 2, 2, 3, 3, -4, 0, 0, 4, -4, -4, -1, -1, 1, 1, 4, 4, -3, -3, 3, 3, -4, -4, -2, -2, 2, 2, 4, 4, -5, -4, -4, -3, -3, 0, 3, 3, 4, 4, -5, -5, -1, 1, -5, -5, -2, 2, -4, -4, 4, 4, -5, -5, -3, 3};
+	static int[] disty_35 = {0, 0, -1, 1, 0, -1, 1, -1, 1, 0, -2, 2, 0, -1, 1, -2, 2, -2, 2, -1, 1, -2, 2, -2, 2, 0, -3, 3, 0, -1, 1, -3, 3, -3, 3, -1, 1, -2, 2, -3, 3, -3, 3, -2, 2, 0, -4, 4, 0, -1, 1, -4, 4, -4, 4, -1, 1, -3, 3, -3, 3, -2, 2, -4, 4, -4, 4, -2, 2, 0, -3, 3, -4, 4, -5, -4, 4, -3, 3, -1, 1, -5, -5, -2, 2, -5, -5, -4, 4, -4, 4, -3, 3, -5, -5};
+
   static Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
   static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL, RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
   static RobotController rc;
@@ -10,8 +13,10 @@ public class Miner {
 
 	static void runMiner() throws GameActionException {
 
-		Helper.tryBlockchain();
-		Helper.tryMove(Helper.randomDirection());
+		// scan around surroundings for mine
+		find_mine();
+
+/*
 		if (Helper.tryMove(Helper.randomDirection()))
 			System.out.println("I moved!");
       // Helper.tryBuild(randomSpawnedByMiner(), Helper.randomDirection());
@@ -23,6 +28,23 @@ public class Miner {
 			for (Direction dir : directions)
 				if (tryMine(dir))
 					System.out.println("I mined soup! " + rc.getSoupCarrying());
+					*/
+	}
+
+	static void find_mine() throws GameActionException {
+		MapLocation cur_loc = rc.getLocation();
+		for (int i = 0; i < distx_35.length; i++) {
+			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+			int count = rc.senseSoup(next_loc);
+			if (count > 0) {
+				System.out.println("Found mine at:" + next_loc.toString());
+				return;
+			}
+		}
+	}
+
+	static void walk_to(MapDirection loc) {
+
 	}
 
   static boolean tryMine(Direction dir) throws GameActionException {
