@@ -37,11 +37,11 @@ public class Miner {
 		Comms.getBlocks();
 
 		if (target_explore == null) {
-			if (round == 3) {
+			if (round == 2) {
 				target_explore = Comms.explore[0];
 				target_idx = 0;
 				System.out.println("Target: " + target_explore.toString());
-			} else if (round == 4) {
+			} else if (round == 3) {
 				target_explore = Comms.explore[1];
 				target_idx = 1;
 				System.out.println("Target: " + target_explore.toString());
