@@ -31,21 +31,21 @@ public class HQ {
       possible_enemy_locs[5] = new MapLocation((myLoc.x / middle.x) * (width-1), (myLoc.y / middle.y) * (height-1));
       System.out.println(Arrays.toString(possible_enemy_locs));
       Comms.setSeed(possible_enemy_locs);
-	    for (Direction dir : directions) {
-	      boolean res = Helper.tryBuild(RobotType.MINER, dir);
-	      if (res) {
-	      	System.out.println("Created miner " + Integer.toString(round));
-	      }
-	    }
+      for (Direction dir : directions) {
+        boolean res = Helper.tryBuild(RobotType.MINER, dir);
+        if (res) {
+          System.out.println("Created miner " + Integer.toString(round));
+        }
+      }
   	} else if (round <= 4) {
-	    for (Direction dir : directions) {
-	      boolean res = Helper.tryBuild(RobotType.MINER, dir);
-	      if (res) {
-	      	System.out.println("Created miner " + Integer.toString(round));
-		      break;
-	      }
-	    }
-	  }
+      for (Direction dir : directions) {
+        boolean res = Helper.tryBuild(RobotType.MINER, dir);
+        if (res) {
+          System.out.println("Created miner " + Integer.toString(round));
+          break;
+        }
+      }
+    }
     /*for (int i = 0; i < possible_enemy_locs.length; i++) {
       System.out.println(possible_enemy_locs[i]);
     }*/
