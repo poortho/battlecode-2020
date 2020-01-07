@@ -4,6 +4,7 @@ import battlecode.common.*;
 import static bot1.Helper.directions;
 import static bot1.RobotPlayer.turnCount;
 import static bot1.RobotPlayer.rc;
+import static bot1.RobotPlayer.waterLevel;
 import static bot1.Helper.distx_35;
 import static bot1.Helper.disty_35;
 
@@ -114,7 +115,7 @@ public class Miner {
 		for (int i = 0; i < directions.length; i++) {
 			MapLocation next_loc = cur_loc.add(directions[i]);
 			int temp_dist = next_loc.distanceSquaredTo(loc);
-			if (temp_dist < least_dist && rc.canMove(directions[i])) {
+			if (temp_dist < least_dist && rc.canMove(directions[i]) && rc.senseElevation(next_loc) < waterLevel) {
 				least_dist = temp_dist;
 				next = i;
 			}
