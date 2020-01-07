@@ -23,6 +23,9 @@ public class HQ {
     System.out.println(possible_enemy_locs[1]);
     System.out.println(possible_enemy_locs[2]);*/
 
+  	if (turnCount == 1) {
+  		Comms.setSeed();
+  	}
     for (Direction dir : Helper.directions)
       Helper.tryBuild(RobotType.MINER, dir);
   }
