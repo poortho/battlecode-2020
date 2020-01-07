@@ -8,7 +8,6 @@ public class Helper {
 
   static Direction[] directions = {Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
           Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST};
-  static RobotController rc;
 
   static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canBuildRobot(type, dir)) {
