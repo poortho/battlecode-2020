@@ -33,29 +33,27 @@ public class Miner {
 		// scan around surroundings for mines
 		if (target_mine != null) {
 			// try mining it lol
-			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
-				// we can mine!
-				if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-					// walk back to hq
-					if (cur_loc.distanceSquaredTo(hq) <= 2) {
-						// deposit
-						tryDepositSoup(cur_loc.directionTo(hq));
-					} else {
-						System.out.println("Walking Back To HQ");
-						greedy_walk(hq);
-					}
+			if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+				if (cur_loc.distanceSquaredTo(hq) <= 2) {
+					// deposit
+					tryDepositSoup(cur_loc.directionTo(hq));
 				} else {
+					System.out.println("Walking Back To HQ");
+					greedy_walk(hq);
+				}
+			} else {
+				if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
 					// mine lmao
 					boolean result = tryMine(cur_loc.directionTo(target_mine));
 					int count = rc.senseSoup(target_mine);
 					if (count == 0) {
 						target_mine = null;
 					}
+				} else {
+					//walk to mine
+					System.out.println("Walking to " + target_mine);
+					greedy_walk(target_mine);
 				}
-			} else {
-				//walk to mine
-				System.out.println("Walking to " + target_mine);
-				greedy_walk(target_mine);
 			}
 		}
 
