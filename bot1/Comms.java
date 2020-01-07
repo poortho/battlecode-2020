@@ -21,7 +21,6 @@ public class Comms {
 		// received all new messages
 		while (blockRound < turnCount) {
 			Transaction[] messages = rc.getBlock(blockRound);
-			blockRound++;
 			trans[c] = messages;
 			for (int i = 0; i < messages.length; i++) {
 				int[] temp_msg = messages[i].getMessage();
@@ -43,6 +42,7 @@ public class Comms {
 					}
 				}
 			}
+			blockRound++;
 			c++;
 		}
 	}
