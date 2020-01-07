@@ -1,9 +1,10 @@
 package bot1;
 import battlecode.common.*;
 
+import static bot1.Helper.directions;
+
 public class Miner {
 
-  static Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
   static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL, RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
   static RobotController rc;
   static int turnCount;
