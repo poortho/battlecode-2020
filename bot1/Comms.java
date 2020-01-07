@@ -15,7 +15,7 @@ public class Comms {
 	private static final int HARDCODE = 0x358eba3;
 	public static int blockRound = 1;
 	private static int c = 0;
-	public static Transaction[][] trans = new Transaction[500][7];
+	//public static Transaction[][] trans = new Transaction[500][7];
 	private static int seed;
 	public static MapLocation[] explore = new MapLocation[6];
 
@@ -23,7 +23,6 @@ public class Comms {
 		// received all new messages
 		while (blockRound < round) {
 			Transaction[] messages = rc.getBlock(blockRound);
-			trans[c] = messages;
 			for (int i = 0; i < messages.length; i++) {
 				int[] temp_msg = messages[i].getMessage();
 				System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));

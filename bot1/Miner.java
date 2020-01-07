@@ -56,8 +56,17 @@ public class Miner {
 					// deposit
 					tryDepositSoup(cur_loc.directionTo(hq));
 				} else {
-					System.out.println("Walking Back To HQ");
-					greedy_walk(hq);
+					int distance = target_mine.distanceSquaredTo(hq);
+					int distance2 = target_mine.distanceSquaredTo(cur_loc);
+					int res = -1;
+					if (distance > 80 && distance2 < 24 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
+						// build refinery
+						hq = cur_loc.add(directions[res]);
+						System.out.println("New HQ: " + hq.toString());
+					} else {
+						System.out.println("Walking Back To HQ");
+						greedy_walk(hq);
+					}
 				}
 			} else {
 				if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
@@ -124,15 +133,17 @@ public class Miner {
 	static MapLocation find_mine() throws GameActionException {
 		for (int i = 0; i < distx_35.length; i++) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-			int count = rc.senseSoup(next_loc);
-			if (count > 0) {
-				System.out.println("Found mine at:" + next_loc.toString());
-				return next_loc;
-				/*
-				if (rc.isReady()) {
-					greedy_walk(next_loc);
+			if (rc.canSenseLocation(next_loc)) {
+				int count = rc.senseSoup(next_loc);
+				if (count > 0) {
+					System.out.println("Found mine at:" + next_loc.toString());
+					return next_loc;
+					/*
+					if (rc.isReady()) {
+						greedy_walk(next_loc);
+					}
+					return;*/
 				}
-				return;*/
 			}
 		}
 		return null;
