@@ -35,6 +35,30 @@ public class Miner {
 
 		Comms.getBlocks();
 
+		// build fulfillment center...
+		if (rc.getTeamSoup() >= 150) {
+			RobotInfo[] robots = rc.senseNearbyRobots();
+			boolean nearby_fulfillment = false;
+			int num_enemies = 0;
+			for (int i = 0; i < robots.length; i++) {
+				if (robots[i].team != rc.getTeam()) {
+					num_enemies++;
+				}
+				if (robots[i].team == rc.getTeam() && robots[i].type == RobotType.FULFILLMENT_CENTER) {
+					nearby_fulfillment = true;
+				}
+			}
+			// build if none nearby and (nearby enemies or close to hq)
+			if (!nearby_fulfillment) {
+				if (num_enemies != 0 || rc.getLocation().distanceSquaredTo(hq) < 35) {
+					int res = -1;
+					if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
+						drone_factories_built++;
+					}
+				}
+			}
+		}
+
 		if (target_explore != null && must_reach_dest) {
 			greedy_walk(target_explore);
 			find_mine();
