@@ -26,7 +26,7 @@ public strictfp class RobotPlayer {
 
         while (true) {
             round = rc.getRoundNum();
-            if (round > 10) {
+            if (round > 400) {
                 rc.resign();
             }
             waterLevel = Helper.water_levels[turnCount];
