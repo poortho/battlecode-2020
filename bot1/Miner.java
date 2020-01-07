@@ -18,6 +18,7 @@ public class Miner {
   static MapLocation target_mine = null;
   static MapLocation target_explore = null;
   static MapLocation hq = null;
+  static int target_idx = -1;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
@@ -38,9 +39,11 @@ public class Miner {
 		if (target_explore == null) {
 			if (round == 3) {
 				target_explore = Comms.explore[0];
+				target_idx = 0;
 				System.out.println("Target: " + target_explore.toString());
 			} else if (round == 4) {
 				target_explore = Comms.explore[1];
+				target_idx = 1;
 				System.out.println("Target: " + target_explore.toString());
 			}
 		}
@@ -71,7 +74,19 @@ public class Miner {
 				}
 			}
 		} else {
+			// if i'm at destination
+			if (rc.canSenseLocation(target_explore)) {
+				if (target_idx == 0) {
+					target_idx = 1;
+				}
+				target_idx++;
+				if (target_idx < 6) {
+					target_explore = Comms.explore[target_idx];
+				}
+			}
+
 			// explore
+			greedy_walk(target_explore);
 		}
 
 /*
