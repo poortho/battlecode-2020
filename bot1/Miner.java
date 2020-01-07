@@ -19,6 +19,8 @@ public class Miner {
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 
+		Comms.getBlocks();
+
 		if (hq == null) {
 			hq = find_hq();
 		}

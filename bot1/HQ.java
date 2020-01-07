@@ -7,6 +7,9 @@ import static bot1.RobotPlayer.rc;
 
 public class HQ {
   static void runHQ() throws GameActionException {
+  	if (turnCount == 1) {
+  		Comms.setSeed();
+  	}
     for (Direction dir : Helper.directions)
       Helper.tryBuild(RobotType.MINER, dir);
   }
