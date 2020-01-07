@@ -11,7 +11,7 @@ import static bot1.Helper.disty_35;
 public class Comms {
 
 	private static final int INITIAL_BID = 2;
-	private static final int BITMASK = 0x358eba3;
+	private static final int HARDCODE = 0x358eba3;
 	public static int blockRound = 1;
 	private static int c = 0;
 	public static Transaction[][] trans = new Transaction[1000][7];
@@ -26,7 +26,7 @@ public class Comms {
 			for (int i = 0; i < messages.length; i++) {
 				int[] temp_msg = messages[i].getMessage();
 				//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
-				if (temp_msg[0] == 6969 && (temp_msg[1] & BITMASK) == BITMASK) {
+				if (temp_msg[0] == 6969 && (temp_msg[1] * HARDCODE) % 0x69696969 == temp_msg[2]) {
 					// read seed
 					seed = temp_msg[1];
 					System.out.println("Seed: " + Integer.toString(seed));
@@ -72,7 +72,7 @@ public class Comms {
 		for (int i = 0; i < directions.length; i++) {
 			total += rc.senseSoup(cur_loc.add(directions[i])) << (i);
 		}
-		int[] msg = {6969, (total / 7) | BITMASK};
+		int[] msg = {6969, (total / 7), ((total / 7) * HARDCODE) % 0x69696969};
 		if (rc.canSubmitTransaction(msg, INITIAL_BID)) {
 			System.out.println("Submit seed bid");
 			rc.submitTransaction(msg, INITIAL_BID);

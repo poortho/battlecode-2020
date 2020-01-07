@@ -19,8 +19,6 @@ public class Miner {
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 
-		Comms.getBlocks();
-
 		if (hq == null) {
 			hq = find_hq();
 		}
@@ -31,6 +29,8 @@ public class Miner {
 				System.out.println("PENIS NO MINES");
 			}
 		}
+
+		Comms.getBlocks();
 
 		// scan around surroundings for mines
 		if (target_mine != null) {
