@@ -1,6 +1,9 @@
 package bot1;
 import battlecode.common.*;
 
+import static bot1.RobotPlayer.turnCount;
+import static bot1.RobotPlayer.rc;
+
 public class Helper {
 
   static Direction[] directions = {Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,

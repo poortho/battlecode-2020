@@ -19,15 +19,6 @@ public strictfp class RobotPlayer {
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
         RobotPlayer.rc = rc;
-        Helper.rc = rc;
-        Miner.rc = rc;
-        Refinery.rc = rc;
-        Vaporator.rc = rc;
-        DesignSchool.rc = rc;
-        FulfillmentCenter.rc = rc;
-        Landscaper.rc = rc;
-        DeliveryDrone.rc = rc;
-        NetGun.rc = rc;
 
         turnCount = 0;
 

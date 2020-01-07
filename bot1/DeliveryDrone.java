@@ -1,10 +1,12 @@
 package bot1;
 import battlecode.common.*;
 
+import static bot1.Helper.directions;
+import static bot1.RobotPlayer.turnCount;
+import static bot1.RobotPlayer.rc;
+
 public class DeliveryDrone {
 
-	static RobotController rc;
-	
   static void runDeliveryDrone() throws GameActionException {
     Team enemy = rc.getTeam().opponent();
     if (!rc.isCurrentlyHoldingUnit()) {
