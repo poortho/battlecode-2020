@@ -26,19 +26,19 @@ public class Comms {
 			for (int i = 0; i < messages.length; i++) {
 				int[] temp_msg = messages[i].getMessage();
 				//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
-				if (temp_msg[0] == 6969 && (temp_msg[1] * HARDCODE) % 0x69696969 == temp_msg[2]) {
+				if (blockRound == 1 && (temp_msg[0] * HARDCODE) % 0x69696969 == temp_msg[1]) {
 					// read seed
-					seed = temp_msg[1];
+					seed = temp_msg[0];
 					System.out.println("Seed: " + Integer.toString(seed));
 				} else {
 					// read messages
 					int key = xorKey(blockRound);
+					if (temp_msg[6] != key) {
+						// bad message
+						continue;
+					}
 					for (int j = 0; j < temp_msg.length; j++) {
 						temp_msg[j] ^= key;
-						if ((temp_msg[j] & 0xff) == 0x69) {
-							// good message
-							temp_msg[j] >>= 8;
-						}
 						System.out.println("Received message: " + Integer.toString(temp_msg[j]));
 					}
 				}
@@ -54,8 +54,9 @@ public class Comms {
 
 	public static void addMessage(int[] msg, int length, int bid) throws GameActionException {
 		int key = xorKey(turnCount);
+		msg[6] = key;
 		for (int i = 0; i < length; i++) {
-			msg[i] = ((msg[i] << 8) | 0x69) ^ key;
+			msg[i] ^= key;
 		}
 
 		System.out.println("Turn key: " + Integer.toString(turnCount) + " " + Integer.toString(key));
@@ -72,7 +73,7 @@ public class Comms {
 		for (int i = 0; i < directions.length; i++) {
 			total += rc.senseSoup(cur_loc.add(directions[i])) << (i);
 		}
-		int[] msg = {6969, (total / 7), ((total / 7) * HARDCODE) % 0x69696969};
+		int[] msg = {(total / 7), ((total / 7) * HARDCODE) % 0x69696969};
 		if (rc.canSubmitTransaction(msg, INITIAL_BID)) {
 			System.out.println("Submit seed bid");
 			rc.submitTransaction(msg, INITIAL_BID);
