@@ -26,7 +26,7 @@ public class HQ {
       possible_enemy_locs[1] = new MapLocation(delta_x, myLoc.y);
       possible_enemy_locs[2] = new MapLocation(myLoc.x, delta_y);
   	}
-    for (Direction dir : Helper.directions)
+    for (Direction dir : directions)
       Helper.tryBuild(RobotType.MINER, dir);
   }
 }
