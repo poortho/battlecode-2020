@@ -28,6 +28,8 @@ public class Comms {
 	public static void getBlocks() throws GameActionException {
 		// received all new messages
 		while (blockRound < round) {
+
+			// miners get their first target
 			if (rc.getType() == RobotType.MINER) {
 				if (blockRound == round - 1 && !Miner.first_target) {
 					System.out.println("First target: " + miner_queue_peek().toString());

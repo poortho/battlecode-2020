@@ -37,7 +37,7 @@ public class Miner {
 		sense();
 
 		if (target_explore != null && must_reach_dest) {
-			greedy_walk(target_explore);
+			miner_walk(target_explore);
 			find_mine();
 
 			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
@@ -59,7 +59,7 @@ public class Miner {
 			} else {
 				target_explore = get_explore_target();
 				if (target_explore != null)
-					greedy_walk(target_explore);
+					miner_walk(target_explore);
 				else
 					System.out.println("Nothing to do");
 			}
@@ -103,7 +103,7 @@ public class Miner {
 			} else if (target_explore == null) {
 				target_explore = get_explore_target();
 				if (target_explore != null)
-					greedy_walk(target_explore);
+					miner_walk(target_explore);
 			}
 		} else {
 			System.out.println("WTF NO WHERE TO GO");
@@ -139,7 +139,7 @@ public class Miner {
 					System.out.println("New HQ: " + hq.toString());
 				} else {
 					System.out.println("Walking Back To HQ");
-					greedy_walk(hq);
+					miner_walk(hq);
 				}
 			}
 		} else {
@@ -159,7 +159,7 @@ public class Miner {
 			} else {
 				//walk to mine
 				//System.out.println("Walking to " + target_mine);
-				greedy_walk(target_mine);
+				miner_walk(target_mine);
 			}
 		}
 	}
@@ -231,7 +231,7 @@ public class Miner {
 					return next_loc;
 					/*
 					if (rc.isReady()) {
-						greedy_walk(next_loc);
+						miner_walk(next_loc);
 					}
 					return;*/
 				}
@@ -240,8 +240,40 @@ public class Miner {
 		return null;
 	}
 
-	static void greedy_walk(MapLocation loc) throws GameActionException {
+	static void bugpath_walk(MapLocation loc) throws GameActionException {
+		Direction greedy;
+
 		int least_dist = 9999999;
+		int next = -1;
+		for (int i = 0; i < directions.length; i++) {
+			MapLocation next_loc = cur_loc.add(directions[i]);
+			int temp_dist = next_loc.distanceSquaredTo(loc);
+			if (temp_dist < least_dist) {
+				least_dist = temp_dist;
+				next = i;
+			}
+		}
+
+		greedy = directions[next];
+		MapLocation greedy_loc = cur_loc.add(greedy);
+
+		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc)) {
+			rc.move(greedy);
+		} else {
+			while (true) {
+				next = (next + 1) % directions.length;
+				Direction cw = directions[next];
+				MapLocation next_loc = cur_loc.add(cw);
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc)) {
+					rc.move(cw);
+					break;
+				}
+			}
+		}
+	}
+
+	static void greedy_walk(MapLocation loc) throws GameActionException {
+			int least_dist = 9999999;
 		int next = -1;
 		for (int i = 0; i < directions.length; i++) {
 			MapLocation next_loc = cur_loc.add(directions[i]);
@@ -254,6 +286,10 @@ public class Miner {
 
 		if (next != -1)
 			rc.move(directions[next]);
+	}
+
+	static void miner_walk(MapLocation loc) throws GameActionException {
+		bugpath_walk(loc);
 	}
 
   static boolean tryMine(Direction dir) throws GameActionException {
