@@ -18,10 +18,44 @@ public class DeliveryDrone {
     static MapLocation nearest_flood = null;
     static int corner_i = 0;
     static MapLocation[] corners = new MapLocation[4];
+    static boolean[] blacklist = new boolean[directions.length];
+    static RobotInfo[] robots;
 
     static void runDeliveryDrone() throws GameActionException {
         cur_loc = rc.getLocation();
-        RobotInfo[] robots = rc.senseNearbyRobots();
+        robots = rc.senseNearbyRobots();
+
+        for (int i = 0; i < blacklist.length; i++) {
+            blacklist[i] = false;
+        }
+
+        // compute blacklist (dont move adjacent to enemy drones, and stay out of shooting range of HQ/netgun
+        for (int i = 0; i < robots.length; i++) {
+            if (robots[i].team != rc.getTeam()) {
+                switch (robots[i].type) {
+                    case NET_GUN:
+                    case HQ:
+                        // avoid netgun
+                        for (int j = 0; j < directions.length; j++) {
+                            if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
+                                    <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                                blacklist[j] = true;
+                            }
+                        }
+                        break;
+                    case DELIVERY_DRONE:
+                        // dont move into enemy drone pickup
+                        for (int j = 0; j < directions.length; j++) {
+                            if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
+                                    <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+                                blacklist[j] = true;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
         if (turnCount == 1) {
             // first turn, get loc of "home"
             for (int i = 0; i < robots.length; i++) {
@@ -112,7 +146,7 @@ public class DeliveryDrone {
                 if (cur_loc.distanceSquaredTo(nearest_flood) <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
                     System.out.println("die chungus");
                     //TODO: uncomment once fixed
-                    //rc.dropUnit(cur_loc.directionTo(nearest_flood));
+                    rc.dropUnit(cur_loc.directionTo(nearest_flood));
                 } else {
                     drone_walk(nearest_flood);
                 }
@@ -143,13 +177,13 @@ public class DeliveryDrone {
 
         greedy = directions[next];
 
-        if (rc.canMove(greedy)) {
+        if (rc.canMove(greedy) && !blacklist[next]) {
             rc.move(greedy);
         } else {
             for (int i = 0; i < 7; i++) {
                 next = (next + 1) % directions.length;
                 Direction cw = directions[next];
-                if (rc.canMove(cw)) {
+                if (rc.canMove(cw) && !blacklist[next]) {
                     rc.move(cw);
                     break;
                 }

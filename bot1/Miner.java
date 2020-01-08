@@ -26,16 +26,23 @@ public class Miner {
   static boolean check_new_patch = false;
   static boolean must_reach_dest = false;
   static boolean first_target = false;
+  static RobotInfo[] robots;
+  static boolean[] blacklist = new boolean[directions.length];
+  static boolean in_danger;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
+		in_danger = false;
 
 		if (hq == null) {
 			hq = find_hq();
 		}
 
+		for (int i = 0; i < blacklist.length; i++) {
+			blacklist[i] = false;
+		}
 		Comms.getBlocks();
-		RobotInfo[] robots = rc.senseNearbyRobots();
+		robots = rc.senseNearbyRobots();
 		int num_enemy_drones = 0;
 		int num_enemy_landscapers = 0;
 		int num_enemy_buildings = 0;
@@ -48,6 +55,15 @@ public class Miner {
 				num_enemies++;
 				switch (robots[i].type) {
 					case DELIVERY_DRONE:
+						if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+							in_danger = true;
+						}
+						for (int j = 0; j < directions.length; j++) {
+							if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
+									<= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+								blacklist[j] = true;
+							}
+						}
 						num_enemy_drones++;
 						break;
 					case LANDSCAPER:
@@ -74,6 +90,15 @@ public class Miner {
 					case NET_GUN:
 						nearby_netgun = true;
 						break;
+				}
+			}
+		}
+
+		if (in_danger) {
+			// move in a direction such that you are not in danger
+			for (int i = 0; i < directions.length; i++) {
+				if (!blacklist[i] && rc.canMove(directions[i]) && !rc.senseFlooding(cur_loc.add(directions[i]))) {
+					Helper.tryMove(directions[i]);
 				}
 			}
 		}
@@ -286,14 +311,14 @@ public class Miner {
 		greedy = directions[next];
 		MapLocation greedy_loc = cur_loc.add(greedy);
 
-		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc)) {
+		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next]) {
 			rc.move(greedy);
 		} else {
 			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
-				if (rc.canMove(cw) && !rc.senseFlooding(next_loc)) {
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next]) {
 					rc.move(cw);
 					break;
 				}
