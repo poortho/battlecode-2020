@@ -18,7 +18,7 @@ public class HQ {
 
     static void runHQ() throws GameActionException {
 
-
+        RobotInfo[] robots = rc.senseNearbyRobots();
       if (turnCount == 1) {
           int width = rc.getMapWidth();
           int height = rc.getMapHeight();
@@ -70,5 +70,12 @@ public class HQ {
 	      	}
 	      }
 	    }
+        for (int i = 0; i < robots.length; i++) {
+            if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE && rc.canShootUnit(robots[i].ID)) {
+                // TODO: base on distance or something to units
+                //rc.shootUnit(robots[i].ID);
+                break;
+            }
+        }
 	  }
 }
