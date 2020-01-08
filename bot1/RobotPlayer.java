@@ -23,6 +23,9 @@ public strictfp class RobotPlayer {
         RobotPlayer.rc = rc;
 
         turnCount = 0;
+        if (rc.getTeam() == Team.A) {
+            Comms.HARDCODE = 0xdeadbeef;
+        }
 
         while (true) {
             round = rc.getRoundNum();

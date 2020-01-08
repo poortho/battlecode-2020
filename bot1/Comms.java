@@ -12,7 +12,7 @@ import static bot1.Helper.disty_35;
 public class Comms {
 
 	private static final int INITIAL_BID = 2;
-	private static final int HARDCODE = 0x358eba3;
+	public static int HARDCODE = 0x358eba3;
 	public static int blockRound = 1;
 	private static int c = 0;
 	//public static Transaction[][] trans = new Transaction[500][7];
@@ -190,7 +190,7 @@ public class Comms {
 		for (int i = 0; i < directions.length; i++) {
 			total += rc.senseElevation(cur_loc.add(directions[i])) << (i);
 		}
-		total += cur_loc.x + cur_loc.y;
+		total += cur_loc.x*69 + cur_loc.y*69;
 		int loc1 = 0;
 		for (int i = 0; i < 4; i++) {
 			loc1 = loc1 | ((((locs[i].x / 4) << 4) | locs[i].y / 4) << (8*i));
