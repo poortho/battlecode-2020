@@ -76,8 +76,17 @@ public class Miner {
 		}
 
 		if (target_explore != null && must_reach_dest) {
-			miner_walk(target_explore);
-			find_mine();
+			// it's flooded!
+			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
+				target_explore = null;
+				must_reach_dest = false;
+				if (target_mine == null) {
+					target_explore = get_explore_target();
+				}
+			} else {
+				miner_walk(target_explore);
+				find_mine();
+			}
 
 			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
 				// broadcast "i explored this location"
@@ -190,7 +199,7 @@ public class Miner {
 					// build refinery
 					hq = cur_loc.add(directions[res]);
 					System.out.println("New HQ: " + hq.toString());
-				} else {
+				} else if (distance < 800) {
 					System.out.println("Walking Back To HQ");
 					miner_walk(hq);
 				}
@@ -278,7 +287,7 @@ public class Miner {
 					System.out.println("Found mine at:" + next_loc.toString());
 					check_new_patch = true;
 					target_mine = next_loc;
-					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
+					if (cur_loc.distanceSquaredTo(target_mine) <= 2 && !rc.senseFlooding(target_mine)) {
 						broadcast_patch();
 					}
 					return next_loc;

@@ -21,7 +21,7 @@ public class NetGun {
                     robots[i].location.distanceSquaredTo(cur_loc) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
                     rc.canShootUnit(robots[i].ID)) {
                 // TODO: base on distance or something to units
-                //rc.shootUnit(robots[i].ID);
+                rc.shootUnit(robots[i].ID);
                 break;
             }
         }        
