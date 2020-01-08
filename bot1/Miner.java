@@ -1,5 +1,6 @@
 package bot1;
 import battlecode.common.*;
+import java.lang.Math;
 
 import static bot1.Helper.directions;
 import static bot1.RobotPlayer.turnCount;
@@ -255,7 +256,15 @@ public class Miner {
 				total_soup += count;
 			}
 		}
-		return total_soup / 900;
+		if (total_soup > 900) {
+			return 1;
+		} else if (total_soup > 2500) {
+			return 2;
+		} else if (total_soup > 5000) {
+			return 3;
+		} else {
+			return 0;
+		}
 	}
 
 	// get next target coordinate to explore to
