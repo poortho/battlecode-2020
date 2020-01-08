@@ -32,6 +32,26 @@ public class Helper {
     } else return false;
   }
 
+  static int tryDig() throws GameActionException {
+    if (!rc.isReady()) {
+      return -1;
+    }
+    for (int i = 0; i < directions.length; i++) {
+      if (rc.canDigDirt(directions[i])) {
+        rc.digDirt(directions[i]);
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  static boolean tryDig(Direction dir) throws GameActionException {
+    if (rc.isReady() && rc.canDigDirt(dir)) {
+      rc.digDirt(dir);
+      return true;
+    } else return false;
+  }
+
   static boolean tryMove(Direction dir) throws GameActionException {
     // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
     if (rc.isReady() && rc.canMove(dir)) {

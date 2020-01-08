@@ -51,8 +51,11 @@ public class Miner {
 		Comms.getBlocks();
 		robots = rc.senseNearbyRobots();
 
+		sense();
+
 		if (in_danger) {
 			// move in a direction such that you are not in danger
+			// TODO change so that it moves towards destination
 			for (int i = 0; i < directions.length; i++) {
 				if (!blacklist[i] && rc.canMove(directions[i]) && !rc.senseFlooding(cur_loc.add(directions[i]))) {
 					Helper.tryMove(directions[i]);
@@ -71,8 +74,6 @@ public class Miner {
 			// build if none nearby and (nearby enemies or close to hq)
 			Helper.tryBuild(toBuild);
 		}
-
-		sense();
 
 		if (target_explore != null && must_reach_dest) {
 			miner_walk(target_explore);

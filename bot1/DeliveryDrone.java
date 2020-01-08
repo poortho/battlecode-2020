@@ -152,11 +152,11 @@ public class DeliveryDrone {
                 }
             } else {
                 // dont know where flood is, move ???
-                if (cur_loc.distanceSquaredTo(corners[corner_i]) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
+                if (cur_loc.distanceSquaredTo(corners[corner_i % corners.length]) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
                     // visited, inc
                     corner_i++;
                 }
-                drone_walk(corners[corner_i]);
+                drone_walk(corners[corner_i % corners.length]);
             }
         }
     }
