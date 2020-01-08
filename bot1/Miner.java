@@ -260,7 +260,7 @@ public class Miner {
 		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc)) {
 			rc.move(greedy);
 		} else {
-			while (true) {
+			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
