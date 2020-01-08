@@ -34,11 +34,21 @@ public class HQ {
           possible_enemy_locs[5] = new MapLocation((myLoc.x / middle.x) * (width-1), (myLoc.y / middle.y) * (height-1));
           System.out.println(Arrays.toString(possible_enemy_locs));
           Comms.setSeed(possible_enemy_locs);
-	      	for (int i = 5; i >= 0; i--) {
-	      		Comms.broadcast_miner_request(possible_enemy_locs[i], 1, true);
-	      	}
+
+          int msg[] = {0, 0, 0, 0, 0, 0, 0};
+          // initial broadcast miner request
+          for (int i = 5; i >= 0; i--) {
+            MapLocation loc = possible_enemy_locs[i];
+            int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
+            val |= 1 << 24;
+            msg[i] = val;
+          }
+          Comms.addMessage(msg, 1, 2);
+	      	//for (int i = 5; i >= 0; i--) {
+	      		//Comms.broadcast_miner_request(possible_enemy_locs[i], 1, true);
+	      	//}
       }
-      if (turnCount > 1) {
+      if (turnCount >= 1) {
 
 	    	Comms.getBlocks();
 	    	// handle building miners from queue
