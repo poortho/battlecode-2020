@@ -70,7 +70,7 @@ public class Comms {
 					for (int j = 0; j < temp_msg.length; j++) {
 						// process message
 						temp_msg[j] ^= key;
-						System.out.println("Received message: " + Integer.toString(temp_msg[j]));
+						// System.out.println("Received message: " + Integer.toString(temp_msg[j]));
 
 						int opcode = temp_msg[j] & 0xf;
 
@@ -85,6 +85,7 @@ public class Comms {
 							}
 
 							if (rc.getType() == RobotType.MINER && blockRound != 1) {
+								// this is so we don't broadcast patches near locations that are already going to be explored
 								Miner.explored[Miner.explored_count] = new MapLocation(x, y);
 								System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
 								Miner.explored_count++;

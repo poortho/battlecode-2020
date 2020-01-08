@@ -11,14 +11,13 @@ public class HQ {
     // used in determining which of 3 directions to send...
     static int rotation = 0;
     static MapLocation[] possible_enemy_locs = new MapLocation[6];
-
     static int remove_num = 0;
 
-    static MapLocation enemy_hq;
+    static MapLocation enemy_hq, cur_loc;
 
     static void runHQ() throws GameActionException {
 
-        RobotInfo[] robots = rc.senseNearbyRobots();
+      RobotInfo[] robots = rc.senseNearbyRobots();
       if (turnCount == 1) {
           int width = rc.getMapWidth();
           int height = rc.getMapHeight();
@@ -53,29 +52,41 @@ public class HQ {
       if (turnCount >= 1) {
 
 	    	Comms.getBlocks();
-	    	// handle building miners from queue
-	    	if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
-	      	int res = Helper.tryBuild(RobotType.MINER);
-	      	if (res != -1) {
-	      		Comms.miner_queue_num[Comms.poll_idx] -= 1;
-	      		if ((Comms.miner_queue_num[Comms.poll_idx] & 0xff) == 0) {
-	      			remove_num++;
-	      		}
-	      	}
-	      }
-	      if (remove_num > 0) {
-	      	boolean res = Comms.broadcast_miner_remove();
-	      	if (res) {
-		      	remove_num--;
-	      	}
-	      }
+
+        handle_miners();
+
+        shootNetGun();
 	    }
+	  }
+
+    static void handle_miners() throws GameActionException {
+      // handle building miners from queue
+      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
+        int res = Helper.tryBuild(RobotType.MINER);
+        if (res != -1) {
+          Comms.miner_queue_num[Comms.poll_idx] -= 1;
+          if ((Comms.miner_queue_num[Comms.poll_idx] & 0xff) == 0) {
+            remove_num++;
+          }
+        }
+      }
+      if (remove_num > 0) {
+        boolean res = Comms.broadcast_miner_remove();
+        if (res) {
+          remove_num--;
+        }
+      } 
+    }
+
+    static void shootNetGun() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
         for (int i = 0; i < robots.length; i++) {
-            if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE && rc.canShootUnit(robots[i].ID)) {
+            if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE &&
+                    rc.canShootUnit(robots[i].ID)) {
                 // TODO: base on distance or something to units
                 //rc.shootUnit(robots[i].ID);
                 break;
             }
-        }
-	  }
+        }        
+    }
 }

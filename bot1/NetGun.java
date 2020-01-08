@@ -6,8 +6,15 @@ import static bot1.RobotPlayer.turnCount;
 import static bot1.RobotPlayer.rc;
 
 public class NetGun {
+
+    static MapLocation cur_loc;
+
     static void runNetGun() throws GameActionException {
-        MapLocation cur_loc = rc.getLocation();
+        cur_loc = rc.getLocation();
+        shootNetGun();
+    }
+
+    static void shootNetGun() throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE &&
@@ -17,6 +24,6 @@ public class NetGun {
                 //rc.shootUnit(robots[i].ID);
                 break;
             }
-        }
+        }        
     }
 }
