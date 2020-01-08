@@ -59,6 +59,8 @@ public class Miner {
 			}
 		}
 
+		sense();
+
 		if (target_explore != null && must_reach_dest) {
 			greedy_walk(target_explore);
 			find_mine();
@@ -155,6 +157,18 @@ public class Miner {
 		} else {
 			System.out.println("WTF NO WHERE TO GO");
 		}*/
+	}
+
+	static void sense() throws GameActionException {
+		RobotInfo[] robots = rc.senseNearbyRobots();
+		int hq_dist = cur_loc.distanceSquaredTo(hq);
+		for (int i = 0; i < robots.length; i++) {
+			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
+			if (robots[i].type == RobotType.REFINERY && temp_dist < hq_dist) {
+				hq = robots[i].location;
+				hq_dist = temp_dist;
+			}
+		}
 	}
 
 	static void do_mine() throws GameActionException {
