@@ -246,7 +246,7 @@ public class Miner {
 				total_soup += count;
 			}
 		}
-		return total_soup / 600;
+		return total_soup / 900;
 	}
 
 	// get next target coordinate to explore to

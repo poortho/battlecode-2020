@@ -61,7 +61,7 @@ public class HQ {
 
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
-      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
+      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0 && (round <= 150 || rc.getTeamSoup() > 250)) {
         int res = Helper.tryBuild(RobotType.MINER);
         if (res != -1) {
           Comms.miner_queue_num[Comms.poll_idx] -= 1;
