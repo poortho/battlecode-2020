@@ -146,7 +146,7 @@ public class DeliveryDrone {
         if (rc.canMove(greedy)) {
             rc.move(greedy);
         } else {
-            while (true) {
+            for (int i = 0; i < 7; i++) {
                 next = (next + 1) % directions.length;
                 Direction cw = directions[next];
                 if (rc.canMove(cw)) {
