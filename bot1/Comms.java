@@ -32,10 +32,12 @@ public class Comms {
 			// miners get their first target
 			if (rc.getType() == RobotType.MINER) {
 				if (blockRound == round - 1 && !Miner.first_target) {
-					System.out.println("First target: " + miner_queue_peek().toString());
-					Miner.target_explore = miner_queue_peek();
+					if (miner_queue_peek() != null) {
+						System.out.println("First target: " + miner_queue_peek().toString());
+						Miner.target_explore = miner_queue_peek();
+						Miner.must_reach_dest = true;
+					}
 					Miner.first_target = true;
-					Miner.must_reach_dest = true;
 				}
 			}
 

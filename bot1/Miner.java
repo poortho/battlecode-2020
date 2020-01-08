@@ -1,5 +1,6 @@
 package bot1;
 import battlecode.common.*;
+import java.lang.Math;
 
 import static bot1.Helper.directions;
 import static bot1.RobotPlayer.turnCount;
@@ -76,8 +77,17 @@ public class Miner {
 		}
 
 		if (target_explore != null && must_reach_dest) {
-			miner_walk(target_explore);
-			find_mine();
+			// it's flooded!
+			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
+				target_explore = null;
+				must_reach_dest = false;
+				if (target_mine == null) {
+					target_explore = get_explore_target();
+				}
+			} else {
+				miner_walk(target_explore);
+				find_mine();
+			}
 
 			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
 				// broadcast "i explored this location"
@@ -190,7 +200,7 @@ public class Miner {
 					// build refinery
 					hq = cur_loc.add(directions[res]);
 					System.out.println("New HQ: " + hq.toString());
-				} else {
+				} else if (distance < 800) {
 					System.out.println("Walking Back To HQ");
 					miner_walk(hq);
 				}
@@ -246,7 +256,15 @@ public class Miner {
 				total_soup += count;
 			}
 		}
-		return total_soup / 600;
+		if (total_soup > 900) {
+			return 1;
+		} else if (total_soup > 2500) {
+			return 2;
+		} else if (total_soup > 5000) {
+			return 3;
+		} else {
+			return 0;
+		}
 	}
 
 	// get next target coordinate to explore to
@@ -278,7 +296,7 @@ public class Miner {
 					System.out.println("Found mine at:" + next_loc.toString());
 					check_new_patch = true;
 					target_mine = next_loc;
-					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
+					if (cur_loc.distanceSquaredTo(target_mine) <= 2 && !rc.senseFlooding(target_mine)) {
 						broadcast_patch();
 					}
 					return next_loc;

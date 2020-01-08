@@ -6,6 +6,8 @@ import static bot1.Helper.directions;
 import static bot1.RobotPlayer.turnCount;
 import static bot1.RobotPlayer.round;
 import static bot1.RobotPlayer.rc;
+import static bot1.Helper.distx_35;
+import static bot1.Helper.disty_35;
 
 public class HQ {
     // used in determining which of 3 directions to send...
@@ -17,24 +19,29 @@ public class HQ {
 
     static void runHQ() throws GameActionException {
 
+      cur_loc = rc.getLocation();
+
       RobotInfo[] robots = rc.senseNearbyRobots();
       if (turnCount == 1) {
           int width = rc.getMapWidth();
           int height = rc.getMapHeight();
           MapLocation middle = new MapLocation(width / 2, height / 2);
-          MapLocation myLoc = rc.getLocation();
 
           // set locations
-          int delta_x = middle.x + (middle.x - myLoc.x);
-          int delta_y = middle.y + (middle.y - myLoc.y);
+          int delta_x = middle.x + (middle.x - cur_loc.x);
+          int delta_y = middle.y + (middle.y - cur_loc.y);
           possible_enemy_locs[0] = new MapLocation(delta_x, delta_y);
-          possible_enemy_locs[1] = new MapLocation(delta_x, myLoc.y);
-          possible_enemy_locs[2] = new MapLocation(myLoc.x, delta_y);
-          possible_enemy_locs[3] = new MapLocation(delta_x, middle.y);
-          possible_enemy_locs[4] = new MapLocation(middle.x, delta_y);
-          possible_enemy_locs[5] = new MapLocation((myLoc.x / middle.x) * (width-1), (myLoc.y / middle.y) * (height-1));
+          possible_enemy_locs[1] = new MapLocation(middle.x, middle.y);
+          possible_enemy_locs[2] = new MapLocation(delta_x, cur_loc.y);
+          possible_enemy_locs[3] = new MapLocation(cur_loc.x, delta_y);
+          possible_enemy_locs[4] = new MapLocation(delta_x, middle.y);
+          possible_enemy_locs[5] = new MapLocation(middle.x, delta_y);
+          //possible_enemy_locs[5] = new MapLocation((cur_loc.x / middle.x) * (width-1), (cur_loc.y / middle.y) * (height-1));
           System.out.println(Arrays.toString(possible_enemy_locs));
           Comms.setSeed(possible_enemy_locs);
+
+          // find soup that's close
+          queue_close_soup();
 
           int msg[] = {0, 0, 0, 0, 0, 0, 0};
           // initial broadcast miner request
@@ -59,9 +66,22 @@ public class HQ {
 	    }
 	  }
 
+    static void queue_close_soup() throws GameActionException {
+      for (int i = 0; i < distx_35.length; i++) {
+        MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+        if (rc.canSenseLocation(next_loc)) {
+          int count = rc.senseSoup(next_loc);
+          if (count != 0) {
+            Comms.broadcast_miner_request(next_loc, 1, true);
+            return;
+          }
+        }
+      }
+    }
+
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
-      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
+      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0 && (round <= 150 || rc.getTeamSoup() > 270)) {
         int res = Helper.tryBuild(RobotType.MINER);
         if (res != -1) {
           Comms.miner_queue_num[Comms.poll_idx] -= 1;
@@ -84,7 +104,7 @@ public class HQ {
             if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE &&
                     rc.canShootUnit(robots[i].ID)) {
                 // TODO: base on distance or something to units
-                //rc.shootUnit(robots[i].ID);
+                rc.shootUnit(robots[i].ID);
                 break;
             }
         }        
