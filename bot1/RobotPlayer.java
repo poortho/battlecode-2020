@@ -1,6 +1,8 @@
 package bot1;
 import battlecode.common.*;
 
+import java.util.Map;
+
 public strictfp class RobotPlayer {
     static RobotController rc;
 
@@ -36,6 +38,28 @@ public strictfp class RobotPlayer {
             // }
             //waterLevel = Helper.water_levels[turnCount];
             turnCount += 1;
+            if (turnCount == 1) {
+                // set directions array to point outwards
+                MapLocation middle = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+                MapLocation my_loc = rc.getLocation();
+                if (my_loc.x < middle.x) {
+                    if (my_loc.y < middle.y) {
+                        // bottom left
+                        Helper.directions = new Direction[]{Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST, Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST};
+                    } else {
+                        // top left
+                        Helper.directions = new Direction[]{Direction.SOUTH, Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST, Direction.NORTH, Direction.NORTHWEST, Direction.WEST, Direction.SOUTHWEST};
+                    }
+                } else {
+                    if (my_loc.y < middle.y) {
+                        // bottom right
+                        Helper.directions = new Direction[]{Direction.NORTH, Direction.NORTHWEST, Direction.WEST, Direction.SOUTHWEST, Direction.SOUTH, Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST};
+                    } else {
+                        // top right
+                        Helper.directions = new Direction[]{Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST, Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST};
+                    }
+                }
+            }
             try {
                 switch (rc.getType()) {
                     case HQ:                 HQ.runHQ();                break;
