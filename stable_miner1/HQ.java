@@ -1,11 +1,11 @@
-package bot1;
+package stable_miner1;
 import battlecode.common.*;
 import java.util.Arrays;
 
-import static bot1.Helper.directions;
-import static bot1.RobotPlayer.turnCount;
-import static bot1.RobotPlayer.round;
-import static bot1.RobotPlayer.rc;
+import static stable_miner1.Helper.directions;
+import static stable_miner1.RobotPlayer.turnCount;
+import static stable_miner1.RobotPlayer.round;
+import static stable_miner1.RobotPlayer.rc;
 
 public class HQ {
     // used in determining which of 3 directions to send...
