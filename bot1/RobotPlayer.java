@@ -25,6 +25,8 @@ public strictfp class RobotPlayer {
         turnCount = 0;
         if (rc.getTeam() == Team.A) {
             Comms.HARDCODE = 0xdeadbeef;
+        } else {
+            Comms.HARDCODE = 0x358eba3;
         }
 
         while (true) {

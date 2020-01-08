@@ -12,11 +12,11 @@ import static bot1.Helper.disty_35;
 public class Comms {
 
 	private static final int INITIAL_BID = 2;
-	public static int HARDCODE = 0x358eba3;
+	public static int HARDCODE;
 	public static int blockRound = 1;
 	private static int c = 0;
 	//public static Transaction[][] trans = new Transaction[500][7];
-	private static int seed;
+	private static int seed = -1;
 	public static MapLocation[] explore = new MapLocation[6];
 	public static boolean[] map_explore = new boolean[6];
 
@@ -40,27 +40,39 @@ public class Comms {
 			}
 
 			Transaction[] messages = rc.getBlock(blockRound);
+
+			if (seed == -1) {
+				// find seed
+				for (int i = 0; i < messages.length; i++) {
+					int[] temp_msg = messages[i].getMessage();
+					if (blockRound == 1 && (temp_msg[0] ^ HARDCODE) % 0x69696969 == temp_msg[1]) {
+						seed = temp_msg[0];
+						System.out.println("Set seed: " + Integer.toString(seed));
+
+						// unpack explore locations
+						int c = 0;
+						for (int j = 0; j < 4; j++) {
+							int temp = (temp_msg[2] >> (j*8)) & 0xff;
+							explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
+							c++;
+						}
+						for (int j = 4; j < 6; j++) {
+							int temp = (temp_msg[3] >> (j*8)) & 0xff;
+							explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
+							c++;
+						}
+						break;
+					}
+				}
+			}
+
+
 			for (int i = 0; i < messages.length; i++) {
 				int[] temp_msg = messages[i].getMessage();
-				//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
 				System.out.println(blockRound);
-				if (blockRound == 1 && (temp_msg[0] ^ HARDCODE) % 0x69696969 == temp_msg[1]) {
-					// read seed
-					seed = temp_msg[0];
-
-					// unpack explore locations
-					int c = 0;
-					for (int j = 0; j < 4; j++) {
-						int temp = (temp_msg[2] >> (j*8)) & 0xff;
-						explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
-						c++;
-					}
-					for (int j = 4; j < 6; j++) {
-						int temp = (temp_msg[3] >> (j*8)) & 0xff;
-						explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
-						c++;
-					}
-				} else if (temp_msg.length == 7) {
+				System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
+				System.out.println("Hardcode: " + Integer.toString(HARDCODE));
+				if (temp_msg.length == 7) {
 					// read messages
 					int key = xorKey(blockRound);
 					if (temp_msg[6] != key) {
@@ -199,8 +211,10 @@ public class Comms {
 		for (int i = 0; i < 2; i++) {
 			loc2 = loc2 | ((((locs[i + 4].x / 4) << 4) | locs[i + 4].y / 4) << (8*i));
 		}
+
+    System.out.println(Comms.HARDCODE);
 		System.out.println("Locations: " + Integer.toString(loc1) + " " + Integer.toString(loc2));
-		int[] msg = {(total), ((total) ^ HARDCODE) % 0x69696969, loc1, loc2};
+		int[] msg = {(total), ((total) ^ HARDCODE), loc1, loc2};
 		System.out.println("Submit seed bid");
 		seed = total;
 		rc.submitTransaction(msg, INITIAL_BID);
