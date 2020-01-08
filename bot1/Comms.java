@@ -190,6 +190,7 @@ public class Comms {
 		for (int i = 0; i < directions.length; i++) {
 			total += rc.senseElevation(cur_loc.add(directions[i])) << (i);
 		}
+		total += cur_loc.x + cur_loc.y;
 		int loc1 = 0;
 		for (int i = 0; i < 4; i++) {
 			loc1 = loc1 | ((((locs[i].x / 4) << 4) | locs[i].y / 4) << (8*i));
