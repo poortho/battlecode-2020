@@ -14,6 +14,8 @@ public class HQ {
 
     static int remove_num = 0;
 
+    static MapLocation enemy_hq;
+
     static void runHQ() throws GameActionException {
 
 

@@ -94,6 +94,12 @@ public class Comms {
 							//int y = (temp_msg[j] >> 12) & 0xf;
 							//int n = (temp_msg[j] >> 4) & 0xf;
 							miner_queue_remove();
+						} else if (opcode == 0x3) {
+							// found enemy HQ
+							int x = (temp_msg[j] >> 12) & 0xff;
+							int y = (temp_msg[j] >> 4) & 0xff;
+							HQ.enemy_hq = new MapLocation(x, y);
+							System.out.println("Received enemy HQ: " + HQ.enemy_hq.toString());
 						}
 
 						temp_msg[j] ^= key;
@@ -103,6 +109,16 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static void broadcast_enemy_hq(MapLocation loc) throws GameActionException {
+		// 0x00000000
+		//          3 <- opcode
+		//      XXYY  <- patch location / 4	
+		int val = (loc.x << 12) | (loc.y << 4) | 0x3;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		addMessage(msg, 1, 2);
 	}
 
 	public static void miner_queue_push(MapLocation loc, int num) {

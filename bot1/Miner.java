@@ -20,6 +20,7 @@ public class Miner {
   static int drone_factories_built = 0;
 
   // patches already explored by other miners
+  static MapLocation previous_location;
   static MapLocation[] explored = new MapLocation[20];
   static int explored_count = 0;
   static boolean check_new_patch = false;
@@ -81,80 +82,16 @@ public class Miner {
 				do_mine();
 			} else {
 				target_explore = get_explore_target();
-				if (target_explore != null)
+				if (target_explore != null) {
 					miner_walk(target_explore);
-				else
-					System.out.println("Nothing to do");
-			}
-		}
-
-/*
-		// get target to explore
-		if (target_explore == null && target_mine == null) {
-			target_explore = get_explore_target();
-			System.out.println("New target: " + target_explore.toString());
-			if (target_explore == null) {
-				System.out.println("Done exploring");
-				return;
-			}
-		}
-
-		if (target_mine == null && !must_reach_dest) {
-			target_mine = find_mine();
-			if (target_mine == null) {
-				//System.out.println("PENIS NO MINES");
-			} else {
-				check_new_patch = true;
-			}
-		}
-
-		// build fulfillment center...
-		if (rc.getTeamSoup() >= 150) {
-			RobotInfo[] robots = rc.senseNearbyRobots();
-			boolean nearby_fulfillment = false;
-			int num_enemies = 0;
-			for (int i = 0; i < robots.length; i++) {
-				if (robots[i].team != rc.getTeam()) {
-					num_enemies++;
-				}
-				if (robots[i].team == rc.getTeam() && robots[i].type == RobotType.FULFILLMENT_CENTER) {
-					nearby_fulfillment = true;
-				}
-			}
-			// build if none nearby and (nearby enemies or close to hq)
-			if (!nearby_fulfillment) {
-				if (num_enemies != 0 || rc.getLocation().distanceSquaredTo(hq) < 35) {
-					int res = -1;
-					if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
-						drone_factories_built++;
+				} else {
+					System.out.println("Walk to enemy HQ");
+					if (HQ.enemy_hq != null) {
+						miner_walk(HQ.enemy_hq);
 					}
 				}
 			}
 		}
-
-		// scan around surroundings for mines
-		if (target_mine != null && !must_reach_dest) {
-			do_mine();
-		} else if (target_explore != null) {
-			// if i'm at destination
-			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
-				// broadcast "i explored this location"
-				target_mine = find_mine();
-				target_explore = null;
-				must_reach_dest = false;
-				//target_explore = get_explore_target();
-			}
-
-			if (target_mine != null) {
-				do_mine();
-			} else if (target_explore == null) {
-				target_explore = get_explore_target();
-				if (target_explore != null)
-					miner_walk(target_explore);
-			}
-		} else {
-			System.out.println("WTF NO WHERE TO GO");
-		}*/
 	}
 
 	static void sense() throws GameActionException {
@@ -165,6 +102,11 @@ public class Miner {
 			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && temp_dist < hq_dist) {
 				hq = robots[i].location;
 				hq_dist = temp_dist;
+			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
+				// found enemy hq broadcast it
+				System.out.println("Found enemy hq! " + robots[i].location);
+				Comms.broadcast_enemy_hq(robots[i].location);
+
 			}
 		}
 	}
@@ -295,7 +237,7 @@ public class Miner {
 		for (int i = 0; i < directions.length; i++) {
 			MapLocation next_loc = cur_loc.add(directions[i]);
 			int temp_dist = next_loc.distanceSquaredTo(loc);
-			if (temp_dist < least_dist) {
+			if (temp_dist < least_dist && !next_loc.equals(previous_location)) {
 				least_dist = temp_dist;
 				next = i;
 			}
@@ -317,6 +259,7 @@ public class Miner {
 				}
 			}
 		}
+		previous_location = cur_loc;
 	}
 
 	static void greedy_walk(MapLocation loc) throws GameActionException {
