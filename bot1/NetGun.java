@@ -6,7 +6,7 @@ import static bot1.RobotPlayer.turnCount;
 import static bot1.RobotPlayer.rc;
 
 public class NetGun {
-  static void runNetGun() throws GameActionException {
+    static void runNetGun() throws GameActionException {
 
-  }
+    }
 }

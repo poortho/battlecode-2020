@@ -6,6 +6,6 @@ import static bot1.RobotPlayer.turnCount;
 import static bot1.RobotPlayer.rc;
 
 public class Landscaper {
-  static void runLandscaper() throws GameActionException {
-  }
+    static void runLandscaper() throws GameActionException {
+    }
 }

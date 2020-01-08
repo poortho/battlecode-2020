@@ -34,27 +34,67 @@ public class Miner {
 		}
 
 		Comms.getBlocks();
+		RobotInfo[] robots = rc.senseNearbyRobots();
+		int num_enemy_drones = 0;
+		int num_enemy_landscapers = 0;
+		int num_enemy_buildings = 0;
+		int num_enemies = 0;
+		boolean nearby_fulfillment = false;
+		boolean nearby_netgun = false;
+		boolean nearby_design = false;
+		for (int i = 0; i < robots.length; i++) {
+			if (robots[i].team != rc.getTeam()) {
+				num_enemies++;
+				switch (robots[i].type) {
+					case DELIVERY_DRONE:
+						num_enemy_drones++;
+						break;
+					case LANDSCAPER:
+						num_enemy_landscapers++;
+						break;
+					case HQ:
+					case NET_GUN:
+					case REFINERY:
+					case VAPORATOR:
+					case DESIGN_SCHOOL:
+					case FULFILLMENT_CENTER:
+						num_enemy_buildings++;
+						break;
+				}
+			}
+			if (robots[i].team == rc.getTeam()) {
+				switch (robots[i].type) {
+					case FULFILLMENT_CENTER:
+						nearby_fulfillment = true;
+						break;
+					case DESIGN_SCHOOL:
+						nearby_design = true;
+						break;
+					case NET_GUN:
+						nearby_netgun = true;
+						break;
+				}
+			}
+		}
 
-		// build fulfillment center...
-		if (rc.getTeamSoup() >= 150 && cur_loc.distanceSquaredTo(hq) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
-			RobotInfo[] robots = rc.senseNearbyRobots();
-			boolean nearby_fulfillment = false;
-			int num_enemies = 0;
-			for (int i = 0; i < robots.length; i++) {
-				if (robots[i].team != rc.getTeam()) {
-					num_enemies++;
-				}
-				if (robots[i].team == rc.getTeam() && robots[i].type == RobotType.FULFILLMENT_CENTER) {
-					nearby_fulfillment = true;
-				}
-			}
+		RobotType toBuild = null;
+		// if drones, build netgun
+		// if landscapers, build drone
+		// if buildings, build landscaper
+		if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
+			// build fulfillment
+			toBuild = RobotType.FULFILLMENT_CENTER;
+		} else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
+			toBuild = RobotType.DESIGN_SCHOOL;
+		} else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
+			toBuild = RobotType.NET_GUN;
+		}
+
+		// build thing
+		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) || rc.getTeamSoup() >= toBuild.cost*4) &&
+				cur_loc.distanceSquaredTo(hq) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
 			// build if none nearby and (nearby enemies or close to hq)
-			if (!nearby_fulfillment && num_enemies != 0) {
-				int res = -1;
-				if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
-					drone_factories_built++;
-				}
-			}
+			Helper.tryBuild(toBuild);
 		}
 
 		sense();
