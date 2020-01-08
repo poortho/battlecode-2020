@@ -36,7 +36,7 @@ public class Miner {
 		Comms.getBlocks();
 
 		// build fulfillment center...
-		if (rc.getTeamSoup() >= 150) {
+		if (rc.getTeamSoup() >= 150 && cur_loc.distanceSquaredTo(hq) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
 			RobotInfo[] robots = rc.senseNearbyRobots();
 			boolean nearby_fulfillment = false;
 			int num_enemies = 0;
@@ -49,12 +49,10 @@ public class Miner {
 				}
 			}
 			// build if none nearby and (nearby enemies or close to hq)
-			if (!nearby_fulfillment) {
-				if (num_enemies != 0 || rc.getLocation().distanceSquaredTo(hq) < 35) {
-					int res = -1;
-					if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
-						drone_factories_built++;
-					}
+			if (!nearby_fulfillment && num_enemies != 0) {
+				int res = -1;
+				if ((res = Helper.tryBuild(RobotType.FULFILLMENT_CENTER)) != -1) {
+					drone_factories_built++;
 				}
 			}
 		}
@@ -164,7 +162,7 @@ public class Miner {
 		int hq_dist = cur_loc.distanceSquaredTo(hq);
 		for (int i = 0; i < robots.length; i++) {
 			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
-			if (robots[i].type == RobotType.REFINERY && temp_dist < hq_dist) {
+			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && temp_dist < hq_dist) {
 				hq = robots[i].location;
 				hq_dist = temp_dist;
 			}
@@ -256,7 +254,7 @@ public class Miner {
 		for (int i = 0; i < 9; i++) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
 			RobotInfo temp = rc.senseRobotAtLocation(next_loc);
-			if (temp != null && temp.type == RobotType.HQ) {
+			if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
 				System.out.println("FOUND HQ");
 				return next_loc;
 			}

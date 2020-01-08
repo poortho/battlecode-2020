@@ -1,8 +1,8 @@
-package bot1;
+package stable_miner1;
 import battlecode.common.*;
 
-import static bot1.RobotPlayer.turnCount;
-import static bot1.RobotPlayer.rc;
+import static stable_miner1.RobotPlayer.turnCount;
+import static stable_miner1.RobotPlayer.rc;
 
 public class Helper {
 

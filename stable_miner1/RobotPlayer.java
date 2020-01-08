@@ -1,4 +1,4 @@
-package bot1;
+package stable_miner1;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {

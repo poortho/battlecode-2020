@@ -1,13 +1,13 @@
-package bot1;
+package stable_miner1;
 import battlecode.common.*;
 import java.util.Arrays;
 
-import static bot1.Helper.directions;
-import static bot1.RobotPlayer.turnCount;
-import static bot1.RobotPlayer.round;
-import static bot1.RobotPlayer.rc;
-import static bot1.Helper.distx_35;
-import static bot1.Helper.disty_35;
+import static stable_miner1.Helper.directions;
+import static stable_miner1.RobotPlayer.turnCount;
+import static stable_miner1.RobotPlayer.round;
+import static stable_miner1.RobotPlayer.rc;
+import static stable_miner1.Helper.distx_35;
+import static stable_miner1.Helper.disty_35;
 
 public class Comms {
 
