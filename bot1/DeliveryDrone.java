@@ -128,19 +128,33 @@ public class DeliveryDrone {
     }
 
     static void drone_walk(MapLocation loc) throws GameActionException {
+        Direction greedy;
+
         int least_dist = 9999999;
         int next = -1;
         for (int i = 0; i < directions.length; i++) {
             MapLocation next_loc = cur_loc.add(directions[i]);
             int temp_dist = next_loc.distanceSquaredTo(loc);
-            if (temp_dist < least_dist && rc.canMove(directions[i])) {
+            if (temp_dist < least_dist) {
                 least_dist = temp_dist;
                 next = i;
             }
         }
 
-        if (next != -1)
-            rc.move(directions[next]);
+        greedy = directions[next];
+
+        if (rc.canMove(greedy)) {
+            rc.move(greedy);
+        } else {
+            while (true) {
+                next = (next + 1) % directions.length;
+                Direction cw = directions[next];
+                if (rc.canMove(cw)) {
+                    rc.move(cw);
+                    break;
+                }
+            }
+        }
     }
 
 }
