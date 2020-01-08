@@ -29,6 +29,13 @@ public class Miner {
   static RobotInfo[] robots;
   static boolean[] blacklist = new boolean[directions.length];
   static boolean in_danger;
+  static int num_enemy_drones = 0;
+  static int num_enemy_landscapers = 0;
+  static int num_enemy_buildings = 0;
+  static int num_enemies = 0;
+  static boolean nearby_fulfillment = false;
+  static boolean nearby_netgun = false;
+  static boolean nearby_design = false;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
@@ -43,56 +50,6 @@ public class Miner {
 		}
 		Comms.getBlocks();
 		robots = rc.senseNearbyRobots();
-		int num_enemy_drones = 0;
-		int num_enemy_landscapers = 0;
-		int num_enemy_buildings = 0;
-		int num_enemies = 0;
-		boolean nearby_fulfillment = false;
-		boolean nearby_netgun = false;
-		boolean nearby_design = false;
-		for (int i = 0; i < robots.length; i++) {
-			if (robots[i].team != rc.getTeam()) {
-				num_enemies++;
-				switch (robots[i].type) {
-					case DELIVERY_DRONE:
-						if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-							in_danger = true;
-						}
-						for (int j = 0; j < directions.length; j++) {
-							if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
-									<= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-								blacklist[j] = true;
-							}
-						}
-						num_enemy_drones++;
-						break;
-					case LANDSCAPER:
-						num_enemy_landscapers++;
-						break;
-					case HQ:
-					case NET_GUN:
-					case REFINERY:
-					case VAPORATOR:
-					case DESIGN_SCHOOL:
-					case FULFILLMENT_CENTER:
-						num_enemy_buildings++;
-						break;
-				}
-			}
-			if (robots[i].team == rc.getTeam()) {
-				switch (robots[i].type) {
-					case FULFILLMENT_CENTER:
-						nearby_fulfillment = true;
-						break;
-					case DESIGN_SCHOOL:
-						nearby_design = true;
-						break;
-					case NET_GUN:
-						nearby_netgun = true;
-						break;
-				}
-			}
-		}
 
 		if (in_danger) {
 			// move in a direction such that you are not in danger
@@ -103,18 +60,10 @@ public class Miner {
 			}
 		}
 
-		RobotType toBuild = null;
+		RobotType toBuild = calcBuilding();
 		// if drones, build netgun
 		// if landscapers, build drone
-		// if buildings, build landscaper
-		if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
-			// build fulfillment
-			toBuild = RobotType.FULFILLMENT_CENTER;
-		} else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
-			toBuild = RobotType.DESIGN_SCHOOL;
-		} else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
-			toBuild = RobotType.NET_GUN;
-		}
+		// if buildings, build landscape
 
 		// build thing
 		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) || rc.getTeamSoup() >= toBuild.cost*4) &&
@@ -160,8 +109,14 @@ public class Miner {
 	}
 
 	static void sense() throws GameActionException {
-		RobotInfo[] robots = rc.senseNearbyRobots();
 		int hq_dist = cur_loc.distanceSquaredTo(hq);
+		num_enemy_drones = 0;
+		num_enemy_landscapers = 0;
+		num_enemy_buildings = 0;
+		num_enemies = 0;
+		nearby_fulfillment = false;
+		nearby_netgun = false;
+		nearby_design = false;
 		for (int i = 0; i < robots.length; i++) {
 			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
 			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && temp_dist < hq_dist) {
@@ -172,6 +127,49 @@ public class Miner {
 				System.out.println("Found enemy hq! " + robots[i].location);
 				Comms.broadcast_enemy_hq(robots[i].location);
 
+			}
+
+			// calculations for building stuff
+			if (robots[i].team != rc.getTeam()) {
+				num_enemies++;
+				switch (robots[i].type) {
+					case DELIVERY_DRONE:
+						if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+							in_danger = true;
+						}
+						for (int j = 0; j < directions.length; j++) {
+							if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
+									<= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+								blacklist[j] = true;
+							}
+						}
+						num_enemy_drones++;
+						break;
+					case LANDSCAPER:
+						num_enemy_landscapers++;
+						break;
+					case HQ:
+					case NET_GUN:
+					case REFINERY:
+					case VAPORATOR:
+					case DESIGN_SCHOOL:
+					case FULFILLMENT_CENTER:
+						num_enemy_buildings++;
+						break;
+				}
+			}
+			if (robots[i].team == rc.getTeam()) {
+				switch (robots[i].type) {
+					case FULFILLMENT_CENTER:
+						nearby_fulfillment = true;
+						break;
+					case DESIGN_SCHOOL:
+						nearby_design = true;
+						break;
+					case NET_GUN:
+						nearby_netgun = true;
+						break;
+				}
 			}
 		}
 	}
@@ -361,5 +359,17 @@ public class Miner {
           System.out.println("DEPOSITED");
           return true;
       } else return false;
+  }
+
+  static RobotType calcBuilding() {
+	  if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
+		  // build fulfillment
+		  return RobotType.FULFILLMENT_CENTER;
+	  } else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
+		  return RobotType.DESIGN_SCHOOL;
+	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
+		  return RobotType.NET_GUN;
+	  }
+	  return null;
   }
 }
