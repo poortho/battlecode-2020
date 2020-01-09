@@ -79,7 +79,7 @@ public class Miner {
 
 		// build thing
 		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*2 && num_enemies != 0) ||
-				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 1 : 4))) {
+				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4))) {
 			// build if none nearby and (nearby enemies or close to hq)
 			if (cur_loc.distanceSquaredTo(hq) <= 8) {
 				for (int i = 0; i < directions.length; i++) {
