@@ -295,8 +295,8 @@ public class Landscaper {
                     case DESIGN_SCHOOL:
                     case FULFILLMENT_CENTER:
                         // enemy building, go fk it
-                        if (destination == null ||
-                                robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc)) {
+                        if (destination == null || (robots[i].type != RobotType.REFINERY &&
+                                 robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc))) {
                             destination = robots[i].location;
                         }
                         break;

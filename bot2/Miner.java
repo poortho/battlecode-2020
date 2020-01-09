@@ -171,7 +171,10 @@ public class Miner {
 					case REFINERY:
 					case VAPORATOR:
 					case DESIGN_SCHOOL:
+						num_enemy_landscapers++; //count this as landscaper
+						num_enemy_drones--; // for when it falls through
 					case FULFILLMENT_CENTER:
+						num_enemy_drones++; // count this as drone
 						num_enemy_buildings++;
 						break;
 				}
