@@ -15,7 +15,7 @@ public class HQ {
     static MapLocation[] possible_enemy_locs = new MapLocation[6];
     static int remove_num = 0;
 
-    static MapLocation enemy_hq, cur_loc;
+    static MapLocation enemy_hq, cur_loc, our_hq;
 
     static void runHQ() throws GameActionException {
 
@@ -60,9 +60,12 @@ public class HQ {
 
 	    	Comms.getBlocks();
 
+        shootNetGun();
         handle_miners();
 
-        shootNetGun();
+        if (turnCount == 80) {
+          Comms.broadcast_friendly_hq(cur_loc);
+        }
 	    }
 	  }
 
