@@ -19,6 +19,7 @@ public class Landscaper {
     static int counter = 0;
     static boolean defensive = false;
     static MapLocation my_hq;
+    static int nearby_landscapers_not_adjacent_hq = 0;
 
     static void runLandscaper() throws GameActionException {
         cur_loc = rc.getLocation();
@@ -72,15 +73,16 @@ public class Landscaper {
             // check if there exists adjacent spot with lower elevation
             // if so fill it in
             // unless im empty, in which case move do it...
-            for (int i = 0; i < directions.length; i++) {
-                if (rc.canMove(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3 &&
-                        rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc)) {
-                    rc.move(directions[i]);
-                    return;
-                } else if (rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
-                        && rc.canDepositDirt(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3
-                        && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) > 0) {
-                    rc.depositDirt(directions[i]);
+            if (nearby_landscapers_not_adjacent_hq == 0) {
+                for (int i = 0; i < directions.length; i++) {
+                    if (rc.canMove(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3 &&
+                            rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc)) {
+                        rc.move(directions[i]);
+                    } else if (rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
+                            && rc.canDepositDirt(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3
+                            && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) > 0) {
+                        rc.depositDirt(directions[i]);
+                    }
                 }
             }
 
@@ -94,12 +96,20 @@ public class Landscaper {
             }
         } else if (dist_from_hq <= 8) {
             // first, check if there is an open spot adjacent to hq...
+            // find closest...
+            int min_dist = 99999;
+            MapLocation best_loc = null;
             for (int i = 0; i < directions.length; i++) {
-                MapLocation new_loc = cur_loc.add(directions[i]);
-                if (new_loc.distanceSquaredTo(my_hq) <= 3 && rc.senseRobotAtLocation(new_loc) == null) {
-                    aggressive_landscaper_walk(new_loc);
-                    return;
+                MapLocation new_loc = my_hq.add(directions[i]);
+                if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null) {
+                    if (new_loc.distanceSquaredTo(cur_loc) < min_dist) {
+                        min_dist = new_loc.distanceSquaredTo(cur_loc);
+                        best_loc = new_loc;
+                    }
                 }
+            }
+            if (best_loc != null) {
+                aggressive_landscaper_walk(best_loc);
             }
 
             // adjacent to 8 tile ring, dig from under and put closer
@@ -112,7 +122,7 @@ public class Landscaper {
             }
         } else {
             // move closer to hq
-            aggressive_landscaper_walk(my_hq);
+            bugpath_walk(my_hq);
         }
     }
 
@@ -121,13 +131,13 @@ public class Landscaper {
         int next = -1;
         for (int i = 0; i < directions.length; i++) {
             MapLocation next_loc = cur_loc.add(directions[i]);
-            int temp_dist = next_loc.distanceSquaredTo(loc);
-            RobotInfo r = rc.senseRobotAtLocation(next_loc);
-            if (temp_dist < least_dist && !rc.senseFlooding(next_loc) &&
-                    !next_loc.equals(previous_location) && (r == null || (r.team != rc.getTeam() ||
-                    !r.type.isBuilding()))) {
-                least_dist = temp_dist;
-                next = i;
+            if (rc.canSenseLocation(next_loc)) {
+                int temp_dist = next_loc.distanceSquaredTo(loc);
+                RobotInfo r = rc.senseRobotAtLocation(next_loc);
+                if (temp_dist < least_dist && r == null) {
+                    least_dist = temp_dist;
+                    next = i;
+                }
             }
         }
 
@@ -140,10 +150,19 @@ public class Landscaper {
         MapLocation new_loc = cur_loc.add(greedy);
 
         if (rc.isReady()) {
-            if (rc.canMove(greedy)) {
+            if (rc.canMove(greedy) && !rc.senseFlooding(new_loc)) {
                 rc.move(greedy);
             } else {
-                if (rc.senseElevation(new_loc) > rc.senseElevation(cur_loc)) {
+                if (rc.senseFlooding(new_loc)) {
+                    // fill flood
+                    if (rc.getDirtCarrying() > 0) {
+                        if (rc.canDepositDirt(cur_loc.directionTo(new_loc))) {
+                            rc.depositDirt(cur_loc.directionTo(new_loc));
+                        }
+                    } else {
+                        Helper.tryDigAway(new_loc);
+                    }
+                } else if (rc.senseElevation(new_loc) > rc.senseElevation(cur_loc)) {
                     // deposit at self lol
                     if (rc.getDirtCarrying() > 0) {
                         if (rc.canDepositDirt(Direction.CENTER)) {
@@ -195,7 +214,7 @@ public class Landscaper {
             counter++;
         }
 
-        if (rc.canSenseLocation(destination)) {
+        if (destination != null && rc.canSenseLocation(destination)) {
             aggressive_landscaper_walk(destination);
         } else {
             walk_to_dest();
@@ -220,6 +239,7 @@ public class Landscaper {
     }
 
     static void sense() throws GameActionException {
+        nearby_landscapers_not_adjacent_hq = 0;
         for (int i = 0; i < robots.length; i++) {
             if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
                 // found enemy hq broadcast it
@@ -230,6 +250,11 @@ public class Landscaper {
                 // defensive
                 defensive = true;
                 my_hq = robots[i].location;
+            }
+            if (defensive && robots[i].type == RobotType.LANDSCAPER && robots[i].team == rc.getTeam() &&
+                robots[i].location.distanceSquaredTo(my_hq) > 3) {
+                // non adjacent landscaper nearby...
+                nearby_landscapers_not_adjacent_hq++;
             }
             if (robots[i].team != rc.getTeam()) {
                 switch (robots[i].type) {
