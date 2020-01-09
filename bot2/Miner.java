@@ -452,7 +452,7 @@ public class Miner {
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
-	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
+	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun && !near_hq) {
 		  return RobotType.NET_GUN;
 	  }
 	  return null;
