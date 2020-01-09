@@ -134,9 +134,8 @@ public class Miner {
 				if (target_explore != null) {
 					miner_walk(target_explore);
 				} else {
-					System.out.println("Walk to enemy HQ");
-					if (HQ.enemy_hq != null) {
-						miner_walk(HQ.enemy_hq);
+					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 8) {
+						miner_walk(hq);
 					}
 				}
 			}
