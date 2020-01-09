@@ -52,6 +52,12 @@ public class Miner {
 
 		sense();
 
+		// move away from hq if turtling
+		if (turtling && cur_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+			Helper.greedy_move_away(HQ.our_hq, cur_loc);
+			return;
+		}
+
 		if (in_danger) {
 			// move in a direction such that you are not in danger
 			// TODO change so that it moves towards destination
@@ -61,6 +67,7 @@ public class Miner {
 				}
 			}
 		}
+
 
 		RobotType toBuild = calcBuilding();
 		// if drones, build netgun
@@ -138,7 +145,6 @@ public class Miner {
 			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && (temp_dist < hq_dist || turtling)) {
 				hq = robots[i].location;
 				hq_dist = temp_dist;
-				turtling = false;
 			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
 				// found enemy hq broadcast it
 				System.out.println("Found enemy hq! " + robots[i].location);
@@ -187,6 +193,22 @@ public class Miner {
 					case NET_GUN:
 						nearby_netgun = true;
 						break;
+					case HQ:
+						if (turtling) {
+							for (int a = 0; a < Helper.directions.length; a++) {
+								MapLocation temp_loc = robots[i].location.add(Helper.directions[a]);
+								if (cur_loc.distanceSquaredTo(temp_loc) <= 2) {
+									Direction d = cur_loc.directionTo(temp_loc);
+									for (int j = 0; j < Helper.directions.length; j++) {
+										if (Helper.directions[j] == d) {
+											blacklist[j] = true;
+											break;
+										}
+									}
+								}
+							}
+						}
+						break;
 				}
 			}
 		}
@@ -215,13 +237,12 @@ public class Miner {
 				}
 			}
 
-			if (turtling) {
+			if (turtling && hq.equals(HQ.our_hq)) {
 				if (cur_loc.distanceSquaredTo(target_mine) <= 5 && HQ.our_hq.equals(hq)) {
 					// try build refinery
 					int res = Helper.tryBuild(RobotType.REFINERY);
 					if (res != -1) {
 						hq = cur_loc.add(directions[res]);
-						turtling = false;
 						return;
 					}
 				} else {
