@@ -20,8 +20,10 @@ public class Landscaper {
     static boolean defensive = false;
     static MapLocation my_hq;
     static int nearby_landscapers_not_adjacent_hq = 0;
+    static int move_counter = 0;
 
     static void runLandscaper() throws GameActionException {
+        move_counter++;
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
         in_danger = false;
@@ -89,7 +91,7 @@ public class Landscaper {
                 }
                 if (num_nearby_nonadjacent == 0 &&
                         rc.canMove(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3 &&
-                        rc.senseElevation(new_loc) < rc.senseElevation(cur_loc)) {
+                        rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && move_counter % 20 == 0) {
                     rc.move(directions[i]);
                 } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
                         && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
@@ -135,7 +137,11 @@ public class Landscaper {
             }
         } else {
             // move closer to hq
-            bugpath_walk(my_hq);
+            if (cur_loc.distanceSquaredTo(my_hq) <= 15) {
+                aggressive_landscaper_walk(my_hq);
+            } else {
+                bugpath_walk(my_hq);
+            }
         }
     }
 

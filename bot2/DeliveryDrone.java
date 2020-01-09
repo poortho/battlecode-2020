@@ -60,6 +60,10 @@ public class DeliveryDrone {
             corners[3] = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
         }
 
+        if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
+            nearest_flood = null;
+        }
+
         if (HQ.our_hq != null && rc.canSenseLocation(HQ.our_hq)) {
             // near hq, set to our hq
             hq = HQ.our_hq;
