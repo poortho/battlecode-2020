@@ -72,6 +72,12 @@ public class Landscaper {
     static void do_defense() throws GameActionException {
         int dist_from_hq = cur_loc.distanceSquaredTo(my_hq);
         if (dist_from_hq <= 3) {
+            // first things first, heal HQ
+            if (rc.canDigDirt(cur_loc.directionTo(my_hq))) {
+                rc.digDirt(cur_loc.directionTo(my_hq));
+                return;
+            }
+
             // check if there exists adjacent spot with lower elevation
             // if so fill it in
             // unless im empty, in which case move do it...
@@ -205,12 +211,12 @@ public class Landscaper {
     }
 
     static void do_offense() throws GameActionException {
-        if (destination == null && HQ.enemy_hq != null) {
+        if (HQ.enemy_hq != null && (destination == null || cur_loc.distanceSquaredTo(HQ.enemy_hq) < cur_loc.distanceSquaredTo(destination))) {
             destination = HQ.enemy_hq;
         }
 
         // adjacent, cuck em asap
-        if (destination != null && cur_loc.distanceSquaredTo(destination) <= 2) {
+        if (destination != null && cur_loc.distanceSquaredTo(destination) <= 3) {
             if (rc.getDirtCarrying() > 0) {
                 // cuck em
                 //System.out.println("tryna dump");
@@ -295,8 +301,8 @@ public class Landscaper {
                     case DESIGN_SCHOOL:
                     case FULFILLMENT_CENTER:
                         // enemy building, go fk it
-                        if (destination == null ||
-                                robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc)) {
+                        if (destination == null || (robots[i].type != RobotType.REFINERY &&
+                                 robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc))) {
                             destination = robots[i].location;
                         }
                         break;

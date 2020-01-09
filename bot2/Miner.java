@@ -180,7 +180,10 @@ public class Miner {
 					case REFINERY:
 					case VAPORATOR:
 					case DESIGN_SCHOOL:
+						num_enemy_landscapers++; //count this as landscaper
+						num_enemy_drones--; // for when it falls through
 					case FULFILLMENT_CENTER:
+						num_enemy_drones++; // count this as drone
 						num_enemy_buildings++;
 						break;
 				}
@@ -497,7 +500,7 @@ public class Miner {
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
-	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
+	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun && !near_hq) {
 		  return RobotType.NET_GUN;
 	  }
 	  return null;
