@@ -72,6 +72,12 @@ public class Landscaper {
     static void do_defense() throws GameActionException {
         int dist_from_hq = cur_loc.distanceSquaredTo(my_hq);
         if (dist_from_hq <= 3) {
+            // first things first, heal HQ
+            if (rc.canDigDirt(cur_loc.directionTo(my_hq))) {
+                rc.digDirt(cur_loc.directionTo(my_hq));
+                return;
+            }
+
             // check if there exists adjacent spot with lower elevation
             // if so fill it in
             // unless im empty, in which case move do it...
