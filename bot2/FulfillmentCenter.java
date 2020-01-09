@@ -41,6 +41,9 @@ public class FulfillmentCenter {
                     case LANDSCAPER:
                         num_enemy_units++;
                         break;
+                    case MINER:
+                        num_enemy_units++;
+                        break;
                 }
             }
         }
