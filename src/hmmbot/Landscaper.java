@@ -200,6 +200,12 @@ public class Landscaper {
                     if (toDig.equals(this.designSchoolLoc)) {
                         continue;
                     }
+                    if (toDig.equals(this.gameState.hqLocation) && this.rc.canSenseLocation(this.gameState.hqLocation) &&
+                            this.rc.canDigDirt(rc.getLocation().directionTo(this.gameState.hqLocation))) {
+                        highest = 1 << 30;
+                        highestDir = rc.getLocation().directionTo(this.gameState.hqLocation);
+                        break;
+                    }
                     if (this.util.distanceLinf(assignment, this.gameState.hqLocation) == 2) {
                         if (RobotUtil.distanceLinf(toDig, this.gameState.hqLocation) != 3) {
                             continue;

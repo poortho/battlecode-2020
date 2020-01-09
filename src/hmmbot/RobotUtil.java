@@ -135,7 +135,7 @@ public class RobotUtil {
         Direction dir = origDir;
         do {
             MapLocation toLoc = currentLocation.add(dir);
-            if (!rc.canMove(dir) || (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc))) {
+            if (!rc.canMove(dir) || (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc) && rc.getType() != RobotType.DELIVERY_DRONE)) {
                 if (!bugPath) {
                     break;
                 }
@@ -214,11 +214,11 @@ public class RobotUtil {
         return new MapLocation((int) (Math.random() * 64), (int) (Math.random() * 64));
     }
 
-    public RobotInfo closestRefinery(RobotInfo[] robots) {
+    public RobotInfo closestRobot(RobotInfo[] robots, RobotType type, boolean sameTeam) {
         RobotInfo closest = null;
         int closestDist = 1 << 30;
         for (RobotInfo info : robots) {
-            if (info.type == RobotType.REFINERY && info.team == rc.getTeam()) {
+            if (info.type == type && (!sameTeam || info.team == rc.getTeam())) {
                 int dist = distanceLinf(rc.getLocation(), info.location);
                 if (dist < closestDist) {
                     closest = info;

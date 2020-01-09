@@ -49,6 +49,14 @@ public strictfp class RobotPlayer {
                         Landscaper landscaper = new Landscaper(rc);
                         landscaper.run();
                         break;
+                    case DELIVERY_DRONE:
+                        Drone drone = new Drone(rc);
+                        drone.run();
+                        break;
+                    case FULFILLMENT_CENTER:
+                        FulfillmentCenter fulfillmentCenter = new FulfillmentCenter(rc);
+                        fulfillmentCenter.run();
+                        break;
                     default:
                         while (true) {
                             Clock.yield();

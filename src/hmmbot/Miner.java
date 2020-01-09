@@ -129,7 +129,7 @@ public class Miner {
 
             MapLocation currentLocation = rc.getLocation();
 
-            if (builtDesignSchool && rc.getRoundNum() > 600 && !this.builtFulfillmentCenter) {
+            if (builtDesignSchool && rc.getRoundNum() > 300 && rc.getTeamSoup() > 1000 && !this.builtFulfillmentCenter) {
                 if (this.util.tryBuild(RobotType.FULFILLMENT_CENTER) != null) {
                     builtFulfillmentCenter = true;
                     Clock.yield();
@@ -172,7 +172,7 @@ public class Miner {
                 this.refineryLoc = null;
             }
 
-            RobotInfo closestRefineryInfo = this.util.closestRefinery(sensedRobots);
+            RobotInfo closestRefineryInfo = this.util.closestRobot(sensedRobots, RobotType.REFINERY, true);
             MapLocation closestRefinery = closestRefineryInfo != null ? closestRefineryInfo.location : this.refineryLoc;
             if (closestRefinery == null || this.refineryLoc != null && RobotUtil.distanceLinf(currentLocation, this.refineryLoc) <= RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
                 closestRefinery = this.refineryLoc;
@@ -184,7 +184,7 @@ public class Miner {
             }
             this.refineryLoc = closestRefinery;
 
-            if (closestRefinery != null && closestRefinery.isAdjacentTo(currentLocation) && this.rc.getSoupCarrying() > 50) {
+            if (closestRefinery != null && closestRefinery.isAdjacentTo(currentLocation) && this.rc.getSoupCarrying() > 80) {
                 Direction dir = currentLocation.directionTo(closestRefinery);
                 if (rc.canDepositSoup(dir)) {
                     rc.depositSoup(dir, this.rc.getSoupCarrying());
@@ -234,7 +234,7 @@ public class Miner {
                 this.target = this.refineryLoc;
             }
 
-            if (this.state == STATE_SEARCHING && this.targetSoupLoc == null && this.target == null) {
+            if (this.target == null) {
                 this.target = this.util.randomLocation();
                 this.util.log(String.format("New Target: %d %d", this.target.x, this.target.y));
             }
