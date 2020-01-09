@@ -75,7 +75,7 @@ public class Landscaper {
             for (int i = 0; i < directions.length; i++) {
                 if (rc.canMove(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3 &&
                         rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc)) {
-                    bugpath_walk(cur_loc.add(directions[i]));
+                    rc.move(directions[i]);
                     return;
                 } else if (rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
                         && rc.canDepositDirt(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3
@@ -95,26 +95,68 @@ public class Landscaper {
         } else if (dist_from_hq <= 8) {
             // first, check if there is an open spot adjacent to hq...
             for (int i = 0; i < directions.length; i++) {
-                if (rc.canMove(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3) {
-                    bugpath_walk(cur_loc.add(directions[i]));
+                MapLocation new_loc = cur_loc.add(directions[i]);
+                if (new_loc.distanceSquaredTo(my_hq) <= 3 && rc.senseRobotAtLocation(new_loc) == null) {
+                    aggressive_landscaper_walk(new_loc);
                     return;
                 }
             }
 
             // adjacent to 8 tile ring, dig from under and put closer
-            // the reason we dig under is to prevent the ring around these landscapers from flooding earlier than expected
             if (rc.getDirtCarrying() > 0) {
                 // have dirt, deposit close as possible
                 Helper.tryDepositClose(my_hq);
             } else {
                 // find direction furthest away and dig
-                if (rc.canDigDirt(Direction.CENTER)) {
-                    rc.digDirt(Direction.CENTER);
-                }
+                Helper.tryDigAway(my_hq);
             }
         } else {
             // move closer to hq
-            bugpath_walk(my_hq);
+            aggressive_landscaper_walk(my_hq);
+        }
+    }
+
+    static void aggressive_landscaper_walk(MapLocation loc) throws GameActionException {
+        int least_dist = 9999999;
+        int next = -1;
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation next_loc = cur_loc.add(directions[i]);
+            int temp_dist = next_loc.distanceSquaredTo(loc);
+            RobotInfo r = rc.senseRobotAtLocation(next_loc);
+            if (temp_dist < least_dist && !next_loc.equals(previous_location) && (r == null || (r.team != rc.getTeam() ||
+                    !r.type.isBuilding()))) {
+                least_dist = temp_dist;
+                next = i;
+            }
+        }
+
+        Direction greedy = directions[next];
+        MapLocation new_loc = cur_loc.add(greedy);
+
+        if (rc.isReady()) {
+            if (rc.canMove(greedy)) {
+                rc.move(greedy);
+            } else {
+                if (rc.senseElevation(new_loc) > rc.senseElevation(cur_loc)) {
+                    // deposit at self lol
+                    if (rc.getDirtCarrying() > 0) {
+                        if (rc.canDepositDirt(Direction.CENTER)) {
+                            rc.depositDirt(Direction.CENTER);
+                        }
+                    } else {
+                        Helper.tryDigAway(new_loc);
+                    }
+                } else {
+                    // deposit at dest
+                    if (rc.getDirtCarrying() > 0) {
+                        if (rc.canDepositDirt(greedy)) {
+                            rc.depositDirt(greedy);
+                        }
+                    } else {
+                        Helper.tryDigAway(new_loc);
+                    }
+                }
+            }
         }
     }
 
