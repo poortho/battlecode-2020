@@ -1,14 +1,9 @@
-package bot1;
-import battlecode.common.*;
-import java.lang.Math;
+package bot2;
 
-import static bot1.Helper.directions;
-import static bot1.RobotPlayer.turnCount;
-import static bot1.RobotPlayer.round;
-import static bot1.RobotPlayer.rc;
-import static bot1.RobotPlayer.waterLevel;
-import static bot1.Helper.distx_35;
-import static bot1.Helper.disty_35;
+import battlecode.common.*;
+
+import static bot2.Helper.*;
+import static bot2.RobotPlayer.rc;
 
 public class Miner {
 
@@ -70,10 +65,14 @@ public class Miner {
 		// if buildings, build landscape
 
 		// build thing
-		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) || rc.getTeamSoup() >= toBuild.cost*4) &&
-				cur_loc.distanceSquaredTo(hq) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
+		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) || rc.getTeamSoup() >= toBuild.cost*4)) {
 			// build if none nearby and (nearby enemies or close to hq)
-			Helper.tryBuild(toBuild);
+			for (int i = 0; i < directions.length; i++) {
+				if (cur_loc.add(directions[i]).distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
+						cur_loc.add(directions[i]).distanceSquaredTo(hq) > 3) {
+					Helper.tryBuild(toBuild, directions[i]);
+				}
+			}
 		}
 
 		if (target_explore != null && must_reach_dest) {
@@ -334,14 +333,14 @@ public class Miner {
 		greedy = directions[next];
 		MapLocation greedy_loc = cur_loc.add(greedy);
 
-		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
+		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next]) {
 			rc.move(greedy);
 		} else {
 			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
-				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next]) {
 					rc.move(cw);
 					break;
 				}
@@ -387,11 +386,11 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-	  if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
+	  if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
+		  return RobotType.DESIGN_SCHOOL;
+	  } else if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
-		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
 	  }
