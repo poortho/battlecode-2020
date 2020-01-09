@@ -32,6 +32,7 @@ public class Miner {
   static boolean nearby_fulfillment = false;
   static boolean nearby_netgun = false;
   static boolean nearby_design = false;
+  static boolean near_hq = false;
 
   static boolean turtling = false;
 
@@ -67,12 +68,15 @@ public class Miner {
 		// if buildings, build landscape
 
 		// build thing
-		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) || rc.getTeamSoup() >= toBuild.cost*4)) {
+		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost && num_enemies != 0) ||
+				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 1 : 4))) {
 			// build if none nearby and (nearby enemies or close to hq)
-			for (int i = 0; i < directions.length; i++) {
-				if (cur_loc.add(directions[i]).distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
-						cur_loc.add(directions[i]).distanceSquaredTo(hq) > 3) {
-					Helper.tryBuild(toBuild, directions[i]);
+			if (cur_loc.distanceSquaredTo(hq) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+				for (int i = 0; i < directions.length; i++) {
+					if (cur_loc.add(directions[i]).distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
+							cur_loc.add(directions[i]).distanceSquaredTo(hq) > 3) {
+						Helper.tryBuild(toBuild, directions[i]);
+					}
 				}
 			}
 		}
@@ -139,7 +143,8 @@ public class Miner {
 				// found enemy hq broadcast it
 				System.out.println("Found enemy hq! " + robots[i].location);
 				Comms.broadcast_enemy_hq(robots[i].location);
-
+			} else if (robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {
+				near_hq = true;
 			}
 
 			// calculations for building stuff
@@ -418,11 +423,11 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-	  if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
-		  return RobotType.DESIGN_SCHOOL;
-	  } else if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
+	  if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
+	  } else if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
+		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
 	  }

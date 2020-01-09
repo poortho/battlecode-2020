@@ -189,7 +189,11 @@ public class Landscaper {
             counter++;
         }
 
-        walk_to_dest();
+        if (rc.canSenseLocation(destination)) {
+            aggressive_landscaper_walk(destination);
+        } else {
+            walk_to_dest();
+        }
     }
 
     static void walk_to_dest() throws GameActionException {
