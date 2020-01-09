@@ -21,6 +21,7 @@ public class DeliveryDrone {
     static void runDeliveryDrone() throws GameActionException {
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
+        Comms.getBlocks();
 
         for (int i = 0; i < blacklist.length; i++) {
             blacklist[i] = false;
@@ -58,6 +59,29 @@ public class DeliveryDrone {
             corners[2] = new MapLocation(0, rc.getMapHeight());
             corners[3] = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
         }
+
+        if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
+            nearest_flood = null;
+        }
+
+        if (HQ.our_hq != null && rc.canSenseLocation(HQ.our_hq)) {
+            // near hq, set to our hq
+            hq = HQ.our_hq;
+        }
+
+        // sense nearby deets for flood
+        int k = 1;
+        while (rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
+            MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
+            if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
+                if (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood)) {
+                    nearest_flood = new_loc;
+                    break;
+                }
+            }
+            k++;
+        }
+
         if (!rc.isCurrentlyHoldingUnit()) {
             // look for enemy units
             int num_enemies = 0;
@@ -75,7 +99,7 @@ public class DeliveryDrone {
             }
 
             // move towards them...
-            if (num_enemies > 0) {
+            if (num_enemies > 0 && closest_robot != null) {
                 if (closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                     // pickup
                     //System.out.println("Pickup: " + closest_robot.getLocation().toString());
@@ -121,19 +145,6 @@ public class DeliveryDrone {
             }
         } else {
             // go to flood
-
-            // sense nearby deets for flood
-            int i = 1;
-            while (Math.pow(distx_35[i], 2) + Math.pow(disty_35[i], 2) <= RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
-                MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[i], cur_loc.y + disty_35[i]);
-                if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
-                    if (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood)) {
-                        nearest_flood = new_loc;
-                        break;
-                    }
-                }
-                i++;
-            }
 
             // if have flood loc, move there
             if (nearest_flood != null) {
