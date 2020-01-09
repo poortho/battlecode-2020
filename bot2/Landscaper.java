@@ -123,11 +123,17 @@ public class Landscaper {
             MapLocation next_loc = cur_loc.add(directions[i]);
             int temp_dist = next_loc.distanceSquaredTo(loc);
             RobotInfo r = rc.senseRobotAtLocation(next_loc);
-            if (temp_dist < least_dist && !next_loc.equals(previous_location) && (r == null || (r.team != rc.getTeam() ||
+            if (temp_dist < least_dist && !rc.senseFlooding(next_loc) &&
+                    !next_loc.equals(previous_location) && (r == null || (r.team != rc.getTeam() ||
                     !r.type.isBuilding()))) {
                 least_dist = temp_dist;
                 next = i;
             }
+        }
+
+        if (next == -1) {
+            bugpath_walk(loc);
+            return;
         }
 
         Direction greedy = directions[next];
