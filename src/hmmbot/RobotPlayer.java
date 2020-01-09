@@ -41,6 +41,14 @@ public strictfp class RobotPlayer {
                         Miner miner = new Miner(rc);
                         miner.run();
                         break;
+                    case DESIGN_SCHOOL:
+                        DesignSchool designSchool = new DesignSchool(rc);
+                        designSchool.run();
+                        break;
+                    case LANDSCAPER:
+                        Landscaper landscaper = new Landscaper(rc);
+                        landscaper.run();
+                        break;
                     default:
                         while (true) {
                             Clock.yield();

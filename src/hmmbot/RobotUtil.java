@@ -6,9 +6,15 @@ import java.util.function.Function;
 
 public class RobotUtil {
     RobotController rc;
+    boolean bugClockwise;
+
+    final boolean DEBUG_MODE = true;
 
     public RobotUtil(RobotController rc) {
         this.rc = rc;
+        this.bugClockwise = rc.getID() % 2 == 0;
+
+        this.log(this.bugClockwise ? "Clockwise!" : "Counterclockwise!");
     }
 
     public void waitCooldown() {
@@ -19,7 +25,7 @@ public class RobotUtil {
 
     public MapLocation tryBuild(RobotType type, Direction dir) throws GameActionException {
         MapLocation buildLoc = rc.getLocation().add(dir);
-        if (this.rc.canBuildRobot(type, dir) && this.rc.canSenseLocation(buildLoc) && !this.rc.senseFlooding(buildLoc)) {
+        if (this.rc.canBuildRobot(type, dir) && (!this.rc.canSenseLocation(buildLoc) || !this.rc.senseFlooding(buildLoc))) {
             this.rc.buildRobot(type, dir);
             return buildLoc;
         }
@@ -51,8 +57,8 @@ public class RobotUtil {
     public MapLocation seeSoup() throws GameActionException {
         MapLocation bestSoupLoc = null;
         int bestSoupDist = 1 << 30;
-        for (int i = -7; i < 8; i++) {
-            for (int j = -7; j < 8; j++) {
+        for (int i = -5; i < 6; i++) {
+            for (int j = -5; j < 6; j++) {
                 int x = rc.getLocation().x + i;
                 int y = rc.getLocation().y + j;
                 MapLocation loc = new MapLocation(x, y);
@@ -98,7 +104,30 @@ public class RobotUtil {
         }
     }
 
-    public boolean moveTowards(MapLocation loc, Function<Void, Void> callback) throws GameActionException {
+    public static Direction counterclockwise(Direction dir) {
+        switch (dir) {
+            case NORTHEAST:
+                return Direction.NORTH;
+            case EAST:
+                return Direction.NORTHEAST;
+            case SOUTHEAST:
+                return Direction.EAST;
+            case SOUTH:
+                return Direction.SOUTHEAST;
+            case SOUTHWEST:
+                return Direction.SOUTH;
+            case WEST:
+                return Direction.SOUTHWEST;
+            case NORTHWEST:
+                return Direction.WEST;
+            case NORTH:
+                return Direction.NORTHWEST;
+            default:
+                return Direction.CENTER;
+        }
+    }
+
+    public boolean moveTowards(MapLocation loc, Function<Void, Void> callback, boolean bugPath) throws GameActionException {
         MapLocation currentLocation = rc.getLocation();
         if (loc.x == currentLocation.x && loc.y == currentLocation.y)
             return false;
@@ -107,7 +136,42 @@ public class RobotUtil {
         do {
             MapLocation toLoc = currentLocation.add(dir);
             if (!rc.canMove(dir) || (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc))) {
-                dir = clockwise(dir);
+                if (!bugPath) {
+                    break;
+                }
+                if (bugClockwise) {
+                    dir = clockwise(dir);
+                } else {
+                    dir = counterclockwise(dir);
+                }
+                continue;
+            }
+            rc.move(dir);
+            return true;
+        } while (dir != origDir);
+        return false;
+    }
+    public boolean moveTowards(MapLocation loc, Function<Void, Void> callback) throws GameActionException {
+        return moveTowards(loc, callback, true);
+    }
+
+    public boolean moveTowardsBounded(MapLocation loc, Function<Void, Void> callback, boolean bugPath, MapLocation center, int distance) throws GameActionException {
+        MapLocation currentLocation = rc.getLocation();
+        if (loc.x == currentLocation.x && loc.y == currentLocation.y)
+            return false;
+        Direction origDir = deltaToDirection(loc.x - currentLocation.x, loc.y - currentLocation.y);
+        Direction dir = origDir;
+        do {
+            MapLocation toLoc = currentLocation.add(dir);
+            if (!rc.canMove(dir) || (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc)) || distanceLinf(center, toLoc) > distance) {
+                if (!bugPath) {
+                    break;
+                }
+                if (bugClockwise) {
+                    dir = clockwise(dir);
+                } else {
+                    dir = counterclockwise(dir);
+                }
                 continue;
             }
             rc.move(dir);
@@ -166,6 +230,7 @@ public class RobotUtil {
     }
 
     public void log(String s) {
-        System.out.println(s);
+        if (DEBUG_MODE)
+            System.out.println(s);
     }
 }

@@ -10,10 +10,15 @@ public class Miner {
     GameState gameState;
 
     int state;
+    int birthRound;
 
     MapLocation target;
     MapLocation targetSoupLoc;
     MapLocation refineryLoc;
+
+    boolean foundDesignSchool = false;
+    boolean builtDesignSchool = false;
+    boolean builtFulfillmentCenter = false;
 
     static int STATE_INIT = 0;
     static int STATE_MOVING = 1;
@@ -33,28 +38,86 @@ public class Miner {
         this.target = null;
         this.targetSoupLoc = null;
         this.refineryLoc = null;
+
+        this.foundDesignSchool = false;
     }
 
     public void run() throws GameActionException {
-        if (this.gameState.hqLocation == null) {
+        this.birthRound = rc.getRoundNum();
+
+        int seenLandscapers = 0;
+        for (RobotInfo info : this.util.seeRobots()) {
             // We are next to the HQ, look for it.
-
-            for (RobotInfo info : this.util.seeRobots()) {
-                if (info.type != RobotType.HQ || info.team != rc.getTeam()) {
-                    continue;
-                }
-
+            if (this.gameState.hqLocation == null && info.type == RobotType.HQ && info.team == rc.getTeam()) {
                 this.gameState.hqLocation = info.location;
+            }
+
+            if (info.type == RobotType.LANDSCAPER && info.team == rc.getTeam()) {
+                seenLandscapers += 1;
             }
         }
 
-        this.state = STATE_SEARCHING;
+        if (rc.getTeamSoup() > RobotType.LANDSCAPER.cost * 5 + 500 && seenLandscapers < 9) {
+            // ensure design school
+            while (true) {
+                int minerCount = 0;
+                for (RobotInfo info : this.util.seeRobots()) {
+                    // look for landscaper house
+                    if (info.type == RobotType.DESIGN_SCHOOL && info.team == rc.getTeam()) {
+                        this.foundDesignSchool = true;
+                    }
+                    if (info.type == RobotType.MINER && info.team == rc.getTeam() && info.location.isAdjacentTo(this.gameState.hqLocation)) {
+                        minerCount += 1;
+                    }
+                }
+
+                if (minerCount > 3) {
+                    if (Math.random() > 0.6) {
+                        break;
+                    }
+                }
+
+                if (foundDesignSchool)
+                    break;
+
+                for (Direction dir : Direction.cardinalDirections()) {
+                    MapLocation toBuild = this.gameState.hqLocation.add(dir);
+                    Direction dirToBuild = rc.getLocation().directionTo(toBuild);
+                    if (!rc.getLocation().isAdjacentTo(toBuild) || !rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dirToBuild)) {
+                        continue;
+                    }
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, dirToBuild);
+
+
+
+                    foundDesignSchool = true;
+                    builtDesignSchool = true;
+                }
+
+                if (foundDesignSchool)
+                    break;
+
+                Clock.yield();
+            }
+        }
+
+        if (rc.getRoundNum() > 50) {
+            this.state = STATE_MOVING;
+            this.target = this.util.randomLocation();
+            this.util.log(String.format("Initial migration: %d %d", this.target.x, this.target.y));
+
+        } else {
+            this.state = STATE_SEARCHING;
+        }
 
         this.util.log(String.format("HQ Loc: %d %d", this.gameState.hqLocation.x, this.gameState.hqLocation.y));
 
         this.refineryLoc = this.gameState.hqLocation;
 
         while (true) {
+            this.util.waitCooldown();
+
+
             this.util.log(String.format("State: %d", this.state));
             if (this.target != null) {
                 this.util.log(String.format("Target: %d %d", this.target.x, this.target.y));
@@ -64,12 +127,25 @@ public class Miner {
             }
             this.util.log(String.format("Carrying Soup: %d", rc.getSoupCarrying()));
 
+            MapLocation currentLocation = rc.getLocation();
+
+            if (builtDesignSchool && rc.getRoundNum() > 600 && !this.builtFulfillmentCenter) {
+                if (this.util.tryBuild(RobotType.FULFILLMENT_CENTER) != null) {
+                    builtFulfillmentCenter = true;
+                    Clock.yield();
+                    continue;
+                }
+            }
+
+            if (this.state == STATE_MOVING && (this.target.equals(currentLocation) || rc.getRoundNum() > this.birthRound + 80)) {
+                this.state = STATE_SEARCHING;
+            }
+
 
             if (this.targetSoupLoc != null && this.rc.canSenseLocation(this.targetSoupLoc) && this.rc.senseSoup(targetSoupLoc) == 0) {
                 this.targetSoupLoc = null;
             }
 
-            MapLocation currentLocation = rc.getLocation();
             MapLocation soupLoc = this.util.seeSoup();
 
             RobotInfo[] sensedRobots = this.util.seeRobots();
@@ -92,17 +168,23 @@ public class Miner {
                 }
             }
 
+            if (this.rc.getRoundNum() >= 300 && this.refineryLoc == this.gameState.hqLocation) {
+                this.refineryLoc = null;
+            }
+
             RobotInfo closestRefineryInfo = this.util.closestRefinery(sensedRobots);
             MapLocation closestRefinery = closestRefineryInfo != null ? closestRefineryInfo.location : this.refineryLoc;
-            if (closestRefinery == null || RobotUtil.distanceLinf(currentLocation, this.refineryLoc) <= RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
+            if (closestRefinery == null || this.refineryLoc != null && RobotUtil.distanceLinf(currentLocation, this.refineryLoc) <= RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
                 closestRefinery = this.refineryLoc;
             }
-            if (RobotUtil.distanceLinf(currentLocation, this.gameState.hqLocation) < RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
-                closestRefinery = this.gameState.hqLocation;
+            if (this.rc.getRoundNum() < 300) {
+                if (RobotUtil.distanceLinf(currentLocation, this.gameState.hqLocation) < RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
+                    closestRefinery = this.gameState.hqLocation;
+                }
             }
             this.refineryLoc = closestRefinery;
 
-            if (closestRefinery.isAdjacentTo(currentLocation) && this.rc.getSoupCarrying() > 50) {
+            if (closestRefinery != null && closestRefinery.isAdjacentTo(currentLocation) && this.rc.getSoupCarrying() > 50) {
                 Direction dir = currentLocation.directionTo(closestRefinery);
                 if (rc.canDepositSoup(dir)) {
                     rc.depositSoup(dir, this.rc.getSoupCarrying());
@@ -111,7 +193,11 @@ public class Miner {
                     Clock.yield();
                     continue;
                 } else {
-                    this.refineryLoc = this.gameState.hqLocation;
+                    if (rc.getRoundNum() < 300) {
+                        this.refineryLoc = this.gameState.hqLocation;
+                    } else {
+                        this.refineryLoc = null;
+                    }
                 }
             }
 
@@ -120,20 +206,32 @@ public class Miner {
             }
 
             if (this.state == STATE_DEPOSITING) {
-                this.target = this.refineryLoc;
-            }
+                if (this.refineryLoc == null || RobotUtil.distanceLinf(currentLocation, this.refineryLoc) > 4 && this.rc.getTeamSoup() > RobotType.REFINERY.cost) {
+                    MapLocation builtLoc = null;
 
-            if (this.state == STATE_DEPOSITING) {
-                if (RobotUtil.distanceLinf(currentLocation, this.refineryLoc) > 15 && this.rc.getTeamSoup() > RobotType.REFINERY.cost) {
-                    MapLocation builtLoc = this.util.tryBuild(RobotType.REFINERY);
+                    for (Direction dir : Direction.allDirections()) {
+                        if (currentLocation.add(dir).isAdjacentTo(this.gameState.hqLocation)) {
+                            continue;
+                        }
+                        MapLocation tryLoc = this.util.tryBuild(RobotType.REFINERY, dir);
+                        if (tryLoc != null) {
+                            builtLoc = tryLoc;
+                            break;
+                        }
+                    }
+
                     if (builtLoc != null) {
                         this.refineryLoc = builtLoc;
-                        this.target = this.refineryLoc;
 
                         Clock.yield();
                         continue;
                     }
                 }
+            }
+
+
+            if (this.state == STATE_DEPOSITING) {
+                this.target = this.refineryLoc;
             }
 
             if (this.state == STATE_SEARCHING && this.targetSoupLoc == null && this.target == null) {
@@ -148,6 +246,7 @@ public class Miner {
                 this.target = this.util.randomLocation();
                 this.util.log(String.format("New Target: %d %d", this.target.x, this.target.y));
             }
+            Clock.yield();
         }
     }
 

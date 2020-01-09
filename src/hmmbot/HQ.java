@@ -6,7 +6,7 @@ public class HQ {
     RobotController rc;
     RobotUtil util;
 
-    int initialMinersCreated = 0;
+    int minersCreated = 0;
 
     public HQ(RobotController rc) {
         this.rc = rc;
@@ -16,19 +16,42 @@ public class HQ {
 
     public void run() throws GameActionException {
 
-        while (initialMinersCreated < 3) {
+        while (minersCreated < 3) {
             this.util.waitCooldown();
-            for (Direction dir : Direction.allDirections()) {
-                if (this.util.tryBuild(RobotType.MINER, dir) != null) {
-                    initialMinersCreated += 1;
-                    break;
-                }
+            if (this.util.tryBuild(RobotType.MINER) != null) {
+                minersCreated += 1;
+                Clock.yield();
+                continue;
+            }
+
+            Clock.yield();
+        }
+
+        while (rc.getTeamSoup() < 500) {
+            Clock.yield();
+        }
+
+        while (minersCreated < rc.getTeamSoup() / 700) {
+            this.util.waitCooldown();
+            if (this.util.tryBuild(RobotType.MINER) != null) {
+                minersCreated += 1;
+                for (int i = 0; i < 20; i++)
+                    Clock.yield();
+
+                continue;
             }
 
             Clock.yield();
         }
 
         while (true) {
+            this.util.waitCooldown();
+            if (rc.getTeamSoup() / minersCreated > 400) {
+                if (this.util.tryBuild(RobotType.MINER) != null) {
+                    minersCreated += 1;
+                    continue;
+                }
+            }
             Clock.yield();
         }
     }
