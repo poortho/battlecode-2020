@@ -73,16 +73,29 @@ public class Landscaper {
             // check if there exists adjacent spot with lower elevation
             // if so fill it in
             // unless im empty, in which case move do it...
-            if (nearby_landscapers_not_adjacent_hq == 0) {
-                for (int i = 0; i < directions.length; i++) {
-                    if (rc.canMove(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3 &&
-                            rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc)) {
-                        rc.move(directions[i]);
-                    } else if (rc.senseElevation(cur_loc.add(directions[i])) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
-                            && rc.canDepositDirt(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) <= 3
-                            && cur_loc.add(directions[i]).distanceSquaredTo(my_hq) > 0) {
-                        rc.depositDirt(directions[i]);
+            for (int i = 0; i < directions.length; i++) {
+                MapLocation new_loc = cur_loc.add(directions[i]);
+                int num_nearby_nonadjacent = 0;
+                for (int j = 0; j < directions.length; j++) {
+                    // check if landscaper nonadjacent to HQ is adjacent to new loc
+                    if (rc.canSenseLocation(new_loc.add(directions[j]))) {
+                        RobotInfo robot = rc.senseRobotAtLocation(new_loc.add(directions[j]));
+                        if (robot != null && robot.location.distanceSquaredTo(my_hq) > 3 &&
+                                robot.type == RobotType.LANDSCAPER &&
+                                robot.team == rc.getTeam()) {
+                            num_nearby_nonadjacent++;
+                        }
                     }
+                }
+                if (num_nearby_nonadjacent == 0 &&
+                        rc.canMove(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3 &&
+                        rc.senseElevation(new_loc) < rc.senseElevation(cur_loc)) {
+                    rc.move(directions[i]);
+                } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
+                        && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
+                        && rc.canDepositDirt(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3
+                        && new_loc.distanceSquaredTo(my_hq) > 0) {
+                    rc.depositDirt(directions[i]);
                 }
             }
 
