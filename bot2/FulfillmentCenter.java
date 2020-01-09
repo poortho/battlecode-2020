@@ -16,7 +16,7 @@ public class FulfillmentCenter {
         int num_enemy_units = 0;
         int num_drones = 0;
         for (int i = 0; i < robots.length; i++) {
-            if (robots[i].team != rc.getTeam() && !robots[i].type.isBuilding()) {
+            if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
                 num_enemy_units++;
             }
             if (robots[i].team == rc.getTeam()) {
