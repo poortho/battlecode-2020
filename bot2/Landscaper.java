@@ -211,12 +211,12 @@ public class Landscaper {
     }
 
     static void do_offense() throws GameActionException {
-        if (destination == null && HQ.enemy_hq != null) {
+        if (HQ.enemy_hq != null && (destination == null || cur_loc.distanceSquaredTo(HQ.enemy_hq) < cur_loc.distanceSquaredTo(destination))) {
             destination = HQ.enemy_hq;
         }
 
         // adjacent, cuck em asap
-        if (destination != null && cur_loc.distanceSquaredTo(destination) <= 2) {
+        if (destination != null && cur_loc.distanceSquaredTo(destination) <= 3) {
             if (rc.getDirtCarrying() > 0) {
                 // cuck em
                 //System.out.println("tryna dump");
