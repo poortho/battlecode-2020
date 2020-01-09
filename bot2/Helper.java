@@ -25,6 +25,7 @@ public class Helper {
 
   // -1 means didn't build
   // returns index in directions where robot was built
+  // avoid building in places adjacent to buildings
   static int tryBuild(RobotType type) throws GameActionException {
     if (!rc.isReady()) {
       return -1;
