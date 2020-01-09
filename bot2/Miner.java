@@ -376,24 +376,30 @@ public class Miner {
 	}
 
 	static void bugpath_walk(MapLocation loc) throws GameActionException {
+		if (!rc.isReady()) {
+			return;
+		}
 		Direction greedy;
 
-		int least_dist = 9999999;
+		int least_dist = cur_loc.distanceSquaredTo(loc);
 		int next = -1;
+		int greedy_dist = 9999999;
+		Direction greedy_dir = directions[0];
 		for (int i = 0; i < directions.length; i++) {
 			MapLocation next_loc = cur_loc.add(directions[i]);
 			int temp_dist = next_loc.distanceSquaredTo(loc);
-			if (temp_dist < least_dist && !next_loc.equals(previous_location)) {
+			if (temp_dist <= least_dist && rc.canMove(directions[i]) && !rc.senseFlooding(next_loc) && !blacklist[i]) {
 				least_dist = temp_dist;
 				next = i;
 			}
+			if (temp_dist < greedy_dist) {
+				greedy_dist = temp_dist;
+				greedy_dir = directions[i];
+			}
 		}
 
-		greedy = directions[next];
-		MapLocation greedy_loc = cur_loc.add(greedy);
-
-		if (!bugpath_blocked && rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
-			rc.move(greedy);
+		if (!bugpath_blocked && next != -1) {
+			rc.move(directions[next]);
 		} else {
 			if (bugpath_blocked) {
 				Direction start_dir = cur_loc.directionTo(previous_location);
@@ -405,12 +411,16 @@ public class Miner {
 				}
 			}
 			bugpath_blocked = true;
-			for (int i = 0; i < 7; i++) {
+			// MapLocation greedy_loc = cur_loc.add(greedy_dir);
+			// if (rc.senseRobotAtLocation(greedy_loc)!= null && rc.senseRobotAtLocation(greedy_loc).type == RobotType.MINER) {
+			// 	bugpath_blocked = false;
+			// }
+			for (int i = 0; i < 6; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
 				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
-					if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
+					if (next_loc.distanceSquaredTo(loc) <= cur_loc.distanceSquaredTo(loc)) {
 						bugpath_blocked = false;
 					}
 					rc.move(cw);
