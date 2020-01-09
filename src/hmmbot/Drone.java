@@ -26,6 +26,15 @@ public class Drone {
         while (true) {
             this.util.waitCooldown();
 
+            RobotInfo enemy = this.util.closestRobot(this.util.seeRobots(), RobotType.COW, false);
+            if (enemy != null && this.rc.canPickUpUnit(enemy.ID)) {
+                this.util.log(String.format("Try to pick up: %d", enemy.ID));
+
+                this.rc.pickUpUnit(enemy.ID);
+                Clock.yield();
+                continue;
+            }
+
 
             if (this.target != null) {
                 this.util.log(String.format("Target: %d %d", this.target.x, this.target.y));

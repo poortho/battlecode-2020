@@ -135,7 +135,18 @@ public class RobotUtil {
         Direction dir = origDir;
         do {
             MapLocation toLoc = currentLocation.add(dir);
-            if (!rc.canMove(dir) || (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc) && rc.getType() != RobotType.DELIVERY_DRONE)) {
+            boolean floodLike = false;
+            if (rc.getType() != RobotType.DELIVERY_DRONE) {
+                if (rc.canSenseLocation(toLoc) && rc.senseFlooding(toLoc)) {
+                    floodLike = true;
+                }
+                for (Direction testDir : Direction.allDirections()) {
+                    if (rc.canSenseLocation(toLoc.add(dir)) && rc.senseFlooding(toLoc.add(dir))) {
+                        floodLike = true;
+                    }
+                }
+            }
+            if (!rc.canMove(dir) || floodLike) {
                 if (!bugPath) {
                     break;
                 }
@@ -218,7 +229,7 @@ public class RobotUtil {
         RobotInfo closest = null;
         int closestDist = 1 << 30;
         for (RobotInfo info : robots) {
-            if (info.type == type && (!sameTeam || info.team == rc.getTeam())) {
+            if (info.type == type && (sameTeam == (info.team == rc.getTeam()))) {
                 int dist = distanceLinf(rc.getLocation(), info.location);
                 if (dist < closestDist) {
                     closest = info;

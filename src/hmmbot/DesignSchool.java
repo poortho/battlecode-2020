@@ -26,7 +26,7 @@ public class DesignSchool {
 
         while (true) {
             this.util.waitCooldown();
-            if (landscapersCreated < 25) {
+            if (landscapersCreated < 25 && rc.getTeamSoup() > RobotType.LANDSCAPER.cost + RobotType.REFINERY.cost) {
                 if (this.util.tryBuild(RobotType.LANDSCAPER) != null) {
                     landscapersCreated += 1;
                     continue;

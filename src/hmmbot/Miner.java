@@ -57,7 +57,7 @@ public class Miner {
             }
         }
 
-        if (rc.getTeamSoup() > RobotType.LANDSCAPER.cost * 5 + 500 && seenLandscapers < 9) {
+        if (rc.getTeamSoup() > RobotType.LANDSCAPER.cost * 8 + 500 && seenLandscapers < 9) {
             // ensure design school
             while (true) {
                 int minerCount = 0;
@@ -168,7 +168,7 @@ public class Miner {
                 }
             }
 
-            if (this.rc.getRoundNum() >= 300 && this.refineryLoc == this.gameState.hqLocation) {
+            if (this.rc.getRoundNum() >= 200 && this.refineryLoc == this.gameState.hqLocation) {
                 this.refineryLoc = null;
             }
 
@@ -177,7 +177,7 @@ public class Miner {
             if (closestRefinery == null || this.refineryLoc != null && RobotUtil.distanceLinf(currentLocation, this.refineryLoc) <= RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
                 closestRefinery = this.refineryLoc;
             }
-            if (this.rc.getRoundNum() < 300) {
+            if (this.rc.getRoundNum() < 200) {
                 if (RobotUtil.distanceLinf(currentLocation, this.gameState.hqLocation) < RobotUtil.distanceLinf(currentLocation, closestRefinery)) {
                     closestRefinery = this.gameState.hqLocation;
                 }
@@ -193,7 +193,7 @@ public class Miner {
                     Clock.yield();
                     continue;
                 } else {
-                    if (rc.getRoundNum() < 300) {
+                    if (rc.getRoundNum() < 200) {
                         this.refineryLoc = this.gameState.hqLocation;
                     } else {
                         this.refineryLoc = null;
