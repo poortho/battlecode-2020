@@ -36,6 +36,8 @@ public class Miner {
 
   static boolean turtling = false;
   static boolean bugpath_blocked = false;
+  static boolean[] turtle_blocked = new boolean[directions.length];
+  static int blocked = 0;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
@@ -225,18 +227,20 @@ public class Miner {
 		// try mining it lol
 		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
 			// check if HQ has landscapers around it
+			/*
 			if (!turtling && HQ.our_hq != null && hq.equals(HQ.our_hq) && rc.canSenseLocation(hq)) {
+				turtling = true;
 				for (int i = 0; i < Helper.directions.length; i++) {
 					MapLocation temp_loc = hq.add(Helper.directions[i]);
 					if (rc.canSenseLocation(temp_loc)) {
-						RobotInfo rob = rc.senseRobotAtLocation(temp_loc);
+						RobotInfo rob = rc.(temp_loc);
 						if (rob != null && rob.type == RobotType.LANDSCAPER) {
 							turtling = true;
 							break;
 						}
 					}
 				}
-			}
+			}*/
 
 			if (turtling && hq.equals(HQ.our_hq)) {
 				if (cur_loc.distanceSquaredTo(target_mine) <= 5 && HQ.our_hq.equals(hq)) {
@@ -388,9 +392,29 @@ public class Miner {
 		for (int i = 0; i < directions.length; i++) {
 			MapLocation next_loc = cur_loc.add(directions[i]);
 			int temp_dist = next_loc.distanceSquaredTo(loc);
-			if (temp_dist <= least_dist && rc.canMove(directions[i]) && !rc.senseFlooding(next_loc) && !blacklist[i]) {
-				least_dist = temp_dist;
-				next = i;
+			if (rc.canMove(directions[i])) {
+				if (temp_dist < least_dist && !rc.senseFlooding(next_loc) && !blacklist[i]) {
+					least_dist = temp_dist;
+					next = i;
+				}
+			} else if (HQ.our_hq != null && HQ.our_hq.distanceSquaredTo(next_loc) <= 2) {
+				// check if it's an HQ tile
+				Direction temp_dir = HQ.our_hq.directionTo(next_loc);
+				System.out.println(temp_dir);
+				int temp_idx = -1;
+				for (int a = 0; a < directions.length; a++) {
+					if (directions[a] == temp_dir) {
+						temp_idx = a;
+						break;
+					}
+				}
+				if (temp_idx != -1 && !turtle_blocked[temp_idx]) {
+					turtle_blocked[temp_idx] = true;
+					blocked++;
+					if (blocked == 3) {
+						turtling = true;
+					}
+				}
 			}
 			if (temp_dist < greedy_dist) {
 				greedy_dist = temp_dist;
@@ -398,7 +422,7 @@ public class Miner {
 			}
 		}
 
-		if (!bugpath_blocked && next != -1) {
+		if (!bugpath_blocked && next != -1 && directions[next] == greedy_dir) {
 			rc.move(directions[next]);
 		} else {
 			if (bugpath_blocked) {
@@ -415,12 +439,12 @@ public class Miner {
 			// if (rc.senseRobotAtLocation(greedy_loc)!= null && rc.senseRobotAtLocation(greedy_loc).type == RobotType.MINER) {
 			// 	bugpath_blocked = false;
 			// }
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
 				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
-					if (next_loc.distanceSquaredTo(loc) <= cur_loc.distanceSquaredTo(loc)) {
+					if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
 						bugpath_blocked = false;
 					}
 					rc.move(cw);
