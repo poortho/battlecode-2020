@@ -33,6 +33,8 @@ public class Miner {
   static boolean nearby_netgun = false;
   static boolean nearby_design = false;
 
+  static boolean turtling = false;
+
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 		in_danger = false;
@@ -132,6 +134,7 @@ public class Miner {
 			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && temp_dist < hq_dist) {
 				hq = robots[i].location;
 				hq_dist = temp_dist;
+				turtling = false;
 			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
 				// found enemy hq broadcast it
 				System.out.println("Found enemy hq! " + robots[i].location);
@@ -193,6 +196,35 @@ public class Miner {
 		}
 		// try mining it lol
 		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+			// check if HQ has landscapers around it
+			if (!turtling && HQ.our_hq != null && hq.equals(HQ.our_hq) && rc.canSenseLocation(hq)) {
+				for (int i = 0; i < Helper.directions.length; i++) {
+					MapLocation temp_loc = hq.add(Helper.directions[i]);
+					if (rc.canSenseLocation(temp_loc)) {
+						RobotInfo rob = rc.senseRobotAtLocation(temp_loc);
+						if (rob != null && rob.type == RobotType.LANDSCAPER) {
+							turtling = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if (turtling) {
+				if (cur_loc.distanceSquaredTo(target_mine) <= 5) {
+					// try build refinery
+					int res = Helper.tryBuild(RobotType.REFINERY);
+					if (res != -1) {
+						hq = cur_loc.add(directions[res]);
+						turtling = false;
+						return;
+					}
+				} else {
+					miner_walk(target_mine);
+				}
+				return;
+			}
+
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
 				// deposit
 				tryDepositSoup(cur_loc.directionTo(hq));
@@ -333,14 +365,14 @@ public class Miner {
 		greedy = directions[next];
 		MapLocation greedy_loc = cur_loc.add(greedy);
 
-		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next]) {
+		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
 			rc.move(greedy);
 		} else {
 			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
-				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next]) {
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
 					rc.move(cw);
 					break;
 				}
