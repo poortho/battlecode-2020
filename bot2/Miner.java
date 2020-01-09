@@ -135,7 +135,7 @@ public class Miner {
 		nearby_design = false;
 		for (int i = 0; i < robots.length; i++) {
 			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
-			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && temp_dist < hq_dist) {
+			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && (temp_dist < hq_dist || turtling)) {
 				hq = robots[i].location;
 				hq_dist = temp_dist;
 				turtling = false;
@@ -216,7 +216,7 @@ public class Miner {
 			}
 
 			if (turtling) {
-				if (cur_loc.distanceSquaredTo(target_mine) <= 5) {
+				if (cur_loc.distanceSquaredTo(target_mine) <= 5 && HQ.our_hq.equals(hq)) {
 					// try build refinery
 					int res = Helper.tryBuild(RobotType.REFINERY);
 					if (res != -1) {
