@@ -1,14 +1,27 @@
 package bot2;
 
 import battlecode.common.*;
+import java.lang.Math;
 
 import static bot2.RobotPlayer.rc;
+import static bot2.RobotPlayer.round;
 
 public class Helper {
 
   static Direction[] directions;
   static int[] distx_35 = {0, -1, 0, 0, 1, -1, -1, 1, 1, -2, 0, 0, 2, -2, -2, -1, -1, 1, 1, 2, 2, -2, -2, 2, 2, -3, 0, 0, 3, -3, -3, -1, -1, 1, 1, 3, 3, -3, -3, -2, -2, 2, 2, 3, 3, -4, 0, 0, 4, -4, -4, -1, -1, 1, 1, 4, 4, -3, -3, 3, 3, -4, -4, -2, -2, 2, 2, 4, 4, -5, -4, -4, -3, -3, 0, 3, 3, 4, 4, -5, -5, -1, 1, -5, -5, -2, 2, -4, -4, 4, 4, -5, -5, -3, 3};
   static int[] disty_35 = {0, 0, -1, 1, 0, -1, 1, -1, 1, 0, -2, 2, 0, -1, 1, -2, 2, -2, 2, -1, 1, -2, 2, -2, 2, 0, -3, 3, 0, -1, 1, -3, 3, -3, 3, -1, 1, -2, 2, -3, 3, -3, 3, -2, 2, 0, -4, 4, 0, -1, 1, -4, 4, -4, 4, -1, 1, -3, 3, -3, 3, -2, 2, -4, 4, -4, 4, -2, 2, 0, -3, 3, -4, 4, -5, -4, 4, -3, 3, -1, 1, -5, -5, -2, 2, -5, -5, -4, 4, -4, 4, -3, 3, -5, -5};
+
+  static int getLevel(int r) {
+    int res = (int)Math.floor(Math.exp(0.0028 * r -1.38*Math.sin(0.00157*r-1.73)+1.38*Math.sin(-1.73)) - 1);
+    System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
+    return res;
+  }
+
+  static boolean willFlood(MapLocation loc) throws GameActionException{
+    int elevation = rc.senseElevation(loc);
+    return elevation <= getLevel(round + 1);
+  }
 
   // -1 means didn't build
   // returns index in directions where robot was built

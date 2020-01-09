@@ -333,14 +333,14 @@ public class Miner {
 		greedy = directions[next];
 		MapLocation greedy_loc = cur_loc.add(greedy);
 
-		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next]) {
+		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
 			rc.move(greedy);
 		} else {
 			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
-				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next]) {
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
 					rc.move(cw);
 					break;
 				}
