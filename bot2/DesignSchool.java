@@ -16,7 +16,7 @@ public class DesignSchool {
         int num_enemy_buildings = 0;
         int num_landscapers = 0;
         for (int i = 0; i < robots.length; i++) {
-            if (robots[i].team != rc.getTeam() && !robots[i].type.canBePickedUp()) {
+            if (robots[i].team != rc.getTeam() && robots[i].type.isBuilding()) {
                 num_enemy_buildings++;
             }
             if (robots[i].team == rc.getTeam()) {

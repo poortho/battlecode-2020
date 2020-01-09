@@ -40,15 +40,6 @@ public class DeliveryDrone {
                             }
                         }
                         break;
-                    case DELIVERY_DRONE:
-                        // dont move into enemy drone pickup
-                        for (int j = 0; j < directions.length; j++) {
-                            if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
-                                    <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-                                blacklist[j] = true;
-                            }
-                        }
-                        break;
                 }
             }
         }
@@ -73,7 +64,7 @@ public class DeliveryDrone {
             int closest_dist = 9999999;
             RobotInfo closest_robot = null;
             for (int i = 0; i < robots.length; i++) {
-                if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
+                if (robots[i].team != rc.getTeam() && !robots[i].type.isBuilding()) {
                     num_enemies++;
                     if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
                         closest_robot = robots[i];

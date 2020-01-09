@@ -41,7 +41,7 @@ public class Landscaper {
         if (destination != null && rc.canSenseLocation(destination)) {
             RobotInfo robot = rc.senseRobotAtLocation(destination);
             // canbepicked up => unit
-            if (robot == null || robot.type.canBePickedUp() || robot.team == rc.getTeam()) {
+            if (robot == null || !robot.type.isBuilding() || robot.team == rc.getTeam()) {
                 //System.out.println("killed!");
                 destination = null;
             }
