@@ -35,6 +35,7 @@ public class Miner {
   static boolean near_hq = false;
 
   static boolean turtling = false;
+  static boolean bugpath_blocked = false;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
@@ -394,20 +395,33 @@ public class Miner {
 		greedy = directions[next];
 		MapLocation greedy_loc = cur_loc.add(greedy);
 
-		if (rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
+		if (!bugpath_blocked && rc.canMove(greedy) && !rc.senseFlooding(greedy_loc) && !blacklist[next] && !Helper.willFlood(greedy_loc)) {
 			rc.move(greedy);
 		} else {
+			if (bugpath_blocked) {
+				Direction start_dir = cur_loc.directionTo(previous_location);
+				for (int i = 0; i < Helper.directions.length; i++) {
+					if (Helper.directions[i] == start_dir) {
+						next = i;
+						break;
+					}
+				}
+			}
+			bugpath_blocked = true;
 			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
 				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc)) {
+					if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
+						bugpath_blocked = false;
+					}
 					rc.move(cw);
+					previous_location = cur_loc;
 					break;
 				}
-			}
+			}	
 		}
-		previous_location = cur_loc;
 	}
 
 	static void greedy_walk(MapLocation loc) throws GameActionException {
