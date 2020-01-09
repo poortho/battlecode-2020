@@ -95,6 +95,7 @@ public class Landscaper {
                         }
                     }
                 }
+                RobotInfo r = rc.senseRobotAtLocation(new_loc);
                 if (num_nearby_nonadjacent == 0 &&
                         rc.canMove(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3 &&
                         rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && move_counter % 20 == 0) {
@@ -102,45 +103,47 @@ public class Landscaper {
                 } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
                         && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
                         && rc.canDepositDirt(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3
-                        && new_loc.distanceSquaredTo(my_hq) > 0) {
+                        && new_loc.distanceSquaredTo(my_hq) > 0 && (r == null || r.type == RobotType.LANDSCAPER)) {
                     rc.depositDirt(directions[i]);
                 }
             }
 
             // directly adjacent, dig from away and put under
-            if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(Direction.CENTER)) {
-                // have dirt, deposit under
-                rc.depositDirt(Direction.CENTER);
-            } else {
-                // find direction furthest away and dig
-                tryDigAway(my_hq);
-            }
+            dig_and_deposit(my_hq, Direction.CENTER);
         } else if (dist_from_hq <= 8) {
             // first, check if there is an open spot adjacent to hq...
             // find closest...
             int min_dist = 99999;
             MapLocation best_loc = null;
+            int best_dep_el = 9999999;
+            Direction best_dep_dir = null;
             for (int i = 0; i < directions.length; i++) {
                 MapLocation new_loc = my_hq.add(directions[i]);
-                if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null) {
-                    if (new_loc.distanceSquaredTo(cur_loc) < min_dist) {
-                        min_dist = new_loc.distanceSquaredTo(cur_loc);
-                        best_loc = new_loc;
+                MapLocation dep_loc = cur_loc.add(directions[i]);
+                if (rc.canSenseLocation(new_loc)) {
+                    RobotInfo r =  rc.senseRobotAtLocation(new_loc);
+                    RobotInfo r2 = rc.senseRobotAtLocation(dep_loc);
+                    if (r == null) {
+                        if (new_loc.distanceSquaredTo(cur_loc) < min_dist) {
+                            min_dist = new_loc.distanceSquaredTo(cur_loc);
+                            best_loc = new_loc;
+                        }
+                    }
+                    if (dep_loc.distanceSquaredTo(my_hq) <= 3 && (r2 == null || r2.type == RobotType.LANDSCAPER) &&
+                        best_dep_el > rc.senseElevation(new_loc)) {
+                        best_dep_dir = directions[i];
+                        best_dep_el = rc.senseElevation(new_loc);
                     }
                 }
             }
+            System.out.println(best_loc);
+            System.out.println(best_dep_dir);
             if (best_loc != null) {
                 aggressive_landscaper_walk(best_loc);
             }
 
             // adjacent to 8 tile ring, dig from under and put closer
-            if (rc.getDirtCarrying() > 0) {
-                // have dirt, deposit close as possible
-                Helper.tryDepositClose(my_hq);
-            } else {
-                // find direction furthest away and dig
-                Helper.tryDigAway(my_hq);
-            }
+            dig_and_deposit(my_hq, best_dep_dir);
         } else {
             // move closer to hq
             if (cur_loc.distanceSquaredTo(my_hq) <= 15) {
@@ -180,31 +183,13 @@ public class Landscaper {
             } else {
                 if (rc.senseFlooding(new_loc)) {
                     // fill flood
-                    if (rc.getDirtCarrying() > 0) {
-                        if (rc.canDepositDirt(cur_loc.directionTo(new_loc))) {
-                            rc.depositDirt(cur_loc.directionTo(new_loc));
-                        }
-                    } else {
-                        Helper.tryDigAway(new_loc);
-                    }
+                    dig_and_deposit(new_loc, cur_loc.directionTo(new_loc));
                 } else if (rc.senseElevation(new_loc) > rc.senseElevation(cur_loc)) {
                     // deposit at self lol
-                    if (rc.getDirtCarrying() > 0) {
-                        if (rc.canDepositDirt(Direction.CENTER)) {
-                            rc.depositDirt(Direction.CENTER);
-                        }
-                    } else {
-                        Helper.tryDigAway(new_loc);
-                    }
+                    dig_and_deposit(new_loc, Direction.CENTER);
                 } else {
                     // deposit at dest
-                    if (rc.getDirtCarrying() > 0) {
-                        if (rc.canDepositDirt(greedy)) {
-                            rc.depositDirt(greedy);
-                        }
-                    } else {
-                        Helper.tryDigAway(new_loc);
-                    }
+                    dig_and_deposit(new_loc, greedy);
                 }
             }
         }
@@ -342,5 +327,15 @@ public class Landscaper {
             }
         }
         previous_location = cur_loc;
+    }
+
+    static void dig_and_deposit(MapLocation loc, Direction dir) throws GameActionException {
+        if (rc.getDirtCarrying() > 0 && dir != null) {
+            if (rc.canDepositDirt(dir)) {
+                rc.depositDirt(dir);
+            }
+        } else {
+            Helper.tryDigAway(loc);
+        }
     }
 }
