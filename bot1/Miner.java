@@ -89,7 +89,7 @@ public class Miner {
 				find_mine();
 			}
 
-			if (cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
+			if (target_explore != null && cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
 				// broadcast "i explored this location"
 				target_explore = null;
 				must_reach_dest = false;

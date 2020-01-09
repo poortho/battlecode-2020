@@ -146,7 +146,7 @@ public class DeliveryDrone {
                 if (cur_loc.distanceSquaredTo(nearest_flood) <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
                     System.out.println("die chungus");
                     //TODO: uncomment once fixed
-                    rc.dropUnit(cur_loc.directionTo(nearest_flood));
+                    // rc.dropUnit(cur_loc.directionTo(nearest_flood));
                 } else {
                     drone_walk(nearest_flood);
                 }
