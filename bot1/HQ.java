@@ -1,19 +1,23 @@
 package bot1;
-import battlecode.common.*;
+
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
+
 import java.util.Arrays;
 
-import static bot1.Helper.directions;
-import static bot1.RobotPlayer.turnCount;
-import static bot1.RobotPlayer.round;
-import static bot1.RobotPlayer.rc;
 import static bot1.Helper.distx_35;
 import static bot1.Helper.disty_35;
+import static bot1.RobotPlayer.*;
 
 public class HQ {
     // used in determining which of 3 directions to send...
     static int rotation = 0;
     static MapLocation[] possible_enemy_locs = new MapLocation[6];
     static int remove_num = 0;
+
+    static boolean queued_near = false;
 
     static MapLocation enemy_hq, cur_loc, our_hq;
 
@@ -41,8 +45,27 @@ public class HQ {
           Comms.setSeed(possible_enemy_locs);
 
           // find soup that's close
-          queue_close_soup();
 
+          queued_near = queue_close_soup();
+          if (!queued_near) {
+             int msg[] = {0, 0, 0, 0, 0, 0, 0};
+            // initial broadcast miner request
+            for (int i = 5; i >= 0; i--) {
+              MapLocation loc = possible_enemy_locs[i];
+              int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
+              val |= 1 << 24;
+              msg[i] = val;
+            }
+            Comms.addMessage(msg, 1, 2);
+            //for (int i = 5; i >= 0; i--) {
+              //Comms.broadcast_miner_request(possible_enemy_locs[i], 1, true);
+            //} 
+          }
+
+      }
+      if (turnCount >= 1) {
+
+        if (turnCount == 2 && queued_near) {
           int msg[] = {0, 0, 0, 0, 0, 0, 0};
           // initial broadcast miner request
           for (int i = 5; i >= 0; i--) {
@@ -52,11 +75,10 @@ public class HQ {
             msg[i] = val;
           }
           Comms.addMessage(msg, 1, 2);
-	      	//for (int i = 5; i >= 0; i--) {
-	      		//Comms.broadcast_miner_request(possible_enemy_locs[i], 1, true);
-	      	//}
-      }
-      if (turnCount >= 1) {
+          //for (int i = 5; i >= 0; i--) {
+            //Comms.broadcast_miner_request(possible_enemy_locs[i], 1, true);
+          //} 
+        }
 
 	    	Comms.getBlocks();
 
@@ -69,17 +91,18 @@ public class HQ {
 	    }
 	  }
 
-    static void queue_close_soup() throws GameActionException {
+    static boolean queue_close_soup() throws GameActionException {
       for (int i = 0; i < distx_35.length; i++) {
         MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
         if (rc.canSenseLocation(next_loc)) {
           int count = rc.senseSoup(next_loc);
           if (count != 0) {
-            Comms.broadcast_miner_request(next_loc, 1, true);
-            return;
+            Comms.broadcast_miner_request(next_loc, 2, true);
+            return true;
           }
         }
       }
+      return false;
     }
 
     static void handle_miners() throws GameActionException {
