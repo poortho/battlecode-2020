@@ -186,6 +186,12 @@ public class Miner {
 	}
 
 	static void do_mine() throws GameActionException {
+		if (rc.canSenseLocation(target_mine) && rc.senseFlooding(target_mine)) {
+			target_mine = find_mine();
+			if (target_mine == null) {
+				return;
+			}
+		}
 		// try mining it lol
 		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
@@ -290,13 +296,13 @@ public class Miner {
 	static MapLocation find_mine() throws GameActionException {
 		for (int i = 0; i < distx_35.length; i++) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-			if (rc.canSenseLocation(next_loc)) {
+			if (rc.canSenseLocation(next_loc) && !rc.senseFlooding(next_loc)) {
 				int count = rc.senseSoup(next_loc);
 				if (count > 0) {
 					System.out.println("Found mine at:" + next_loc.toString());
 					check_new_patch = true;
 					target_mine = next_loc;
-					if (cur_loc.distanceSquaredTo(target_mine) <= 2 && !rc.senseFlooding(target_mine)) {
+					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
 						broadcast_patch();
 					}
 					return next_loc;
