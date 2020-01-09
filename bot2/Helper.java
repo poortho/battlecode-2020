@@ -38,6 +38,22 @@ public class Helper {
     return -1;
   }
 
+  static void greedy_move_away(MapLocation loc, MapLocation cur_loc) throws GameActionException {
+    int max_dist = 0;
+    int next = -1;
+    for (int i = 0; i < directions.length; i++) {
+      MapLocation next_loc = cur_loc.add(directions[i]);
+      int temp_dist = next_loc.distanceSquaredTo(loc);
+      if (temp_dist > max_dist && rc.canMove(directions[i])) {
+        max_dist = temp_dist;
+        next = i;
+      }
+    }
+
+    if (next != -1)
+      rc.move(directions[next]);
+  }
+
   static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canBuildRobot(type, dir)) {
       rc.buildRobot(type, dir);
