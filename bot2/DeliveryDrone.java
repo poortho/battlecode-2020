@@ -69,6 +69,7 @@ public class DeliveryDrone {
                     if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
                         closest_robot = robots[i];
                         closest_dist = cur_loc.distanceSquaredTo(closest_robot.getLocation());
+                        break;
                     }
                 }
             }
@@ -77,10 +78,12 @@ public class DeliveryDrone {
             if (num_enemies > 0) {
                 if (closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                     // pickup
+                    //System.out.println("Pickup: " + closest_robot.getLocation().toString());
                     if (rc.canPickUpUnit(closest_robot.ID)) {
                         rc.pickUpUnit(closest_robot.ID);
                     }
                 } else {
+                    //System.out.println("Chase: " + closest_robot.getLocation().toString());
                     drone_walk(closest_robot.getLocation());
                 }
             } else if (cur_loc.distanceSquaredTo(hq) < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared) {
@@ -120,12 +123,13 @@ public class DeliveryDrone {
             // go to flood
 
             // sense nearby deets for flood
-            int i = 0;
+            int i = 1;
             while (Math.pow(distx_35[i], 2) + Math.pow(disty_35[i], 2) <= RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
                 MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[i], cur_loc.y + disty_35[i]);
                 if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
                     if (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood)) {
                         nearest_flood = new_loc;
+                        break;
                     }
                 }
                 i++;
@@ -134,10 +138,11 @@ public class DeliveryDrone {
             // if have flood loc, move there
             if (nearest_flood != null) {
                 // adjacent, dump em
-                if (cur_loc.distanceSquaredTo(nearest_flood) <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
-                    // System.out.println("die chungus");
+                int temp_dist = cur_loc.distanceSquaredTo(nearest_flood);
+                if (temp_dist != 0 && temp_dist <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
+                    //System.out.println("die chungus");
                     //TODO: uncomment once fixed
-                    // rc.dropUnit(cur_loc.directionTo(nearest_flood));
+                    rc.dropUnit(cur_loc.directionTo(nearest_flood));
                 } else {
                     drone_walk(nearest_flood);
                 }
