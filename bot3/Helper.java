@@ -85,6 +85,11 @@ public class Helper {
           }
         }
 
+        RobotInfo rob = rc.senseRobotAtLocation(new_loc);
+        if (rob != null && rob.type == RobotType.MINER && HQ.our_hq.distanceSquaredTo(new_loc) <= 2) {
+          continue;
+        }
+
         if ((allow_design_adjacent && !adjacent) ||
            (!allow_design_adjacent && !adjacent && new_loc.distanceSquaredTo(loc) > max_dist) ||
            (allow_design_adjacent && new_loc.distanceSquaredTo(loc) > max_dist)) {
