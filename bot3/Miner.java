@@ -158,7 +158,7 @@ public class Miner {
 				hq_dist = temp_dist;
 			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
 				// found enemy hq broadcast it
-				System.out.println("Found enemy hq! " + robots[i].location);
+				//System.out.println("Found enemy hq! " + robots[i].location);
 				Comms.broadcast_enemy_hq(robots[i].location);
 			} else if (robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {
 				near_hq = true;
@@ -282,9 +282,9 @@ public class Miner {
 				if (distance > 80 && distance2 < 24 && mine_count > 600 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
 					// build refinery
 					hq = cur_loc.add(directions[res]);
-					System.out.println("New HQ: " + hq.toString());
+					//System.out.println("New HQ: " + hq.toString());
 				} else if (distance < 800) {
-					System.out.println("Walking Back To HQ");
+					//System.out.println("Walking Back To HQ");
 					miner_walk(hq);
 				}
 			}
@@ -311,7 +311,7 @@ public class Miner {
 		//       XY   <- patch location / 4
 
 		// make sure this patch wasn't already broadcasted
-		System.out.println("broadcast patch: " + target_mine.toString());
+		//System.out.println("broadcast patch: " + target_mine.toString());
 		for (int c = 0; c < explored_count; c++) {
 			if (target_mine.distanceSquaredTo(explored[c]) <= 45) {
 				return;
@@ -320,8 +320,8 @@ public class Miner {
 
 		int num = get_num_workers_needed();
 		Comms.broadcast_miner_request(target_mine, num, true);
-		System.out.println("Found patch at: " + target_mine);
-		System.out.println("Workers needed: " + Integer.toString(num));
+		//System.out.println("Found patch at: " + target_mine);
+		//System.out.println("Workers needed: " + Integer.toString(num));
 	}
 
 	static int get_num_workers_needed() throws GameActionException {
@@ -349,11 +349,11 @@ public class Miner {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
 			RobotInfo temp = rc.senseRobotAtLocation(next_loc);
 			if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
-				System.out.println("FOUND HQ");
+				//System.out.println("FOUND HQ");
 				return next_loc;
 			}
 		}
-		System.out.println("SHOULDNT HAPPEN EVER");
+		//System.out.println("SHOULDNT HAPPEN EVER");
 		return null;
 	}
 
@@ -375,7 +375,7 @@ public class Miner {
 			if (rc.canSenseLocation(next_loc) && !rc.senseFlooding(next_loc)) {
 				int count = rc.senseSoup(next_loc);
 				if (count > 0) {
-					System.out.println("Found mine at:" + next_loc.toString());
+					//System.out.println("Found mine at:" + next_loc.toString());
 					check_new_patch = true;
 					target_mine = next_loc;
 					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
@@ -414,7 +414,7 @@ public class Miner {
 			} else if (HQ.our_hq != null && HQ.our_hq.distanceSquaredTo(next_loc) <= 2) {
 				// check if it's an HQ tile
 				Direction temp_dir = HQ.our_hq.directionTo(next_loc);
-				System.out.println(temp_dir);
+				//System.out.println(temp_dir);
 				int temp_idx = -1;
 				for (int a = 0; a < directions.length; a++) {
 					if (directions[a] == temp_dir) {
@@ -492,7 +492,7 @@ public class Miner {
   static boolean tryMine(Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canMineSoup(dir)) {
         rc.mineSoup(dir);
-        System.out.println("MINED!");
+        //System.out.println("MINED!");
         return true;
     } else return false;
   }
@@ -500,7 +500,7 @@ public class Miner {
   static boolean tryDepositSoup(Direction dir) throws GameActionException {
       if (rc.isReady() && rc.canDepositSoup(dir)) {
           rc.depositSoup(dir, rc.getSoupCarrying());
-          System.out.println("DEPOSITED");
+          //System.out.println("DEPOSITED");
           return true;
       } else return false;
   }

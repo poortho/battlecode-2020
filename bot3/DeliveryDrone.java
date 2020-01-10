@@ -17,6 +17,7 @@ public class DeliveryDrone {
     static MapLocation[] corners = new MapLocation[4];
     static boolean[] blacklist = new boolean[directions.length];
     static RobotInfo[] robots;
+    static RobotType carried_type = null;
 
     static MapLocation previous_location;
     static boolean bugpath_blocked = false;
@@ -108,6 +109,7 @@ public class DeliveryDrone {
                     //System.out.println("Pickup: " + closest_robot.getLocation().toString());
                     if (rc.canPickUpUnit(closest_robot.ID)) {
                         rc.pickUpUnit(closest_robot.ID);
+                        carried_type = closest_robot.type;
                     }
                 } else {
                     //System.out.println("Chase: " + closest_robot.getLocation().toString());
@@ -149,24 +151,48 @@ public class DeliveryDrone {
         } else {
             // go to flood
 
-            // if have flood loc, move there
-            if (nearest_flood != null) {
-                // adjacent, dump em
-                int temp_dist = cur_loc.distanceSquaredTo(nearest_flood);
-                if (temp_dist != 0 && temp_dist <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
-                    //System.out.println("die chungus");
-                    //TODO: uncomment once fixed
-                    rc.dropUnit(cur_loc.directionTo(nearest_flood));
+            if (carried_type == RobotType.COW && HQ.enemy_hq != null) {
+                int distance_to_hq = cur_loc.distanceSquaredTo(HQ.enemy_hq);
+                if (distance_to_hq <= 25) {
+                    // any closer and we'll get shot !!!
+                    // drop close to them
+                    int min_dist = 9999999;
+                    int best_i = -1;
+                    for (int i = 0; i < directions.length; i++) {
+                        if (rc.canDropUnit(directions[i]) && cur_loc.add(directions[i]).distanceSquaredTo(HQ.enemy_hq) < min_dist
+                            && !rc.senseFlooding(cur_loc.add(directions[i]))) {
+                            min_dist = cur_loc.add(directions[i]).distanceSquaredTo(HQ.enemy_hq);
+                            best_i = i;
+                        }
+                    }
+
+                    if (best_i != -1) {
+                        rc.dropUnit(directions[best_i]);
+                    }
                 } else {
-                    drone_walk(nearest_flood);
+                    // move towards
+                    drone_walk(HQ.enemy_hq);
                 }
             } else {
-                // dont know where flood is, move ???
-                if (cur_loc.distanceSquaredTo(corners[corner_i % corners.length]) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
-                    // visited, inc
-                    corner_i++;
+                // if have flood loc, move there
+                if (nearest_flood != null) {
+                    // adjacent, dump em
+                    int temp_dist = cur_loc.distanceSquaredTo(nearest_flood);
+                    if (temp_dist != 0 && temp_dist <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
+                        //System.out.println("die chungus");
+                        //TODO: uncomment once fixed
+                        rc.dropUnit(cur_loc.directionTo(nearest_flood));
+                    } else {
+                        drone_walk(nearest_flood);
+                    }
+                } else {
+                    // dont know where flood is, move ???
+                    if (cur_loc.distanceSquaredTo(corners[corner_i % corners.length]) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
+                        // visited, inc
+                        corner_i++;
+                    }
+                    drone_walk(corners[corner_i % corners.length]);
                 }
-                drone_walk(corners[corner_i % corners.length]);
             }
         }
     }
