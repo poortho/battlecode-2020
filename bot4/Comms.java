@@ -125,6 +125,8 @@ public class Comms {
 							HQ.rushed = true;
 						} else if (opcode == 0x6) {
 							HQ.rushed = false;
+						} else if (opcode == 0x7) {
+							HQ.patrol_broadcast_round = blockRound;
 						}
 
 						temp_msg[j] ^= key;
@@ -134,6 +136,16 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static void broadcast_patrol_enemy_hq() throws GameActionException {
+		// 0x00000000
+		//          3 <- opcode
+		//      XXYY  <- patch location / 4
+		int val = 0x7;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		addMessage(msg, 1, 2);
 	}
 
 	public static void broadcast_end_rushed() throws GameActionException {

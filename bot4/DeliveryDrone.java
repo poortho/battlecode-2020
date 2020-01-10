@@ -82,7 +82,7 @@ public class DeliveryDrone {
                 if (nearest_flood_curloc == null || cur_loc.distanceSquaredTo(new_loc) < cur_loc.distanceSquaredTo(nearest_flood_curloc)) {
                     nearest_flood_curloc = new_loc;
                 }
-                if (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood)) {
+                if (hq != null && (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood))) {
                     nearest_flood = new_loc;
                 }
             }
@@ -104,18 +104,47 @@ public class DeliveryDrone {
                     }
                 }
             }
+            if (num_enemies > 0 && closest_robot != null && closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+                System.out.println("Try to pick up");
+                // pickup
+                //System.out.println("Pickup: " + closest_robot.getLocation().toString());
+                if (rc.canPickUpUnit(closest_robot.ID)) {
+                    rc.pickUpUnit(closest_robot.ID);
+                    carried_type = closest_robot.type;
+                }
+            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && rc.getRoundNum() < HQ.patrol_broadcast_round + 100) {
+                System.out.println("patrol enemy hq");
+                //System.out.println("!!!");
+                if (cur_loc.distanceSquaredTo(HQ.enemy_hq) < 50) {
+                    //System.out.println("patrolling enemy hq");
+                    // close-ish, start patrolling
 
-            // move towards them...
-            if (num_enemies > 0 && closest_robot != null) {
-                if (closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-                    // pickup
-                    //System.out.println("Pickup: " + closest_robot.getLocation().toString());
-                    if (rc.canPickUpUnit(closest_robot.ID)) {
-                        rc.pickUpUnit(closest_robot.ID);
-                        carried_type = closest_robot.type;
+                    int best_dst = 99999999;
+                    Direction best_dir = Direction.CENTER;
+                    for (int i = 0; i < directions.length; i++) {
+                        if (blacklist[i]) {
+                            continue;
+                        }
+                        int dst = cur_loc.add(directions[i]).distanceSquaredTo(HQ.enemy_hq);
+
+                        if (rc.canMove(directions[i]) && dst > GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED
+                                && dst < best_dst) {
+                            best_dst = dst;
+                            best_dir = directions[i];
+                        }
                     }
+
+                    Helper.tryMove(best_dir);
                 } else {
-                    //System.out.println("Chase: " + closest_robot.getLocation().toString());
+                    // bugpath
+                    drone_walk(HQ.enemy_hq);
+                }
+            } else if (num_enemies > 0 && closest_robot != null) {
+                System.out.println("collapse onto them");
+                //System.out.println("Chase: " + closest_robot.getLocation().toString());
+                if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null) {
+                    bugpath_ignore_blacklist(closest_robot.getLocation());
+                } else {
                     drone_walk(closest_robot.getLocation());
                 }
             } else if (cur_loc.distanceSquaredTo(hq) < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared) {
@@ -209,7 +238,7 @@ public class DeliveryDrone {
     }
 
 
-    static void bugpath_walk(MapLocation loc) throws GameActionException {
+    static void bugpath_walk(MapLocation loc, boolean ignore_blacklist) throws GameActionException {
         if (!rc.isReady()) {
             return;
         }
@@ -223,7 +252,7 @@ public class DeliveryDrone {
             MapLocation next_loc = cur_loc.add(directions[i]);
             int temp_dist = next_loc.distanceSquaredTo(loc);
             if (rc.canMove(directions[i])) {
-                if (temp_dist < least_dist && !blacklist[i]) {
+                if (temp_dist < least_dist && (ignore_blacklist || !blacklist[i])) {
                     least_dist = temp_dist;
                     next = i;
                 }
@@ -255,7 +284,7 @@ public class DeliveryDrone {
                 next = (next + 1) % directions.length;
                 Direction cw = directions[next];
                 MapLocation next_loc = cur_loc.add(cw);
-                if (rc.canMove(cw) && !blacklist[next]) {
+                if (rc.canMove(cw) && (!blacklist[next] || ignore_blacklist)) {
                     if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
                         bugpath_blocked = false;
                     }
@@ -267,8 +296,12 @@ public class DeliveryDrone {
         }
     }
 
+    static void bugpath_ignore_blacklist(MapLocation loc) throws GameActionException {
+        bugpath_walk(loc, true);
+    }
+
     static void drone_walk(MapLocation loc) throws GameActionException {
-        bugpath_walk(loc);
+        bugpath_walk(loc, false);
         /*
         Direction greedy;
 

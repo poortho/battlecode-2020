@@ -1,9 +1,8 @@
 package bot4;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+
+import java.util.Map;
 
 import static bot4.Helper.distx_35;
 import static bot4.Helper.disty_35;
@@ -20,6 +19,9 @@ public class HQ {
 
     static MapLocation enemy_hq, cur_loc, our_hq;
     static boolean rushed = false;
+
+    static int patrol_broadcast_round = -1;
+    static boolean broadcasted_patrol = false;
 
     static void runHQ() throws GameActionException {
 
@@ -105,8 +107,35 @@ public class HQ {
         if (turnCount == 70) {
           Comms.broadcast_friendly_hq(cur_loc);
         }
+
+        if (!broadcasted_patrol) {
+            check_if_flooded();
+        }
 	    }
 	  }
+
+	  static void check_if_flooded() throws GameActionException {
+        MapLocation next_loc = null;
+        int index = 1;
+        int flooded_count = 0;
+        int nonflooded_count = 0;
+        do {
+            next_loc = new MapLocation(cur_loc.x + distx_35[index], cur_loc.y + disty_35[index]);
+            if (rc.canSenseLocation(next_loc)) {
+                if (rc.senseFlooding(next_loc)) {
+                    flooded_count++;
+                } else {
+                    nonflooded_count++;
+                }
+            }
+            index++;
+        } while (next_loc.distanceSquaredTo(cur_loc) <= 15);
+        if (flooded_count > nonflooded_count) {
+            //System.out.println("broadcasted!");
+            Comms.broadcast_patrol_enemy_hq();
+            broadcasted_patrol = true;
+        }
+      }
 
     static void build_defensive_miner() throws GameActionException {
       Helper.tryBuild(RobotType.MINER);
