@@ -222,14 +222,14 @@ public class RobotUtil {
 
     public MapLocation randomLocation() {
         // todo: replace hardcode 64 with getMapWidth/getMapHeight
-        return new MapLocation((int) (Math.random() * 64), (int) (Math.random() * 64));
+        return new MapLocation((int) (Math.random() * rc.getMapWidth()), (int) (Math.random() * rc.getMapHeight()));
     }
 
     public RobotInfo closestRobot(RobotInfo[] robots, RobotType type, boolean sameTeam) {
         RobotInfo closest = null;
         int closestDist = 1 << 30;
         for (RobotInfo info : robots) {
-            if (info.type == type && (sameTeam == (info.team == rc.getTeam()))) {
+            if ((type == null || info.type == type) && (sameTeam == (info.team == rc.getTeam()))) {
                 int dist = distanceLinf(rc.getLocation(), info.location);
                 if (dist < closestDist) {
                     closest = info;

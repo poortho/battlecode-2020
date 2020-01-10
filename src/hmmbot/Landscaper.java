@@ -37,87 +37,6 @@ public class Landscaper {
         MapLocation assignment = null;
         MapLocation tryAssignment = null;
 
-        /*
-        // look for assignment
-        while (rc.getRoundNum() < startRound + 100) {
-            this.util.waitCooldown();
-
-            if (RobotUtil.distanceLinf(this.gameState.hqLocation, rc.getLocation()) <= 2 && (rc.getRoundNum() > startRound + 30 || !rc.getLocation().isAdjacentTo(designSchoolLoc))) {
-                assignment = this.gameState.hqLocation;
-                break;
-            }
-
-            boolean[][] occupancy = new boolean[5][5];
-            for (RobotInfo info : this.util.seeRobots()) {
-                int dx = info.location.x - this.gameState.hqLocation.x;
-                int dy = info.location.y - this.gameState.hqLocation.y;
-
-                if (-2 <= dx && dx <= 2 && -2 <= dy && dy <= 2) {
-                    occupancy[dx + 2][dy + 2] = true;
-                }
-            }
-
-            if (tryAssignment != null && (occupancy[tryAssignment.x - this.gameState.hqLocation.x + 2][tryAssignment.y - this.gameState.hqLocation.y + 2] || (rc.canSenseLocation(tryAssignment) && rc.senseFlooding(tryAssignment)))) {
-                tryAssignment = null;
-            }
-
-            if (tryAssignment == null) {
-                MapLocation bestAssignment = null;
-                int bestAssignmentScore = -1;
-                for (int i = -2; i < 3; i++) {
-                    for (int j = -2; j < 3; j++) {
-                        MapLocation potentialAssignment = new MapLocation(this.gameState.hqLocation.x + i, this.gameState.hqLocation.y + j);
-                        if (RobotUtil.distanceLinf(this.gameState.hqLocation, potentialAssignment) > 2)
-                            continue;
-
-                        int dx = potentialAssignment.x - this.gameState.hqLocation.x;
-                        int dy = potentialAssignment.y - this.gameState.hqLocation.y;
-
-                        int assignmentScore;
-                        if (rc.canSenseLocation(potentialAssignment)) {
-                            if (!occupancy[dx + 2][dy + 2] && !rc.senseFlooding(potentialAssignment)) {
-                                assignmentScore = 2;
-                            } else {
-                                assignmentScore = -10;
-                            }
-                        } else {
-                            assignmentScore = 1;
-                        }
-
-                        if (rc.getRoundNum() < startRound + 50) {
-                            if (!potentialAssignment.isAdjacentTo(this.designSchoolLoc)) {
-                                assignmentScore += 1;
-                            }
-                        } else {
-                            if (potentialAssignment.isAdjacentTo(this.designSchoolLoc)) {
-                                assignmentScore += 1;
-                            }
-                        }
-                        //assignmentScore += RobotUtil.distanceLinf(this.gameState.hqLocation, potentialAssignment) == 1 ? 1 : 0;
-
-                        //RobotUtil.distanceLinf(rc.getLocation(), potentialAssignment) < RobotUtil.distanceLinf(rc.getLocation(), bestAssignment))
-                        if (assignmentScore > bestAssignmentScore || (assignmentScore == bestAssignmentScore && Math.random() > 0.4)) {
-                            bestAssignment = potentialAssignment;
-                            bestAssignmentScore = assignmentScore;
-                        }
-                    }
-                }
-
-                tryAssignment = bestAssignment;
-                if (tryAssignment != null) {
-                    this.util.log(String.format("Try assignment: %d %d", tryAssignment.x, tryAssignment.y));
-                } else {
-                    this.util.log("No assignments to try F");
-                }
-            }
-
-            if (tryAssignment != null) {
-                this.util.moveTowards(tryAssignment, null);
-            }
-            Clock.yield();
-        }
-         */
-
         Direction designSchoolOrientation = this.designSchoolLoc.directionTo(this.gameState.hqLocation);
         MapLocation theCoolSpot = this.gameState.hqLocation.add(designSchoolOrientation).add(designSchoolOrientation);
         while (rc.getRoundNum() < startRound + 30) {
@@ -155,7 +74,7 @@ public class Landscaper {
                     }
 
                     if (RobotUtil.distanceLinf(this.gameState.hqLocation, potentialAssignment) == 1) {
-                        assignmentScore += 2;
+                        assignmentScore -= 3;
                     }
 
                     assignmentScore -= RobotUtil.distanceLinf(rc.getLocation(), potentialAssignment);
@@ -197,7 +116,10 @@ public class Landscaper {
                     if (rc.getRoundNum() < startRound + 100 && toDig.isAdjacentTo(this.designSchoolLoc)) {
                         continue;
                     }
-                    if (toDig.equals(this.designSchoolLoc)) {
+                    if (toDig.equals(this.designSchoolLoc)) { // fixme: this broke
+                        continue;
+                    }
+                    if (!rc.canDigDirt(dir)) {
                         continue;
                     }
                     if (toDig.equals(this.gameState.hqLocation) && this.rc.canSenseLocation(this.gameState.hqLocation) &&

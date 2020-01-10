@@ -26,13 +26,30 @@ public class Drone {
         while (true) {
             this.util.waitCooldown();
 
-            RobotInfo enemy = this.util.closestRobot(this.util.seeRobots(), RobotType.COW, false);
+            RobotInfo enemy = this.util.closestRobot(this.util.seeRobots(), null, false);
             if (enemy != null && this.rc.canPickUpUnit(enemy.ID)) {
                 this.util.log(String.format("Try to pick up: %d", enemy.ID));
 
                 this.rc.pickUpUnit(enemy.ID);
                 Clock.yield();
                 continue;
+            }
+
+            if (this.rc.isCurrentlyHoldingUnit()) {
+                boolean dropped = false;
+                for (Direction dir : Direction.allDirections()) {
+                    MapLocation toDropLoc = rc.getLocation().add(dir);
+                    if (rc.canSenseLocation(toDropLoc) && rc.senseFlooding(toDropLoc) && rc.canDropUnit(dir)) {
+                        rc.dropUnit(dir);
+                        Clock.yield();
+                        dropped = true;
+                        break;
+                    }
+                }
+
+                if (dropped) {
+                    continue;
+                }
             }
 
 
@@ -47,7 +64,7 @@ public class Drone {
                 this.util.log(String.format("New Target: %d %d", this.target.x, this.target.y));
             }
 
-            if (!this.util.moveTowards(this.target, null)) {
+            if (!this.util.moveTowards(this.target, null, false)) {
                 this.util.log("Can't move!");
 
                 this.target = this.util.randomLocation();
