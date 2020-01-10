@@ -1,6 +1,8 @@
 package bot3;
 
 import battlecode.common.*;
+
+import java.awt.*;
 import java.lang.Math;
 
 import static bot3.RobotPlayer.rc;
@@ -62,24 +64,47 @@ public class Helper {
     } else return false;
   }
 
-  static int tryDigAway(MapLocation loc) throws GameActionException {
+  static void tryDigAway(MapLocation loc) throws GameActionException {
     if (!rc.isReady()) {
-      return -1;
+      return;
     }
     int max_dist = -1;
-    int best_i = -1;
+    Direction best_dir = null;
+    boolean allow_design_adjacent = true;
     for (int i = 0; i < directions.length; i++) {
-      if (rc.canDigDirt(directions[i]) && Landscaper.cur_loc.add(directions[i]).distanceSquaredTo(loc) > max_dist) {
-        max_dist = Landscaper.cur_loc.add(directions[i]).distanceSquaredTo(loc);
-        best_i = i;
+      MapLocation new_loc = Landscaper.cur_loc.add(directions[i]);
+      if (rc.canDigDirt(directions[i]) && new_loc.distanceSquaredTo(loc) > max_dist) {
+        boolean adjacent = false;
+        for (int j = 0; j < directions.length; j++) {
+          MapLocation even_newer_loc = new_loc.add(directions[j]);
+          if (rc.canSenseLocation(even_newer_loc)) {
+            RobotInfo r = rc.senseRobotAtLocation(even_newer_loc);
+            if (r != null && r.type == RobotType.DESIGN_SCHOOL && r.team == rc.getTeam()) {
+              adjacent = true;
+            }
+          }
+        }
+
+        if ((allow_design_adjacent && !adjacent) ||
+           (!allow_design_adjacent && !adjacent && new_loc.distanceSquaredTo(loc) > max_dist) ||
+           (allow_design_adjacent && new_loc.distanceSquaredTo(loc) > max_dist)) {
+          max_dist = Landscaper.cur_loc.add(directions[i]).distanceSquaredTo(loc);
+          best_dir = directions[i];
+          if (!adjacent) {
+            allow_design_adjacent = false;
+          }
+        }
       }
     }
 
-    if (best_i != -1) {
-      rc.digDirt(directions[best_i]);
+    if (rc.canDigDirt(Direction.CENTER) && Landscaper.cur_loc.add(Direction.CENTER).distanceSquaredTo(loc) > max_dist) {
+      max_dist = Landscaper.cur_loc.add(Direction.CENTER).distanceSquaredTo(loc);
+      best_dir = Direction.CENTER;
     }
 
-    return best_i;
+    if (best_dir != null) {
+      rc.digDirt(best_dir);
+    }
   }
 
   static int tryDepositClose(MapLocation loc) throws GameActionException {
