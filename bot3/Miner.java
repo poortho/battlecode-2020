@@ -161,6 +161,7 @@ public class Miner {
 				//System.out.println("Found enemy hq! " + robots[i].location);
 				Comms.broadcast_enemy_hq(robots[i].location);
 			} else if (robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {
+				HQ.our_hq = robots[i].location;
 				near_hq = true;
 			}
 
@@ -260,7 +261,7 @@ public class Miner {
 			if (turtling && hq.equals(HQ.our_hq)) {
 				if (cur_loc.distanceSquaredTo(target_mine) <= 5 && HQ.our_hq.equals(hq) && mine_count > 350) {
 					// try build refinery
-					int res = Helper.tryBuild(RobotType.REFINERY);
+					int res = Helper.tryBuildNotAdjacentHQ(RobotType.REFINERY, near_hq);
 					if (res != -1) {
 						hq = cur_loc.add(directions[res]);
 						return;
@@ -279,7 +280,7 @@ public class Miner {
 				int distance = target_mine.distanceSquaredTo(hq);
 				int distance2 = target_mine.distanceSquaredTo(cur_loc);
 				int res = -1;
-				if (distance > 80 && distance2 < 24 && mine_count > 600 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
+				if (distance > 80 && distance2 < 24 && mine_count > 600 && (res = Helper.tryBuildNotAdjacentHQ(RobotType.REFINERY, near_hq)) != -1) {
 					// build refinery
 					hq = cur_loc.add(directions[res]);
 					//System.out.println("New HQ: " + hq.toString());
