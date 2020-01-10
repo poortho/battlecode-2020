@@ -28,7 +28,7 @@ public class Helper {
   // -1 means didn't build
   // returns index in directions where robot was built
   // avoid building in places adjacent to buildings
-  static int tryBuild(RobotType type) throws GameActionException {
+  static int tryBuildNotAdjacentHQ(RobotType type) throws GameActionException {
     if (!rc.isReady()) {
       return -1;
     }
@@ -36,6 +36,19 @@ public class Helper {
     for (int i = 0; i < directions.length; i++) {
       MapLocation new_loc = cur_loc.add(directions[i]);
       if (rc.canBuildRobot(type, directions[i]) && HQ.our_hq != null && new_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+        rc.buildRobot(type, directions[i]);
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  static int tryBuild(RobotType type) throws GameActionException {
+    if (!rc.isReady()) {
+      return -1;
+    }
+    for (int i = 0; i < directions.length; i++) {
+      if (rc.canBuildRobot(type, directions[i])) {
         rc.buildRobot(type, directions[i]);
         return i;
       }
