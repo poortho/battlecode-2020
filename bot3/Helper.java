@@ -14,7 +14,7 @@ public class Helper {
 
   static int getLevel(int r) {
     int res = (int)Math.floor(Math.exp(0.0028 * r -1.38*Math.sin(0.00157*r-1.73)+1.38*Math.sin(-1.73)) - 1);
-    System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
+    //System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
     return res;
   }
 

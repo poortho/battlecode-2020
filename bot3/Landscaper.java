@@ -136,8 +136,8 @@ public class Landscaper {
                     }
                 }
             }
-            System.out.println(best_loc);
-            System.out.println(best_dep_dir);
+            //System.out.println(best_loc);
+            //System.out.println(best_dep_dir);
             if (best_loc != null) {
                 aggressive_landscaper_walk(best_loc);
             }
@@ -253,7 +253,7 @@ public class Landscaper {
         for (int i = 0; i < robots.length; i++) {
             if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
                 // found enemy hq broadcast it
-                System.out.println("Found enemy hq! " + robots[i].location);
+                //System.out.println("Found enemy hq! " + robots[i].location);
                 Comms.broadcast_enemy_hq(robots[i].location);
             }
             if (!defensive && robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {

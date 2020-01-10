@@ -41,7 +41,7 @@ public class HQ {
           possible_enemy_locs[4] = new MapLocation(delta_x, middle.y);
           possible_enemy_locs[5] = new MapLocation(middle.x, delta_y);
           //possible_enemy_locs[5] = new MapLocation((cur_loc.x / middle.x) * (width-1), (cur_loc.y / middle.y) * (height-1));
-          System.out.println(Arrays.toString(possible_enemy_locs));
+          //System.out.println(Arrays.toString(possible_enemy_locs));
           Comms.setSeed(possible_enemy_locs);
 
           // find soup that's close
