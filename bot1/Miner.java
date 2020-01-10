@@ -111,7 +111,7 @@ public class Miner {
 				if (target_explore != null) {
 					miner_walk(target_explore);
 				} else {
-					System.out.println("Walk to enemy HQ");
+					//System.out.println("Walk to enemy HQ");
 					if (HQ.enemy_hq != null) {
 						miner_walk(HQ.enemy_hq);
 					}
@@ -137,7 +137,7 @@ public class Miner {
 				turtling = false;
 			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
 				// found enemy hq broadcast it
-				System.out.println("Found enemy hq! " + robots[i].location);
+				//System.out.println("Found enemy hq! " + robots[i].location);
 				Comms.broadcast_enemy_hq(robots[i].location);
 
 			}
@@ -236,9 +236,9 @@ public class Miner {
 				if (distance > 80 && distance2 < 24 && (res = Helper.tryBuild(RobotType.REFINERY)) != -1) {
 					// build refinery
 					hq = cur_loc.add(directions[res]);
-					System.out.println("New HQ: " + hq.toString());
+					//System.out.println("New HQ: " + hq.toString());
 				} else if (distance < 800) {
-					System.out.println("Walking Back To HQ");
+					//System.out.println("Walking Back To HQ");
 					miner_walk(hq);
 				}
 			}
@@ -258,7 +258,7 @@ public class Miner {
 				}
 			} else {
 				//walk to mine
-				//System.out.println("Walking to " + target_mine);
+				////System.out.println("Walking to " + target_mine);
 				miner_walk(target_mine);
 			}
 		}
@@ -271,7 +271,7 @@ public class Miner {
 		//       XY   <- patch location / 4
 
 		// make sure this patch wasn't already broadcasted
-		System.out.println("broadcast patch: " + target_mine.toString());
+		//System.out.println("broadcast patch: " + target_mine.toString());
 		for (int c = 0; c < explored_count; c++) {
 			if (target_mine.distanceSquaredTo(explored[c]) <= 45) {
 				return;
@@ -280,8 +280,8 @@ public class Miner {
 
 		int num = get_num_workers_needed();
 		Comms.broadcast_miner_request(target_mine, num, true);
-		System.out.println("Found patch at: " + target_mine);
-		System.out.println("Workers needed: " + Integer.toString(num));
+		//System.out.println("Found patch at: " + target_mine);
+		//System.out.println("Workers needed: " + Integer.toString(num));
 	}
 
 	static int get_num_workers_needed() throws GameActionException {
@@ -294,11 +294,11 @@ public class Miner {
 			}
 		}
 		if (total_soup > 900) {
-			return 1;
+			return 0;
 		} else if (total_soup > 2500) {
-			return 2;
+			return 0;
 		} else if (total_soup > 5000) {
-			return 3;
+			return 0;
 		} else {
 			return 0;
 		}
@@ -316,11 +316,11 @@ public class Miner {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
 			RobotInfo temp = rc.senseRobotAtLocation(next_loc);
 			if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
-				System.out.println("FOUND HQ");
+				//System.out.println("FOUND HQ");
 				return next_loc;
 			}
 		}
-		System.out.println("SHOULDNT HAPPEN EVER");
+		//System.out.println("SHOULDNT HAPPEN EVER");
 		return null;
 	}
 
@@ -330,7 +330,7 @@ public class Miner {
 			if (rc.canSenseLocation(next_loc) && !rc.senseFlooding(next_loc)) {
 				int count = rc.senseSoup(next_loc);
 				if (count > 0) {
-					System.out.println("Found mine at:" + next_loc.toString());
+					//System.out.println("Found mine at:" + next_loc.toString());
 					check_new_patch = true;
 					target_mine = next_loc;
 					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
@@ -404,7 +404,7 @@ public class Miner {
   static boolean tryMine(Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canMineSoup(dir)) {
         rc.mineSoup(dir);
-        System.out.println("MINED!");
+        //System.out.println("MINED!");
         return true;
     } else return false;
   }
@@ -412,7 +412,7 @@ public class Miner {
   static boolean tryDepositSoup(Direction dir) throws GameActionException {
       if (rc.isReady() && rc.canDepositSoup(dir)) {
           rc.depositSoup(dir, rc.getSoupCarrying());
-          System.out.println("DEPOSITED");
+          //System.out.println("DEPOSITED");
           return true;
       } else return false;
   }
@@ -420,10 +420,10 @@ public class Miner {
   static RobotType calcBuilding() {
 	  if (num_enemy_buildings >= num_enemy_drones && num_enemy_buildings >= num_enemy_landscapers && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
-	  } else if (num_enemy_landscapers >= num_enemy_drones && num_enemy_landscapers >= num_enemy_buildings && !nearby_fulfillment) {
+	  } else if (num_enemy_landscapers > num_enemy_drones && num_enemy_landscapers > num_enemy_buildings && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (num_enemy_drones >= num_enemy_landscapers && num_enemy_drones >= num_enemy_buildings && !nearby_netgun) {
+	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
 	  }
 	  return null;

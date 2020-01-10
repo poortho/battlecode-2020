@@ -38,7 +38,7 @@ public class Landscaper {
             RobotInfo robot = rc.senseRobotAtLocation(destination);
             // canbepicked up => unit
             if (robot == null || robot.type.canBePickedUp() || robot.team == rc.getTeam()) {
-                //System.out.println("killed!");
+                ////System.out.println("killed!");
                 destination = null;
             }
         }
@@ -63,16 +63,16 @@ public class Landscaper {
         if (destination != null && cur_loc.distanceSquaredTo(destination) <= 2) {
             if (rc.getDirtCarrying() > 0) {
                 // cuck em
-                //System.out.println("tryna dump");
-                //System.out.println(rc.getDirtCarrying());
-                //System.out.println(rc.isReady());
+                ////System.out.println("tryna dump");
+                ////System.out.println(rc.getDirtCarrying());
+                ////System.out.println(rc.isReady());
                 if (rc.canDepositDirt(cur_loc.directionTo(destination))) {
-                    //System.out.println("dumped");
+                    ////System.out.println("dumped");
                     rc.depositDirt(cur_loc.directionTo(destination));
                 }
             } else {
                 // succ
-                //System.out.println("Tryna dig");
+                ////System.out.println("Tryna dig");
                 Helper.tryDig();
             }
         } else if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
@@ -90,12 +90,12 @@ public class Landscaper {
     static void walk_to_dest() throws GameActionException {
         // walk if possible
         if (destination != null) {
-            //System.out.println("Destination: " + destination.toString());
+            ////System.out.println("Destination: " + destination.toString());
             // move to destination
             bugpath_walk(destination);
         } else {
             // no known destination & full, wander map
-            //System.out.println("no destination, walking to corner " + corners[corner_i % corners.length].toString());
+            ////System.out.println("no destination, walking to corner " + corners[corner_i % corners.length].toString());
             if (cur_loc.distanceSquaredTo(corners[corner_i % corners.length]) < RobotType.LANDSCAPER.sensorRadiusSquared) {
                 // visited, inc
                 corner_i++;
@@ -108,7 +108,7 @@ public class Landscaper {
         for (int i = 0; i < robots.length; i++) {
             if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
                 // found enemy hq broadcast it
-                System.out.println("Found enemy hq! " + robots[i].location);
+                //System.out.println("Found enemy hq! " + robots[i].location);
                 Comms.broadcast_enemy_hq(robots[i].location);
             }
             if (robots[i].team != rc.getTeam()) {

@@ -41,7 +41,7 @@ public class HQ {
           possible_enemy_locs[4] = new MapLocation(delta_x, middle.y);
           possible_enemy_locs[5] = new MapLocation(middle.x, delta_y);
           //possible_enemy_locs[5] = new MapLocation((cur_loc.x / middle.x) * (width-1), (cur_loc.y / middle.y) * (height-1));
-          System.out.println(Arrays.toString(possible_enemy_locs));
+          //System.out.println(Arrays.toString(possible_enemy_locs));
           Comms.setSeed(possible_enemy_locs);
 
           // find soup that's close
@@ -50,7 +50,7 @@ public class HQ {
           if (!queued_near) {
              int msg[] = {0, 0, 0, 0, 0, 0, 0};
             // initial broadcast miner request
-            for (int i = 5; i >= 0; i--) {
+            for (int i = 0; i >= 0; i--) {
               MapLocation loc = possible_enemy_locs[i];
               int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
               val |= 1 << 24;
@@ -68,7 +68,7 @@ public class HQ {
         if (turnCount == 2 && queued_near) {
           int msg[] = {0, 0, 0, 0, 0, 0, 0};
           // initial broadcast miner request
-          for (int i = 5; i >= 0; i--) {
+          for (int i = 0; i >= 0; i--) {
             MapLocation loc = possible_enemy_locs[i];
             int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
             val |= 1 << 24;

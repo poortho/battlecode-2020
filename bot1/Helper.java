@@ -14,7 +14,7 @@ public class Helper {
 
   static int getLevel(int r) {
     int res = (int)Math.floor(Math.exp(0.0028 * r -1.38*Math.sin(0.00157*r-1.73)+1.38*Math.sin(-1.73)) - 1);
-    System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
+    //System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
     return res;
   }
 
@@ -117,7 +117,7 @@ public class Helper {
   }
 
   static boolean tryMove(Direction dir) throws GameActionException {
-    // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+    // //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
     if (rc.isReady() && rc.canMove(dir)) {
       rc.move(dir);
       return true;
@@ -138,6 +138,6 @@ public class Helper {
       if (rc.canSubmitTransaction(message, 10))
         rc.submitTransaction(message, 10);
     }
-    // System.out.println(rc.getRoundMessages(turnCount-1));
+    // //System.out.println(rc.getRoundMessages(turnCount-1));
   }
 }

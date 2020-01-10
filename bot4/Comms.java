@@ -121,6 +121,10 @@ public class Comms {
 							int y = (temp_msg[j] >> 4) & 0xff;
 							HQ.our_hq = new MapLocation(x, y);
 							//System.out.println("Received our HQ: " + HQ.our_hq.toString());
+						} else if (opcode == 0x5) {
+							HQ.rushed = true;
+						} else if (opcode == 0x6) {
+							HQ.rushed = false;
 						}
 
 						temp_msg[j] ^= key;
@@ -130,6 +134,26 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static void broadcast_end_rushed() throws GameActionException {
+		// 0x00000000
+		//          3 <- opcode
+		//      XXYY  <- patch location / 4	
+		int val = 0x6;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		addMessage(msg, 1, 2);
+	}
+
+	public static void broadcast_being_rushed() throws GameActionException {
+		// 0x00000000
+		//          3 <- opcode
+		//      XXYY  <- patch location / 4	
+		int val = 0x5;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		addMessage(msg, 1, 2);
 	}
 
 	public static void broadcast_enemy_hq(MapLocation loc) throws GameActionException {

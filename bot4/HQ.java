@@ -7,6 +7,7 @@ import battlecode.common.RobotType;
 
 import static bot4.Helper.distx_35;
 import static bot4.Helper.disty_35;
+import static bot4.Helper.directions;
 import static bot4.RobotPlayer.*;
 
 public class HQ {
@@ -18,6 +19,7 @@ public class HQ {
     static boolean queued_near = false;
 
     static MapLocation enemy_hq, cur_loc, our_hq;
+    static boolean rushed = false;
 
     static void runHQ() throws GameActionException {
 
@@ -80,14 +82,50 @@ public class HQ {
 
 	    	Comms.getBlocks();
 
-        shootNetGun();
-        handle_miners();
+        // check for if we're being rushed
+        if (!rushed) {
+          rushed = checkRush();
+          if (rushed) {
+            Comms.broadcast_being_rushed();
+          }
+        } else {
+          rushed = checkRush();
+          if (!rushed) {
+            Comms.broadcast_end_rushed();
+          }
+        }
 
-        if (turnCount == 80) {
+        shootNetGun();
+        if (rushed) {
+          build_defensive_miner();
+        } else {
+          handle_miners();
+        }
+
+        if (turnCount == 70) {
           Comms.broadcast_friendly_hq(cur_loc);
         }
 	    }
 	  }
+
+    static void build_defensive_miner() throws GameActionException {
+      Helper.tryBuild(RobotType.MINER);
+    }
+
+    static boolean checkRush() throws GameActionException {
+      RobotInfo[] nearby = rc.senseNearbyRobots();
+      int enemy = 0;
+      for (int i = 0; i < nearby.length; i++) {
+        switch (nearby[i].type) {
+          case LANDSCAPER:
+            if (nearby[i].team != rc.getTeam()) {
+              enemy++;
+            }
+            break;
+        }
+      }
+      return enemy >= 3;
+    }
 
     static boolean queue_close_soup() throws GameActionException {
       for (int i = 0; i < distx_35.length; i++) {
