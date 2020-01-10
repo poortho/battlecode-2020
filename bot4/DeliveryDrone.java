@@ -76,7 +76,7 @@ public class DeliveryDrone {
 
         // sense nearby deets for flood
         int k = 1;
-        while (rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
+        while (k < distx_35.length && rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
             MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
             if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
                 if (nearest_flood_curloc == null || cur_loc.distanceSquaredTo(new_loc) < cur_loc.distanceSquaredTo(nearest_flood_curloc)) {
