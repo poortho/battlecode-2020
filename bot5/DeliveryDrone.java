@@ -1,6 +1,7 @@
 package bot5;
 
 import battlecode.common.*;
+import java.util.Arrays;
 
 import static bot5.Helper.*;
 import static bot5.RobotPlayer.*;
@@ -22,6 +23,8 @@ public class DeliveryDrone {
     static MapLocation previous_location;
     static boolean bugpath_blocked = false;
 
+    static int search_idx = 0;
+
     static void runDeliveryDrone() throws GameActionException {
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
@@ -32,21 +35,25 @@ public class DeliveryDrone {
         }
 
         // compute blacklist (dont move adjacent to enemy drones, and stay out of shooting range of HQ/netgun
-        if (HQ.patrol_broadcast_round == -1) {
-            for (int i = 0; i < robots.length; i++) {
-                if (robots[i].team != rc.getTeam()) {
-                    switch (robots[i].type) {
-                        case NET_GUN:
-                        case HQ:
-                            // avoid netgun
+        for (int i = 0; i < robots.length; i++) {
+            if (robots[i].team != rc.getTeam()) {
+                switch (robots[i].type) {
+                    case NET_GUN:
+                    case HQ:
+                        MapLocation temp_loc = robots[i].getLocation();
+                        if (HQ.enemy_hq == null) {
+                            HQ.enemy_hq = temp_loc;
+                            Comms.broadcast_enemy_hq(temp_loc);
+                        }
+                        // avoid netgun
+                        if (HQ.patrol_broadcast_round == -1) {
                             for (int j = 0; j < directions.length; j++) {
-                                if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
-                                        <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                                if (cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
                                     blacklist[j] = true;
                                 }
                             }
-                            break;
-                    }
+                        }
+                        break;
                 }
             }
         }
@@ -103,31 +110,43 @@ public class DeliveryDrone {
             k++;
         }
 
+        // if enemy HQ was never found
+        if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq == null) {
+            HQ.patrol_broadcast_round = round;
+            // explore
+            if (search_idx < 6) {
+                if (cur_loc.distanceSquaredTo(Comms.explore[search_idx]) <= 10) {
+                    search_idx++;
+                }
+                if (search_idx < 6) {
+                    drone_walk(Comms.explore[search_idx]);
+                }
+            }
+            return;
+        }
+
         if (!rc.isCurrentlyHoldingUnit()) {
             // look for enemy units
             int num_enemies = 0;
             int closest_dist = 9999999;
             RobotInfo closest_robot = null;
             for (int i = 0; i < robots.length; i++) {
-                // System.out.println(robots[i]);
                 if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
                     num_enemies++;
                     if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
                         closest_robot = robots[i];
                         closest_dist = cur_loc.distanceSquaredTo(closest_robot.getLocation());
-                        break;
                     }
                 }
             }
             if (num_enemies > 0 && closest_robot != null && closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                 // pickup
-                System.out.println("Pickup: " + closest_robot.getLocation().toString());
+                //System.out.println("Cur loc: " + cur_loc.toString() + " Pickup: " + closest_robot.getLocation().toString());
                 if (rc.canPickUpUnit(closest_robot.ID)) {
                     rc.pickUpUnit(closest_robot.ID);
                     carried_type = closest_robot.type;
                 }
             } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 130) {
-                System.out.println("patrol enemy hq");
                 //System.out.println("!!!");
                 if (cur_loc.distanceSquaredTo(HQ.enemy_hq) < 50) {
                     //System.out.println("patrolling enemy hq");

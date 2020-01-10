@@ -52,17 +52,12 @@ public class Comms {
 						//System.out.println("Set seed: " + Integer.toString(seed));
 
 						// unpack explore locations
-						int c = 0;
-						for (int j = 0; j < 4; j++) {
-							int temp = (temp_msg[2] >> (j*8)) & 0xff;
-							explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
-							c++;
-						}
-						for (int j = 4; j < 6; j++) {
-							int temp = (temp_msg[3] >> (j*8)) & 0xff;
-							explore[c] = new MapLocation((temp >> 4) * 4, (temp & 0xf) * 4);
-							c++;
-						}
+						explore[0] = new MapLocation((temp_msg[2] >> 8) & 0xff, temp_msg[2] & 0xff);
+						explore[1] = new MapLocation((temp_msg[2] >> 24) & 0xff, (temp_msg[2] >> 16) & 0xff);
+						explore[2] = new MapLocation((temp_msg[3] >> 8) & 0xff, temp_msg[3] & 0xff);
+						explore[3] = new MapLocation((temp_msg[3] >> 24) & 0xff, (temp_msg[3] >> 16) & 0xff);
+						explore[4] = new MapLocation((temp_msg[4] >> 8) & 0xff, temp_msg[4] & 0xff);
+						explore[5] = new MapLocation((temp_msg[4] >> 24) & 0xff, (temp_msg[4] >> 16) & 0xff);
 						break;
 					}
 				}
@@ -127,6 +122,7 @@ public class Comms {
 							HQ.rushed = false;
 						} else if (opcode == 0x7) {
 							HQ.patrol_broadcast_round = blockRound;
+							HQ.broadcasted_patrol = true;
 						}
 
 						temp_msg[j] ^= key;
@@ -138,14 +134,14 @@ public class Comms {
 		}
 	}
 
-	public static void broadcast_patrol_enemy_hq() throws GameActionException {
+	public static boolean broadcast_patrol_enemy_hq() throws GameActionException {
 		// 0x00000000
 		//          3 <- opcode
 		//      XXYY  <- patch location / 4
 		int val = 0x7;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 2);
 	}
 
 	public static void broadcast_end_rushed() throws GameActionException {
@@ -257,18 +253,10 @@ public class Comms {
 			total += rc.senseElevation(cur_loc.add(directions[i])) << (i);
 		}
 		total += cur_loc.x*69 + cur_loc.y*69;
-		int loc1 = 0;
-		for (int i = 0; i < 4; i++) {
-			loc1 = loc1 | ((((locs[i].x / 4) << 4) | locs[i].y / 4) << (8*i));
-		}
-		int loc2 = 0;
-		for (int i = 0; i < 2; i++) {
-			loc2 = loc2 | ((((locs[i + 4].x / 4) << 4) | locs[i + 4].y / 4) << (8*i));
-		}
 
     //System.out.println(Comms.HARDCODE);
 		//System.out.println("Locations: " + Integer.toString(loc1) + " " + Integer.toString(loc2));
-		int[] msg = {(total), ((total) ^ HARDCODE), loc1, loc2};
+		int[] msg = {(total), ((total) ^ HARDCODE), (locs[1].x << 24) | (locs[1].y << 16) | (locs[0].x << 8) | (locs[0].y), (locs[3].x << 24) | (locs[3].y << 16) | (locs[2].x << 8) | (locs[2].y), (locs[5].x << 24) | (locs[5].y << 16) | (locs[4].x << 8) | (locs[4].y)};
 		//System.out.println("Submit seed bid");
 		seed = total;
 		rc.submitTransaction(msg, INITIAL_BID);
