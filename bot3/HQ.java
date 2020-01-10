@@ -85,7 +85,7 @@ public class HQ {
         shootNetGun();
         handle_miners();
 
-        if (turnCount == 20) {
+        if (turnCount == 80) {
           Comms.broadcast_friendly_hq(cur_loc);
         }
 	    }
