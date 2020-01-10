@@ -18,6 +18,7 @@ public class DeliveryDrone {
     static boolean[] blacklist = new boolean[directions.length];
     static RobotInfo[] robots;
     static RobotType carried_type = null;
+    static MapLocation nearest_flood_curloc;
 
     static MapLocation previous_location;
     static boolean bugpath_blocked = false;
@@ -78,9 +79,11 @@ public class DeliveryDrone {
         while (rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
             MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
             if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
+                if (nearest_flood_curloc == null || cur_loc.distanceSquaredTo(new_loc) < cur_loc.distanceSquaredTo(nearest_flood_curloc)) {
+                    nearest_flood_curloc = new_loc;
+                }
                 if (nearest_flood == null || hq.distanceSquaredTo(new_loc) < hq.distanceSquaredTo(nearest_flood)) {
                     nearest_flood = new_loc;
-                    break;
                 }
             }
             k++;
@@ -175,7 +178,15 @@ public class DeliveryDrone {
                 }
             } else {
                 // if have flood loc, move there
-                if (nearest_flood != null) {
+                if (nearest_flood_curloc != null) {
+                    int temp_dist = cur_loc.distanceSquaredTo(nearest_flood_curloc);
+                    if (temp_dist != 0 && temp_dist <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood_curloc))) {
+                        //System.out.println("die chungus");
+                        rc.dropUnit(cur_loc.directionTo(nearest_flood_curloc));
+                    } else {
+                        drone_walk(nearest_flood_curloc);
+                    }
+                } else if (nearest_flood != null) {
                     // adjacent, dump em
                     int temp_dist = cur_loc.distanceSquaredTo(nearest_flood);
                     if (temp_dist != 0 && temp_dist <= 2 && rc.canDropUnit(cur_loc.directionTo(nearest_flood))) {
