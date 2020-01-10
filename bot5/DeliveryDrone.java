@@ -120,7 +120,7 @@ public class DeliveryDrone {
                     rc.pickUpUnit(closest_robot.ID);
                     carried_type = closest_robot.type;
                 }
-            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 100) {
+            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 130) {
                 System.out.println("patrol enemy hq");
                 //System.out.println("!!!");
                 if (cur_loc.distanceSquaredTo(HQ.enemy_hq) < 50) {
