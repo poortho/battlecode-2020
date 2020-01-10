@@ -247,7 +247,7 @@ public class DeliveryDrone {
         int least_dist = cur_loc.distanceSquaredTo(loc);
         int next = -1;
         int greedy_dist = 9999999;
-        Direction greedy_dir = directions[0];
+        int greedy_idx = -1;
         for (int i = 0; i < directions.length; i++) {
             MapLocation next_loc = cur_loc.add(directions[i]);
             int temp_dist = next_loc.distanceSquaredTo(loc);
@@ -259,7 +259,7 @@ public class DeliveryDrone {
             }
             if (temp_dist < greedy_dist) {
                 greedy_dist = temp_dist;
-                greedy_dir = directions[i];
+                greedy_idx = i;
             }
         }
 
@@ -276,10 +276,11 @@ public class DeliveryDrone {
                 }
             }
             bugpath_blocked = true;
-            // MapLocation greedy_loc = cur_loc.add(greedy_dir);
-            // if (rc.senseRobotAtLocation(greedy_loc)!= null && rc.senseRobotAtLocation(greedy_loc).type == RobotType.MINER) {
-            //  bugpath_blocked = false;
-            // }
+
+            if (next == -1) {
+                next = greedy_idx;
+            }
+
             for (int i = 0; i < 7; i++) {
                 next = (next + 1) % directions.length;
                 Direction cw = directions[next];
