@@ -4,6 +4,7 @@ import battlecode.common.*;
 
 import static bot4.Helper.*;
 import static bot4.RobotPlayer.rc;
+import static bot4.RobotPlayer.round;
 import static bot4.RobotPlayer.turnCount;
 
 public class DeliveryDrone {
@@ -112,7 +113,7 @@ public class DeliveryDrone {
                     rc.pickUpUnit(closest_robot.ID);
                     carried_type = closest_robot.type;
                 }
-            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && rc.getRoundNum() < HQ.patrol_broadcast_round + 100) {
+            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 100) {
                 System.out.println("patrol enemy hq");
                 //System.out.println("!!!");
                 if (cur_loc.distanceSquaredTo(HQ.enemy_hq) < 50) {
@@ -136,7 +137,6 @@ public class DeliveryDrone {
 
                     Helper.tryMove(best_dir);
                 } else {
-                    // bugpath
                     drone_walk(HQ.enemy_hq);
                 }
             } else if (num_enemies > 0 && closest_robot != null) {
@@ -176,8 +176,10 @@ public class DeliveryDrone {
                 prev_loc[prev_loc_i % prev_loc.length] = cur_loc.add(best_dir);
                 prev_loc_i++;
                 Helper.tryMove(best_dir);
-            } else {
+            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round >= HQ.patrol_broadcast_round + 100) {
                 // just dropped a unit, move back to hq
+                drone_walk(HQ.enemy_hq);
+            } else {
                 drone_walk(hq);
             }
         } else {

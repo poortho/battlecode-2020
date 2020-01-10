@@ -136,7 +136,6 @@ public class Miner {
 				target_explore = null;
 			}
 			if (target_explore != null) {
-				System.out.println("ME: " + cur_loc.toString() + " Exploring: " + target_explore.toString());
 				miner_walk(target_explore);
 			}
 			else if (target_mine != null) {
