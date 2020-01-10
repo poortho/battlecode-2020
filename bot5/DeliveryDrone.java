@@ -82,6 +82,12 @@ public class DeliveryDrone {
             hq = HQ.our_hq;
         }
 
+        // if i'm ever next to hq, move away
+        if (HQ.our_hq != null && hq.equals(HQ.our_hq) && cur_loc.distanceSquaredTo(hq) <= 2) {
+            Helper.greedy_move_away(hq, cur_loc);
+            return;
+        }
+
         // sense nearby deets for flood
         int k = 1;
         while (k < distx_35.length && rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
