@@ -170,8 +170,8 @@ public class Miner {
 		if (near_hq && hq.equals(HQ.our_hq)) {
 			int blocked = 0;
 			for (int i = 0; i < directions.length; i++) {
-				MapLocation next_loc = cur_loc.add(directions[i]);
-				if (rc.canSenseLocation(next_loc) && rc.senseElevation(next_loc) > rc.senseElevation(HQ.our_hq) + 3) {
+				MapLocation next_loc = hq.add(directions[i]);
+				if (rc.canSenseLocation(next_loc) && rc.senseElevation(next_loc) > rc.senseElevation(hq) + 3) {
 					blocked++;
 				}
 			}
