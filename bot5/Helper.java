@@ -85,7 +85,7 @@ public class Helper {
     boolean allow_design_adjacent = true;
     for (int i = 0; i < directions.length; i++) {
       MapLocation new_loc = Landscaper.cur_loc.add(directions[i]);
-      if (rc.canDigDirt(directions[i]) && new_loc.distanceSquaredTo(loc) > max_dist) {
+      if (rc.canDigDirt(directions[i]) && new_loc.distanceSquaredTo(loc) > max_dist && (HQ.our_hq.distanceSquaredTo(new_loc) > 3)) {
         boolean adjacent = false;
         for (int j = 0; j < directions.length; j++) {
           MapLocation even_newer_loc = new_loc.add(directions[j]);

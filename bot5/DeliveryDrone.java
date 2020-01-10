@@ -41,7 +41,9 @@ public class DeliveryDrone {
                             // avoid netgun
                             for (int j = 0; j < directions.length; j++) {
                                 if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
-                                        <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                                        <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED ||
+                                   (HQ.enemy_hq != null && cur_loc.add(directions[j]).distanceSquaredTo(HQ.enemy_hq) <=
+                                        GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
                                     blacklist[j] = true;
                                 }
                             }
