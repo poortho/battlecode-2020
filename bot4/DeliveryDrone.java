@@ -66,6 +66,13 @@ public class DeliveryDrone {
             corners[1] = new MapLocation(rc.getMapWidth(), 0);
             corners[2] = new MapLocation(0, rc.getMapHeight());
             corners[3] = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
+            if (hq == null) {
+                if (HQ.our_hq != null) {
+                    hq = HQ.our_hq;
+                } else {
+                    hq = cur_loc;
+                }
+            }
         }
 
         if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
@@ -110,7 +117,7 @@ public class DeliveryDrone {
             }
             if (num_enemies > 0 && closest_robot != null && closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                 // pickup
-                System.out.println("Pickup: " + closest_robot.getLocation().toString());
+                // System.out.println("Pickup: " + closest_robot.getLocation().toString());
                 if (rc.canPickUpUnit(closest_robot.ID)) {
                     rc.pickUpUnit(closest_robot.ID);
                     carried_type = closest_robot.type;

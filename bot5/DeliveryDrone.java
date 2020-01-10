@@ -64,6 +64,13 @@ public class DeliveryDrone {
             corners[1] = new MapLocation(rc.getMapWidth(), 0);
             corners[2] = new MapLocation(0, rc.getMapHeight());
             corners[3] = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
+            if (hq == null) {
+                if (HQ.our_hq != null) {
+                    hq = HQ.our_hq;
+                } else {
+                    hq = cur_loc;
+                }
+            }
         }
 
         if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
