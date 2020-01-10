@@ -31,6 +31,7 @@ public class Miner {
   static int num_enemy_landscapers = 0;
   static int num_enemy_buildings = 0;
   static int num_enemies = 0;
+  static int num_enemy_miners = 0;
   static boolean nearby_fulfillment = false;
   static boolean nearby_netgun = false;
   static boolean nearby_design = false;
@@ -97,7 +98,7 @@ public class Miner {
 		// if buildings, build landscape
 
 		// build thing
-		if (toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*2 && num_enemies != 0) ||
+		if (toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5 && num_enemies != 0) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4))) {
 			// build if none nearby and (nearby enemies or close to hq)
 			if (cur_loc.distanceSquaredTo(hq) <= 8) {
@@ -189,6 +190,7 @@ public class Miner {
 		num_enemy_landscapers = 0;
 		num_enemy_buildings = 0;
 		num_enemies = 0;
+		num_enemy_miners = 0;
 		nearby_fulfillment = false;
 		nearby_netgun = false;
 		nearby_design = false;
@@ -235,6 +237,9 @@ public class Miner {
 					case FULFILLMENT_CENTER:
 						num_enemy_drones++; // count this as drone
 						num_enemy_buildings++;
+						break;
+					case MINER:
+						num_enemy_miners++;
 						break;
 				}
 			}
@@ -536,7 +541,7 @@ public class Miner {
 	  if (num_enemy_landscapers > num_enemy_drones && num_enemy_landscapers > num_enemy_buildings && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || num_enemy_miners > 0) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun && !near_hq) {
 		  return RobotType.NET_GUN;

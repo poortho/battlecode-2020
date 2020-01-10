@@ -177,7 +177,6 @@ public class DeliveryDrone {
                 prev_loc_i++;
                 Helper.tryMove(best_dir);
             } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round >= HQ.patrol_broadcast_round + 100) {
-                // just dropped a unit, move back to hq
                 drone_walk(HQ.enemy_hq);
             } else {
                 drone_walk(hq);
