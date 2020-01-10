@@ -146,7 +146,8 @@ public class DeliveryDrone {
                     //bugpath_ignore_blacklist(closest_robot.getLocation());
                     greedy_walk(closest_robot.getLocation());
                 } else {
-                    drone_walk(closest_robot.getLocation());
+                    //drone_walk(closest_robot.getLocation());
+                    greedy_walk(closest_robot.getLocation());
                 }
             } else if (cur_loc.distanceSquaredTo(hq) < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared) {
                 // patrol area
