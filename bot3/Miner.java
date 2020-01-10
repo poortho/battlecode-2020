@@ -223,7 +223,7 @@ public class Miner {
 							}
 						}
 						break;
-				}
+					}
 			}
 		}
 	}
@@ -436,7 +436,7 @@ public class Miner {
 			}
 		}
 
-		if (!bugpath_blocked && next != -1 && directions[next] == greedy_dir) {
+		if (!bugpath_blocked && next != -1) {
 			rc.move(directions[next]);
 		} else {
 			if (bugpath_blocked) {

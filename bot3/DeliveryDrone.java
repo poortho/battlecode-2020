@@ -18,6 +18,9 @@ public class DeliveryDrone {
     static boolean[] blacklist = new boolean[directions.length];
     static RobotInfo[] robots;
 
+    static MapLocation previous_location;
+    static boolean bugpath_blocked = false;
+
     static void runDeliveryDrone() throws GameActionException {
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
@@ -168,7 +171,68 @@ public class DeliveryDrone {
         }
     }
 
+
+    static void bugpath_walk(MapLocation loc) throws GameActionException {
+        if (!rc.isReady()) {
+            return;
+        }
+        Direction greedy;
+
+        int least_dist = cur_loc.distanceSquaredTo(loc);
+        int next = -1;
+        int greedy_dist = 9999999;
+        Direction greedy_dir = directions[0];
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation next_loc = cur_loc.add(directions[i]);
+            int temp_dist = next_loc.distanceSquaredTo(loc);
+            if (rc.canMove(directions[i])) {
+                if (temp_dist < least_dist && !blacklist[i]) {
+                    least_dist = temp_dist;
+                    next = i;
+                }
+            }
+            if (temp_dist < greedy_dist) {
+                greedy_dist = temp_dist;
+                greedy_dir = directions[i];
+            }
+        }
+
+        if (!bugpath_blocked && next != -1) {
+            rc.move(directions[next]);
+        } else {
+            if (bugpath_blocked) {
+                Direction start_dir = cur_loc.directionTo(previous_location);
+                for (int i = 0; i < Helper.directions.length; i++) {
+                    if (Helper.directions[i] == start_dir) {
+                        next = i;
+                        break;
+                    }
+                }
+            }
+            bugpath_blocked = true;
+            // MapLocation greedy_loc = cur_loc.add(greedy_dir);
+            // if (rc.senseRobotAtLocation(greedy_loc)!= null && rc.senseRobotAtLocation(greedy_loc).type == RobotType.MINER) {
+            //  bugpath_blocked = false;
+            // }
+            for (int i = 0; i < 7; i++) {
+                next = (next + 1) % directions.length;
+                Direction cw = directions[next];
+                MapLocation next_loc = cur_loc.add(cw);
+                if (rc.canMove(cw) && !blacklist[next]) {
+                    if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
+                        bugpath_blocked = false;
+                    }
+                    rc.move(cw);
+                    previous_location = cur_loc;
+                    break;
+                }
+            }   
+        }
+    }
+
     static void drone_walk(MapLocation loc) throws GameActionException {
+        bugpath_walk(loc);
+        /*
         Direction greedy;
 
         int least_dist = 9999999;
@@ -195,7 +259,7 @@ public class DeliveryDrone {
                     break;
                 }
             }
-        }
+        }*/
     }
 
 }
