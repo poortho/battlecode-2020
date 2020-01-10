@@ -96,7 +96,7 @@ public class DeliveryDrone {
             int closest_dist = 9999999;
             RobotInfo closest_robot = null;
             for (int i = 0; i < robots.length; i++) {
-                System.out.println(robots[i]);
+                // System.out.println(robots[i]);
                 if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
                     num_enemies++;
                     if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
