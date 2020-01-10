@@ -32,8 +32,10 @@ public class Helper {
     if (!rc.isReady()) {
       return -1;
     }
+    MapLocation cur_loc = rc.getLocation();
     for (int i = 0; i < directions.length; i++) {
-      if (rc.canBuildRobot(type, directions[i])) {
+      MapLocation new_loc = cur_loc.add(directions[i]);
+      if (rc.canBuildRobot(type, directions[i]) && HQ.our_hq != null && new_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
         rc.buildRobot(type, directions[i]);
         return i;
       }
