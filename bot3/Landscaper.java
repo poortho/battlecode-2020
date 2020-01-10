@@ -214,7 +214,8 @@ public class Landscaper {
             } else {
                 // succ
                 //System.out.println("Tryna dig");
-                Helper.tryDig();
+                //Helper.tryDig();
+                Helper.tryDigAway(destination);
             }
         } else if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
             // not full and not adjacent, fill up on dirt
