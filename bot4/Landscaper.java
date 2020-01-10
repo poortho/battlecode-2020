@@ -318,7 +318,7 @@ public class Landscaper {
             }
             if (temp_dist < greedy_dist) {
                 greedy_dist = temp_dist;
-                greedy_dir = i;
+                greedy_idx = i;
             }
         }
 
