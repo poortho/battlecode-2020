@@ -108,11 +108,13 @@ public class DeliveryDrone {
                     }
                 }
             }
-            if (num_enemies > 0 && closest_robot != null && rc.canPickUpUnit(closest_robot.ID)) {
+            if (num_enemies > 0 && closest_robot != null && closest_dist <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                 // pickup
                 System.out.println("Pickup: " + closest_robot.getLocation().toString());
-                rc.pickUpUnit(closest_robot.ID);
-                carried_type = closest_robot.type;
+                if (rc.canPickUpUnit(closest_robot.ID)) {
+                    rc.pickUpUnit(closest_robot.ID);
+                    carried_type = closest_robot.type;
+                }
             } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 100) {
                 System.out.println("patrol enemy hq");
                 //System.out.println("!!!");
