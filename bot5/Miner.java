@@ -306,7 +306,8 @@ public class Miner {
 				if (cur_loc.distanceSquaredTo(target_mine) <= 5 && mine_count > 300) {
 					// try build refinery
 					int res = Helper.tryBuildNotAdjacentHQ(RobotType.REFINERY, near_hq);
-					if (res != -1).add(directions[res]);
+					if (res != -1) {
+						hq = cur_loc.add(directions[res]);
 						return;
 					}
 				} else {
