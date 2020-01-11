@@ -84,6 +84,14 @@ public class HQ {
 
 	    	Comms.getBlocks();
 
+        if (turnCount == 70) {
+          Comms.broadcast_friendly_hq(cur_loc);
+        }
+
+        if (!broadcasted_patrol) {
+            check_if_flooded();
+        }
+
         // check for if we're being rushed
         if (!rushed) {
           rushed = checkRush();
@@ -102,14 +110,6 @@ public class HQ {
           build_defensive_miner();
         } else {
           handle_miners();
-        }
-
-        if (turnCount == 70) {
-          Comms.broadcast_friendly_hq(cur_loc);
-        }
-
-        if (!broadcasted_patrol) {
-            check_if_flooded();
         }
 	    }
 	  }
@@ -133,7 +133,6 @@ public class HQ {
         if (flooded_count > nonflooded_count) {
             //System.out.println("broadcasted!");
             Comms.broadcast_patrol_enemy_hq();
-            broadcasted_patrol = true;
         }
       }
 

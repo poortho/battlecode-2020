@@ -148,7 +148,7 @@ public class Landscaper {
                     }
                 }
             }
-            System.out.println(best_loc);
+            //System.out.println(best_loc);
             //System.out.println(best_dep_dir);
             if (best_loc != null) {
                 if (cur_loc.distanceSquaredTo(best_loc) <= 3) {
