@@ -123,6 +123,10 @@ public class Comms {
 						} else if (opcode == 0x7) {
 							HQ.patrol_broadcast_round = blockRound;
 							HQ.broadcasted_patrol = true;
+						} else if (opcode == 0x8) {
+							int x = (temp_msg[j] >> 12) & 0xff;
+							int y = (temp_msg[j] >> 4) & 0xff;
+							RobotPlayer.netgun_map[x][y] = blockRound;
 						}
 
 						temp_msg[j] ^= key;
@@ -159,6 +163,20 @@ public class Comms {
 		//          3 <- opcode
 		//      XXYY  <- patch location / 4	
 		int val = 0x5;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		addMessage(msg, 1, 2);
+	}
+
+	public static void broadcast_enemy_netgun(MapLocation loc) throws GameActionException {
+		broadcast_enemy_netgun(loc, rc.getRoundNum());
+	}
+
+	public static void broadcast_enemy_netgun(MapLocation loc, int round) throws GameActionException {
+		// 0x00000000
+		//          3 <- opcode
+		//      XXYY  <- patch location / 4
+		int val = (loc.x << 12) | (loc.y << 4) | 8;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
 		addMessage(msg, 1, 2);

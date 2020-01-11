@@ -236,7 +236,12 @@ public class Landscaper {
                 //System.out.println(rc.isReady());
                 if (rc.canDepositDirt(cur_loc.directionTo(destination))) {
                     //System.out.println("dumped");
+                    RobotInfo r = rc.senseRobotAtLocation(destination);
                     rc.depositDirt(cur_loc.directionTo(destination));
+                    if (r != null && !rc.canSenseRobot(r.ID) && r.type == RobotType.NET_GUN) {
+                        // killed a netgun :O
+                        Comms.broadcast_enemy_netgun(destination, 0);
+                    }
                 }
             } else {
                 // succ

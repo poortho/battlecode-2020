@@ -199,4 +199,19 @@ public class Helper {
     }
     // System.out.println(rc.getRoundMessages(turnCount-1));
   }
+
+  static void check_netguns() throws GameActionException {
+    // sense robots after moving, broadcast if netgun
+    RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam() == Team.A ? Team.B : Team.A);
+    for (int i = 0; i < robots.length; i++) {
+      if (robots[i].type == RobotType.NET_GUN || robots[i].type == RobotType.HQ) {
+        // netgun, broadcast it :O
+        Comms.broadcast_enemy_netgun(robots[i].location);
+      }
+    }
+  }
+
+  static boolean onTheMap(MapLocation loc) {
+    return loc.x >= 0 && loc.y >= 0 && loc.x < rc.getMapWidth() && loc.y < rc.getMapHeight();
+  }
 }

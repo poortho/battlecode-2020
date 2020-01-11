@@ -60,6 +60,28 @@ public class DeliveryDrone {
             }
         }
 
+        // now, iterate over directions within distance 25 to check for netguns lol
+        int x = cur_loc.x;
+        int y = cur_loc.y;
+        int l = 45; // start at distance 16
+        MapLocation next_loc = null;
+
+        //System.out.println(Clock.getBytecodesLeft());
+        do {
+            next_loc = new MapLocation(x + distx_35[l], y + disty_35[l]);
+            if (Helper.onTheMap(next_loc) && netgun_map[x + distx_35[l]][y + disty_35[l]] != 0 &&
+                    netgun_map[x + distx_35[l]][y + disty_35[l]] > rc.getRoundNum() - 400) { //timeout
+                // ouo theres a netgun here, blacklist all necessary
+                for (int j = directions.length; --j >= 0;) {
+                    if (cur_loc.add(directions[j]).distanceSquaredTo(next_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                        blacklist[j] = true;
+                    }
+                }
+            }
+            l++;
+        } while (cur_loc.distanceSquaredTo(next_loc) <= 25);
+        //System.out.println(Clock.getBytecodesLeft());
+
         if (turnCount == 1) {
             // first turn, get loc of "home"
             for (int i = 0; i < robots.length; i++) {

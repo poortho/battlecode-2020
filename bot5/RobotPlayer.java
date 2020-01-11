@@ -1,6 +1,8 @@
 package bot5;
 import battlecode.common.*;
 
+import static bot5.RobotPlayer.rc;
+
 public strictfp class RobotPlayer {
     static RobotController rc;
 
@@ -10,6 +12,7 @@ public strictfp class RobotPlayer {
     static int turnCount;
     static int waterLevel;
     static int round;
+    static int[][] netgun_map;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -57,6 +60,8 @@ public strictfp class RobotPlayer {
                         Helper.directions = new Direction[]{Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST, Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST};
                     }
                 }
+
+                netgun_map = new int[rc.getMapWidth()][rc.getMapHeight()];
             }
             try {
                 switch (rc.getType()) {
@@ -70,6 +75,8 @@ public strictfp class RobotPlayer {
                     case DELIVERY_DRONE:     DeliveryDrone.runDeliveryDrone();     break;
                     case NET_GUN:            NetGun.runNetGun();            break;
                 }
+
+                Helper.check_netguns();
 
                 Clock.yield();
 
