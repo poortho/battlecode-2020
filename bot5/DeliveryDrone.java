@@ -109,8 +109,13 @@ public class DeliveryDrone {
                 if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
                     num_enemies++;
                     if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
-                        closest_robot = robots[i];
-                        closest_dist = cur_loc.distanceSquaredTo(closest_robot.getLocation());
+                        if (HQ.enemy_hq != null && robots[i].type == RobotType.COW &&
+                                robots[i].getLocation().distanceSquaredTo(HQ.enemy_hq) < 25) {
+
+                        } else {
+                            closest_robot = robots[i];
+                            closest_dist = cur_loc.distanceSquaredTo(closest_robot.getLocation());
+                        }
                         break;
                     }
                 }
