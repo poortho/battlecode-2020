@@ -83,9 +83,14 @@ public class Landscaper {
             boolean near_flood = false;
             for (int i = 0; i < directions.length; i++) {
                 MapLocation new_loc = cur_loc.add(directions[i]);
-                if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
-                    near_flood = true;
-                    break;
+                if (rc.canSenseLocation(new_loc)) {
+                    RobotInfo r = rc.senseRobotAtLocation(new_loc);
+                    if (new_loc.distanceSquaredTo(my_hq) <= 3 && r != null && r.team != rc.getTeam() && r.type.isBuilding()) {
+                        do_offense();
+                    }
+                    if (rc.senseFlooding(new_loc)) {
+                        near_flood = true;
+                    }
                 }
             }
 
