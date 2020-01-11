@@ -21,6 +21,7 @@ public class Landscaper {
     static MapLocation my_hq;
     static int nearby_landscapers_not_adjacent_hq = 0;
     static int move_counter = 0;
+    static MapLocation my_design = null;
 
     static void runLandscaper() throws GameActionException {
         move_counter++;
@@ -117,6 +118,13 @@ public class Landscaper {
                             && new_loc.distanceSquaredTo(my_hq) > 0 && (r == null || r.type == RobotType.LANDSCAPER)) {
                         rc.depositDirt(directions[i]);
                     }
+                }
+
+                // if further away place from design school is movable, then sice
+                if (my_design != null && new_loc.distanceSquaredTo(my_hq) <= 3 &&
+                        new_loc.distanceSquaredTo(my_design) > cur_loc.distanceSquaredTo(my_design) &&
+                        rc.canMove(directions[i])) {
+                    rc.move(directions[i]);
                 }
             }
 
@@ -278,6 +286,9 @@ public class Landscaper {
                 robots[i].location.distanceSquaredTo(my_hq) > 3) {
                 // non adjacent landscaper nearby...
                 nearby_landscapers_not_adjacent_hq++;
+            }
+            if (turnCount == 1 && robots[i].type == RobotType.DESIGN_SCHOOL && robots[i].team == rc.getTeam()) {
+                my_design = robots[i].location;
             }
             if (robots[i].team != rc.getTeam()) {
                 switch (robots[i].type) {
