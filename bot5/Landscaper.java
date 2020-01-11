@@ -130,6 +130,8 @@ public class Landscaper {
 
             // directly adjacent, dig from away and put under
             dig_and_deposit(my_hq, Direction.CENTER);
+        } else if (destination != null && rc.canSenseLocation(destination)) {
+            do_offense();
         } else if (dist_from_hq <= 8) {
             // first, check if there is an open spot adjacent to hq...
             // find closest...

@@ -98,7 +98,7 @@ public class Helper {
         }
 
         RobotInfo rob = rc.senseRobotAtLocation(new_loc);
-        if (rob != null && HQ.our_hq != null && rob.type == RobotType.MINER && HQ.our_hq.distanceSquaredTo(new_loc) <= 2) {
+        if (rob != null && HQ.our_hq != null && rob.type == RobotType.MINER && rob.team == rc.getTeam()) {
           continue;
         }
 
