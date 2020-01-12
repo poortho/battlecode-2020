@@ -1,6 +1,8 @@
 package bot5;
 import battlecode.common.*;
 
+import java.sql.SQLOutput;
+
 import static bot5.RobotPlayer.rc;
 
 public strictfp class RobotPlayer {
@@ -77,6 +79,10 @@ public strictfp class RobotPlayer {
                 }
 
                 Helper.check_netguns();
+
+                if (rc.getRoundNum() != round) {
+                    System.out.println("Ran out of bytecode on turn " + turnCount + ", took " + (rc.getRoundNum() - round) + " turns.");
+                }
 
                 Clock.yield();
 

@@ -2,8 +2,7 @@ package bot5;
 
 import battlecode.common.*;
 
-import static bot5.RobotPlayer.rc;
-import static bot5.RobotPlayer.round;
+import static bot5.RobotPlayer.*;
 
 public class Helper {
 
@@ -204,7 +203,8 @@ public class Helper {
     // sense robots after moving, broadcast if netgun
     RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam() == Team.A ? Team.B : Team.A);
     for (int i = 0; i < robots.length; i++) {
-      if (robots[i].type == RobotType.NET_GUN || robots[i].type == RobotType.HQ) {
+      if ((robots[i].type == RobotType.NET_GUN || robots[i].type == RobotType.HQ) &&
+              RobotPlayer.netgun_map[robots[i].location.x][robots[i].location.y] < Math.min(rc.getRoundNum() - 100, 0)) {
         // netgun, broadcast it :O
         Comms.broadcast_enemy_netgun(robots[i].location);
       }

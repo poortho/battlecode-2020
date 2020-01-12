@@ -117,11 +117,13 @@ public class Landscaper {
                             rc.canMove(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3 &&
                             rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && move_counter % 20 == 0) {
                         rc.move(directions[i]);
+                        return;
                     } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
                             && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
                             && rc.canDepositDirt(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3
                             && new_loc.distanceSquaredTo(my_hq) > 0 && (r == null || r.type == RobotType.LANDSCAPER)) {
                         rc.depositDirt(directions[i]);
+                        return;
                     }
                 }
 
@@ -130,6 +132,7 @@ public class Landscaper {
                         new_loc.distanceSquaredTo(my_design) > cur_loc.distanceSquaredTo(my_design) &&
                         rc.canMove(directions[i])) {
                     rc.move(directions[i]);
+                    return;
                 }
             }
 
@@ -171,10 +174,11 @@ public class Landscaper {
                 } else {
                     bugpath_walk(best_loc);
                 }
+            } else {
+                // adjacent to 8 tile ring, dig from under and put closer
+                dig_and_deposit(my_hq, best_dep_dir);
             }
 
-            // adjacent to 8 tile ring, dig from under and put closer
-            dig_and_deposit(my_hq, best_dep_dir);
         } else {
             // move closer to hq
             bugpath_walk(my_hq);
@@ -255,9 +259,7 @@ public class Landscaper {
                 Helper.tryDig();
             }
             counter++;
-        }
-
-        if (destination != null && rc.canSenseLocation(destination)) {
+        } else if (destination != null && rc.canSenseLocation(destination)) {
             aggressive_landscaper_walk(destination);
         } else {
             walk_to_dest();
@@ -284,23 +286,24 @@ public class Landscaper {
     static void sense() throws GameActionException {
         nearby_landscapers_not_adjacent_hq = 0;
         for (int i = 0; i < robots.length; i++) {
-            if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
-                // found enemy hq broadcast it
-                //System.out.println("Found enemy hq! " + robots[i].location);
-                Comms.broadcast_enemy_hq(robots[i].location);
-            }
-            if (!defensive && robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {
-                // defensive
-                defensive = true;
-                my_hq = robots[i].location;
-            }
-            if (defensive && robots[i].type == RobotType.LANDSCAPER && robots[i].team == rc.getTeam() &&
-                robots[i].location.distanceSquaredTo(my_hq) > 3) {
-                // non adjacent landscaper nearby...
-                nearby_landscapers_not_adjacent_hq++;
-            }
-            if (turnCount == 1 && robots[i].type == RobotType.DESIGN_SCHOOL && robots[i].team == rc.getTeam()) {
-                my_design = robots[i].location;
+            if (robots[i].team == rc.getTeam()) {
+                switch(robots[i].type) {
+                    case HQ:
+                        // defensive
+                        defensive = true;
+                        my_hq = robots[i].location;
+                        break;
+                    case LANDSCAPER:
+                        if (defensive && robots[i].location.distanceSquaredTo(my_hq) > 3) {
+                            nearby_landscapers_not_adjacent_hq++;
+                        }
+                        break;
+                    case DESIGN_SCHOOL:
+                        if (turnCount == 1) {
+                            my_design = robots[i].location;
+                        }
+                        break;
+                }
             }
             if (robots[i].team != rc.getTeam()) {
                 switch (robots[i].type) {
@@ -316,6 +319,9 @@ public class Landscaper {
                         }
                         break;
                     case HQ:
+                        if (HQ.enemy_hq == null) {
+                            Comms.broadcast_enemy_hq(robots[i].location);
+                        }
                     case NET_GUN:
                     case REFINERY:
                     case VAPORATOR:
