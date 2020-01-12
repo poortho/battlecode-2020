@@ -93,7 +93,16 @@ public class Helper {
     return -1;
   }
 
-  static void greedy_move_away(MapLocation loc, MapLocation cur_loc) throws GameActionException {
+  static void try_miner_suicide(MapLocation cur_loc) throws GameActionException {
+    for (int i = 0; i < directions.length; i++) {
+      MapLocation next_loc = cur_loc.add(directions[i]);
+      if (rc.canMove(directions[i]) && rc.senseFlooding(next_loc)) {
+        rc.move(directions[i]);
+      }
+    }
+  }
+
+  static boolean greedy_move_away(MapLocation loc, MapLocation cur_loc) throws GameActionException {
     int max_dist = cur_loc.distanceSquaredTo(loc);
     int next = -1;
     for (int i = 0; i < directions.length; i++) {
@@ -105,8 +114,11 @@ public class Helper {
       }
     }
 
-    if (next != -1)
+    if (next != -1) {
       rc.move(directions[next]);
+      return true;
+    }
+    return false;
   }
 
   static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {

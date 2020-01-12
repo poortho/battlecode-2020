@@ -5,6 +5,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
+import static megajoy.Helper.directions;
 import static megajoy.Helper.distx_35;
 import static megajoy.Helper.disty_35;
 import static megajoy.RobotPlayer.*;
@@ -23,12 +24,15 @@ public class HQ {
     static int patrol_broadcast_round = -1;
     static int friendly_drones = 0;
     static boolean broadcasted_patrol = false;
+    static boolean turtling = false;
 
     static MapLocation closest_rush_enemy = null;
 
     static void runHQ() throws GameActionException {
 
       cur_loc = rc.getLocation();
+
+      turtling = check_turtling();
 
       RobotInfo[] robots = rc.senseNearbyRobots();
       friendly_drones = 0;
@@ -118,11 +122,25 @@ public class HQ {
         shootNetGun();
         if (rushed) {
           build_defensive_miner(closest_rush_enemy);
-        } else {
+        } else if (!turtling) {
           handle_miners();
         }
 	    }
 	  }
+
+    static boolean check_turtling() throws GameActionException {
+      int blocked = 0;
+      for (int i = 0; i < directions.length; i++) {
+        MapLocation next_loc = cur_loc.add(directions[i]);
+        if (rc.canSenseLocation(next_loc) && rc.senseElevation(next_loc) > rc.senseElevation(cur_loc) + 3) {
+          blocked++;
+        }
+      }
+      if (blocked >= 5) {
+        return true;
+      }
+      return false;
+    }
 
 	  static void check_if_flooded() throws GameActionException {
         MapLocation next_loc = null;

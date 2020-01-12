@@ -95,7 +95,10 @@ public class Miner {
 
 		// move away from hq if turtling
 		if (!dont_move && turtling && cur_loc.distanceSquaredTo(HQ.our_hq) <= 8) {
-			Helper.greedy_move_away(HQ.our_hq, cur_loc);
+			boolean res = Helper.greedy_move_away(HQ.our_hq, cur_loc);
+			if (!res && cur_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+				Helper.try_miner_suicide(cur_loc);
+			}
 			return;
 		}
 
