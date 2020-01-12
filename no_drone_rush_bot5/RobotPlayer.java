@@ -81,13 +81,13 @@ public strictfp class RobotPlayer {
                 Helper.check_netguns();
 
                 if (rc.getRoundNum() != round) {
-                    System.out.println("Ran out of bytecode on turn " + turnCount + ", took " + (rc.getRoundNum() - round) + " turns.");
+                    //System.out.println("Ran out of bytecode on turn " + turnCount + ", took " + (rc.getRoundNum() - round) + " turns.");
                 }
 
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println(rc.getType() + " Exception");
+                //System.out.println(rc.getType() + " Exception");
                 e.printStackTrace();
             }
         }
