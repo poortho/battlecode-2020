@@ -77,15 +77,21 @@ public class Miner {
 		}
 
 		boolean dont_move = HQ.rushed && near_hq;
-/*
+
 		if (HQ.rushed && near_hq) {
 			// try to check if miners already surrounded HQ
+			int c = 0;
 			for (int i = 0; i < directions.length; i++) {
 				MapLocation next_loc = HQ.our_hq.add(directions[i]);
-				Robotinfo rob = rc.senseRobotAtLocation(next_loc);
-				if (rc.senseRobotAtLocation(next_loc))
+				RobotInfo rob = rc.senseRobotAtLocation(next_loc);
+				if (rob.team == rc.getTeam()) {
+					c++;
+				}
 			}
-		}*/
+			if (c == 8 && cur_loc.distanceSquaredTo(HQ.our_hq) > 2) {
+				dont_move = false;
+			}
+		}
 
 		// move away from hq if turtling
 		if (!dont_move && turtling && cur_loc.distanceSquaredTo(HQ.our_hq) <= 8) {
@@ -190,7 +196,7 @@ public class Miner {
 					blocked++;
 				}
 			}
-			if (blocked >= 4) {
+			if (blocked == 8) {
 				return true;
 			}
 		}
