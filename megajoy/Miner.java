@@ -77,7 +77,6 @@ public class Miner {
 		}
 
 		boolean dont_move = HQ.rushed && near_hq;
-
 /*
 		if (HQ.rushed && near_hq) {
 			// try to check if miners already surrounded HQ
@@ -171,12 +170,8 @@ public class Miner {
 				if (target_explore != null) {
 					miner_walk(target_explore);
 				} else {
-					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 8) {
-						if (cur_loc.distanceSquaredTo(hq) > 8) {
-							miner_walk(hq);
-						} else if (cur_loc.distanceSquaredTo(hq) <= 2) {
-							Helper.greedy_move_away(hq, cur_loc);
-						}
+					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
+						Helper.greedy_move_away(hq, cur_loc);
 					}
 				}
 			}
