@@ -41,7 +41,7 @@ public class Miner {
   static boolean[] turtle_blocked = new boolean[directions.length];
   static int blocked = 0;
   static int mine_count = -1;
-  static boolean duplicate_building;
+  static boolean duplicate_building, gay_rush_alert = false;
 
   static MapLocation closest_rush_enemy = null;
 
@@ -70,10 +70,14 @@ public class Miner {
 
 		// don't do anything if being rushed and i'm next to HQ
 		if (HQ.rushed && near_hq) {
-			if (cur_loc.distanceSquaredTo(hq) > 2) {
-				greedy_walk(hq);
-			} else if (closest_rush_enemy != null) {
-				Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
+			if (!gay_rush_alert) {
+				if (cur_loc.distanceSquaredTo(hq) > 2) {
+					greedy_walk(hq);
+				} else if (closest_rush_enemy != null) {
+					Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
+				}
+			} else {
+				// miner hug the enemy refinery lmao
 			}
 		}
 

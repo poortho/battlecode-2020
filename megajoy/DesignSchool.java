@@ -72,7 +72,11 @@ public class DesignSchool {
             if (near_hq && num_landscapers >= 8) {
                 // do nothing
             } else {
-                Helper.tryBuild(RobotType.LANDSCAPER);
+                if (near_hq && HQ.our_hq != null) {
+                    Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq);
+                } else {
+                    Helper.tryBuild(RobotType.LANDSCAPER);
+                }
             }
         }
     }

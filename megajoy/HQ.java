@@ -26,6 +26,8 @@ public class HQ {
     static boolean broadcasted_patrol = false;
     static boolean turtling = false;
 
+    static boolean gay_rush_alert = false;
+
     static MapLocation closest_rush_enemy = null;
 
     static void runHQ() throws GameActionException {
@@ -50,8 +52,8 @@ public class HQ {
           // set locations
           int delta_x = middle.x + (middle.x - cur_loc.x);
           int delta_y = middle.y + (middle.y - cur_loc.y);
-          possible_enemy_locs[0] = new MapLocation(delta_x, delta_y);
-          possible_enemy_locs[1] = new MapLocation(middle.x, middle.y);
+          possible_enemy_locs[0] = new MapLocation(middle.x, middle.y);
+          possible_enemy_locs[1] = new MapLocation(delta_x, delta_y);
           possible_enemy_locs[2] = new MapLocation(delta_x, cur_loc.y);
           possible_enemy_locs[3] = new MapLocation(cur_loc.x, delta_y);
           possible_enemy_locs[4] = new MapLocation(delta_x, middle.y);
@@ -66,7 +68,7 @@ public class HQ {
           if (!queued_near) {
              int msg[] = {0, 0, 0, 0, 0, 0, 0};
             // initial broadcast miner request
-            for (int i = 5; i >= 0; i--) {
+            for (int i = 3; i >= 0; i--) {
               MapLocation loc = possible_enemy_locs[i];
               int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
               val |= 1 << 24;
@@ -84,7 +86,7 @@ public class HQ {
         if (turnCount == 2 && queued_near) {
           int msg[] = {0, 0, 0, 0, 0, 0, 0};
           // initial broadcast miner request
-          for (int i = 5; i >= 0; i--) {
+          for (int i = 3; i >= 0; i--) {
             MapLocation loc = possible_enemy_locs[i];
             int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
             val |= 1 << 24;
@@ -110,7 +112,7 @@ public class HQ {
         if (!rushed) {
           rushed = checkRush();
           if (rushed) {
-            Comms.broadcast_being_rushed();
+            Comms.broadcast_being_rushed(gay_rush_alert);
           }
         } else {
           rushed = checkRush();
@@ -169,6 +171,7 @@ public class HQ {
     }
 
     static boolean checkRush() throws GameActionException {
+      gay_rush_alert = false;
       RobotInfo[] nearby = rc.senseNearbyRobots();
       int enemy_land = 0;
       int enemy_design = 0;
@@ -193,6 +196,9 @@ public class HQ {
               if (dist < min_dist) {
                 min_dist = dist;
                 closest_rush_enemy = nearby[i].location;
+                if (dist <= 2) {
+                  gay_rush_alert = true;
+                }
               }
             }
         }
@@ -206,7 +212,7 @@ public class HQ {
         if (rc.canSenseLocation(next_loc)) {
           int count = rc.senseSoup(next_loc);
           if (count != 0) {
-            Comms.broadcast_miner_request(next_loc, 2, true);
+            Comms.broadcast_miner_request(next_loc, 3, true);
             return true;
           }
         }

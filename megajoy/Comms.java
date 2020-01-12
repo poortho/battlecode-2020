@@ -131,10 +131,14 @@ public class Comms {
 								if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
 									HQ.rushed = false;
 								}
+								if (temp_msg[j] >> 4 == 1) {
+									Miner.gay_rush_alert = true;
+								}
 								break;
 
 							case 0x6:
 								HQ.rushed = false;
+								Miner.gay_rush_alert = false;
 								break;
 
 							case 0x7:
@@ -206,11 +210,11 @@ public class Comms {
 		addMessage(msg, 1, 2);
 	}
 
-	public static void broadcast_being_rushed() throws GameActionException {
+	public static void broadcast_being_rushed(boolean gay_rush_alert) throws GameActionException {
 		// 0x00000000
 		//          3 <- opcode
 		//      XXYY  <- patch location / 4	
-		int val = 0x5;
+		int val = 0x5 | (gay_rush_alert ? (1 << 4) : 0);
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
 		addMessage(msg, 1, 2);
