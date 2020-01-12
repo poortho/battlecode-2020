@@ -64,7 +64,7 @@ public class DeliveryDrone {
             // now, iterate over directions within distance 25 to check for netguns lol
             int x = cur_loc.x;
             int y = cur_loc.y;
-            int l = 45; // start at distance 16
+            int l = 26; // start at distance 9
             MapLocation next_loc = null;
 
             //System.out.println(Clock.getBytecodesLeft());
