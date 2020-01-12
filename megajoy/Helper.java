@@ -9,6 +9,8 @@ public class Helper {
   static Direction[] directions;
   static int[] distx_35 = {0, -1, 0, 0, 1, -1, -1, 1, 1, -2, 0, 0, 2, -2, -2, -1, -1, 1, 1, 2, 2, -2, -2, 2, 2, -3, 0, 0, 3, -3, -3, -1, -1, 1, 1, 3, 3, -3, -3, -2, -2, 2, 2, 3, 3, -4, 0, 0, 4, -4, -4, -1, -1, 1, 1, 4, 4, -3, -3, 3, 3, -4, -4, -2, -2, 2, 2, 4, 4, -5, -4, -4, -3, -3, 0, 0, 3, 3, 4, 4, 5, -5, -5, -1, -1, 1, 1, 5, 5, -5, -5, -2, -2, 2, 2, 5, 5, -4, -4, 4, 4, -5, -5, -3, -3, 3, 3, 5, 5};
   static int[] disty_35 = {0, 0, -1, 1, 0, -1, 1, -1, 1, 0, -2, 2, 0, -1, 1, -2, 2, -2, 2, -1, 1, -2, 2, -2, 2, 0, -3, 3, 0, -1, 1, -3, 3, -3, 3, -1, 1, -2, 2, -3, 3, -3, 3, -2, 2, 0, -4, 4, 0, -1, 1, -4, 4, -4, 4, -1, 1, -3, 3, -3, 3, -2, 2, -4, 4, -4, 4, -2, 2, 0, -3, 3, -4, 4, -5, 5, -4, 4, -3, 3, 0, -1, 1, -5, 5, -5, 5, -1, 1, -2, 2, -5, 5, -5, 5, -2, 2, -4, 4, -4, 4, -3, 3, -5, 5, -5, 5, -3, 3};
+  static int[] edges_x = {2, 0, -2, 0};
+  static int[] edges_y = {0, 2, 0, -2};
 
   static void greedy_move_adjacent_HQ(MapLocation target, MapLocation cur_loc) throws GameActionException {
     int min_dist = cur_loc.distanceSquaredTo(target);
@@ -218,6 +220,22 @@ public class Helper {
       rc.digDirt(best);
     }
     return -1;
+  }
+
+  static boolean tryDigEdges() throws GameActionException {
+    for (int i = 0; i < edges_x.length; i++) {
+      MapLocation loc = new MapLocation(Landscaper.my_hq.x + edges_x[i], Landscaper.my_hq.y + edges_y[i]);
+      RobotInfo r = null;
+      if (rc.canSenseLocation(loc)) {
+        r = rc.senseRobotAtLocation(loc);
+      }
+      if (Landscaper.cur_loc.distanceSquaredTo(loc) <= 3 && rc.canDigDirt(Landscaper.cur_loc.directionTo(loc)) &&
+              (r == null || r.type == RobotType.DELIVERY_DRONE)) {
+        rc.digDirt(Landscaper.cur_loc.directionTo(loc));
+        return true;
+      }
+    }
+    return false;
   }
 
   static boolean tryDig(Direction dir) throws GameActionException {

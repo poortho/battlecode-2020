@@ -176,7 +176,7 @@ public class Miner {
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
 					if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
-						new_loc.distanceSquaredTo(hq) > 3) {
+						new_loc.distanceSquaredTo(hq) > 4) {
 
 						boolean valid = true;
 						for (int j = 0; j < directions.length; j++) {

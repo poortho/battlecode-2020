@@ -407,7 +407,12 @@ public class Landscaper {
                 rc.depositDirt(dir);
             }
         } else {
-            Helper.tryDigAway(loc);
+            if (loc.equals(my_hq)) {
+                // dig edges
+                Helper.tryDigEdges();
+            } else {
+                Helper.tryDigAway(loc);
+            }
         }
     }
 }
