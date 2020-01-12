@@ -46,7 +46,7 @@ public class DeliveryDrone {
                             Comms.broadcast_enemy_hq(temp_loc);
                         }
                         // avoid netgun
-                        if (HQ.patrol_broadcast_round == -1) {
+                        if (HQ.patrol_broadcast_round == -1 && round >= HQ.patrol_broadcast_round + 130) {
                             for (int j = 0; j < directions.length; j++) {
                                 if (cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED ||
                                    (HQ.enemy_hq != null && cur_loc.add(directions[j]).distanceSquaredTo(HQ.enemy_hq) <=
@@ -60,7 +60,7 @@ public class DeliveryDrone {
             }
         }
 
-        if (HQ.patrol_broadcast_round == -1) {
+        if (HQ.patrol_broadcast_round == -1 && round >= HQ.patrol_broadcast_round + 130) {
             // now, iterate over directions within distance 25 to check for netguns lol
             int x = cur_loc.x;
             int y = cur_loc.y;
