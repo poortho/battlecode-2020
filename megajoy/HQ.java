@@ -100,7 +100,7 @@ public class HQ {
 
 	    	Comms.getBlocks();
 
-        if (turnCount == 70) {
+        if (turnCount == 30) {
           Comms.broadcast_friendly_hq(cur_loc);
         }
 

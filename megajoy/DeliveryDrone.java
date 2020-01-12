@@ -92,11 +92,7 @@ public class DeliveryDrone {
                     break;
                 }
             }
-            // TODO: do this based on start?
-            corners[0] = new MapLocation(0, 0);
-            corners[1] = new MapLocation(rc.getMapWidth(), 0);
-            corners[2] = new MapLocation(0, rc.getMapHeight());
-            corners[3] = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
+
             if (hq == null) {
                 if (HQ.our_hq != null) {
                     hq = HQ.our_hq;
@@ -104,10 +100,27 @@ public class DeliveryDrone {
                     hq = cur_loc;
                 }
             }
+
+            // TODO: do this based on start?
+            int width = rc.getMapWidth();
+            int height = rc.getMapHeight();
+            MapLocation middle = new MapLocation(width / 2, height / 2);
+
+            int closest_x = (hq.x / middle.x) * (width - 1);
+            int closest_y = (hq.y / middle.y) * (height - 1);
+            corners[0] = new MapLocation(closest_x, closest_y);
+            corners[1] = new MapLocation(closest_x, height - 1 - closest_y);
+            corners[2] = new MapLocation(width - 1 - closest_x, closest_y);
+            corners[3] = new MapLocation(width - 1 - closest_x, height - 1 - closest_y);
+
         }
 
         if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
             nearest_flood = null;
+        }
+
+        if (nearest_flood_curloc != null && rc.canSenseLocation(nearest_flood_curloc) && !rc.senseFlooding(nearest_flood_curloc)) {
+            nearest_flood_curloc = null;
         }
 
         if (HQ.our_hq != null && rc.canSenseLocation(HQ.our_hq)) {
@@ -123,7 +136,7 @@ public class DeliveryDrone {
 
         // sense nearby deets for flood
         int k = 1;
-        while (k < distx_35.length && rc.canSenseLocation(new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]))) {
+        while (k < distx_35.length) {
             MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
             if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
                 if (nearest_flood_curloc == null || cur_loc.distanceSquaredTo(new_loc) < cur_loc.distanceSquaredTo(nearest_flood_curloc)) {
