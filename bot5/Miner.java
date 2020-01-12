@@ -30,6 +30,7 @@ public class Miner {
   static int num_enemy_buildings = 0;
   static int num_enemies = 0;
   static int num_enemy_miners = 0;
+  static int friendy_landscapers = 0;
   static boolean nearby_fulfillment = false;
   static boolean nearby_netgun = false;
   static boolean nearby_design = false;
@@ -211,6 +212,7 @@ public class Miner {
 		nearby_fulfillment = false;
 		nearby_netgun = false;
 		nearby_design = false;
+		friendy_landscapers = 0;
 		int min_dist = 999999;
 		for (int i = 0; i < robots.length; i++) {
 			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
@@ -548,10 +550,11 @@ public class Miner {
 
   static boolean tryMine(Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canMineSoup(dir)) {
-        rc.mineSoup(dir);
-        //System.out.println("MINED!");
+        rc.mineSoup(dir); //System.out.println("MINED!"); return true;
         return true;
-    } else return false;
+    } else {
+    	return false;
+    }
   }
 
   static boolean tryDepositSoup(Direction dir) throws GameActionException {
@@ -559,11 +562,13 @@ public class Miner {
           rc.depositSoup(dir, rc.getSoupCarrying());
           //System.out.println("DEPOSITED");
           return true;
-      } else return false;
+      } else {
+      	return false;
+      }
   }
 
   static RobotType calcBuilding() {
-	  if (num_enemy_landscapers > num_enemy_drones && num_enemy_landscapers > num_enemy_buildings && !nearby_fulfillment) {
+	  if (((num_enemy_landscapers > num_enemy_drones && num_enemy_landscapers > num_enemy_buildings) || near_hq) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || num_enemy_miners > 0) && !nearby_design) {

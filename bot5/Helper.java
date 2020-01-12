@@ -16,7 +16,7 @@ public class Helper {
     for (int i = 0; i < directions.length; i++) {
       MapLocation next_loc = cur_loc.add(directions[i]);
       int temp_dist = next_loc.distanceSquaredTo(target);
-      if (temp_dist < min_dist && rc.canMove(directions[i]) && next_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+      if (temp_dist < min_dist && rc.canMove(directions[i]) && next_loc.distanceSquaredTo(HQ.our_hq) <= 2 && !rc.senseFlooding(next_loc)) {
         min_dist = temp_dist;
         next = i;
       }
@@ -99,7 +99,7 @@ public class Helper {
     for (int i = 0; i < directions.length; i++) {
       MapLocation next_loc = cur_loc.add(directions[i]);
       int temp_dist = next_loc.distanceSquaredTo(loc);
-      if (temp_dist > max_dist && rc.canMove(directions[i])) {
+      if (temp_dist > max_dist && rc.canMove(directions[i]) && !rc.senseFlooding(next_loc)) {
         max_dist = temp_dist;
         next = i;
       }

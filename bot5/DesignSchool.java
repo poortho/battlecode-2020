@@ -12,6 +12,8 @@ import static bot5.Helper.disty_35;
 public class DesignSchool {
 
     static boolean near_hq = false;
+    static boolean seen_enemy_drone = false;
+    static int seen_drone_timeout = 0;
     static int mine_count;
 
     static void runDesignSchool() throws GameActionException {
@@ -45,20 +47,24 @@ public class DesignSchool {
                         break;
                     case DELIVERY_DRONE:
                         num_enemy_drones++;
+                        seen_enemy_drone = true;
+                        seen_drone_timeout = 0;
                         break;
                 }
             }
         }
 
+        seen_drone_timeout++;
+        if (seen_drone_timeout == 50) {
+            seen_drone_timeout = 0;
+            seen_enemy_drone = false;
+        }
+
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
         // build more if close to HQ
 
-        if (mine_count > 200 && num_enemy_buildings > 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
-            if (num_landscapers >= 8) {
-                // do nothing
-            } else {
-                Helper.tryBuild(RobotType.LANDSCAPER);
-            }
+        if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 && num_landscapers == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
+            Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
         if ((num_enemy_design > 0 && num_enemy_drones == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1)))
