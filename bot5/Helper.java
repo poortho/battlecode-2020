@@ -11,13 +11,29 @@ public class Helper {
   static int[] distx_35 = {0, -1, 0, 0, 1, -1, -1, 1, 1, -2, 0, 0, 2, -2, -2, -1, -1, 1, 1, 2, 2, -2, -2, 2, 2, -3, 0, 0, 3, -3, -3, -1, -1, 1, 1, 3, 3, -3, -3, -2, -2, 2, 2, 3, 3, -4, 0, 0, 4, -4, -4, -1, -1, 1, 1, 4, 4, -3, -3, 3, 3, -4, -4, -2, -2, 2, 2, 4, 4, -5, -4, -4, -3, -3, 0, 0, 3, 3, 4, 4, 5, -5, -5, -1, -1, 1, 1, 5, 5, -5, -5, -2, -2, 2, 2, 5, 5, -4, -4, 4, 4, -5, -5, -3, -3, 3, 3, 5, 5};
   static int[] disty_35 = {0, 0, -1, 1, 0, -1, 1, -1, 1, 0, -2, 2, 0, -1, 1, -2, 2, -2, 2, -1, 1, -2, 2, -2, 2, 0, -3, 3, 0, -1, 1, -3, 3, -3, 3, -1, 1, -2, 2, -3, 3, -3, 3, -2, 2, 0, -4, 4, 0, -1, 1, -4, 4, -4, 4, -1, 1, -3, 3, -3, 3, -2, 2, -4, 4, -4, 4, -2, 2, 0, -3, 3, -4, 4, -5, 5, -4, 4, -3, 3, 0, -1, 1, -5, 5, -5, 5, -1, 1, -2, 2, -5, 5, -5, 5, -2, 2, -4, 4, -4, 4, -3, 3, -5, 5, -5, 5, -3, 3};
 
+  static void greedy_move_adjacent_HQ(MapLocation target, MapLocation cur_loc) throws GameActionException {
+    int min_dist = cur_loc.distanceSquaredTo(target);
+    int next = -1;
+    for (int i = 0; i < directions.length; i++) {
+      MapLocation next_loc = cur_loc.add(directions[i]);
+      int temp_dist = next_loc.distanceSquaredTo(target);
+      if (temp_dist < min_dist && rc.canMove(directions[i]) && next_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+        min_dist = temp_dist;
+        next = i;
+      }
+    }
+
+    if (next != -1)
+      rc.move(directions[next]); 
+  }
+
   static int getLevel(int r) {
     int res = (int)Math.floor(Math.exp(0.0028 * r -1.38*Math.sin(0.00157*r-1.73)+1.38*Math.sin(-1.73)) - 1);
     //System.out.println("Level: " + Integer.toString(res) + " Round: " + Integer.toString(r));
     return res;
   }
 
-  static boolean willFlood(MapLocation loc) throws GameActionException{
+  static boolean willFlood(MapLocation loc) throws GameActionException {
     int elevation = rc.senseElevation(loc);
     return elevation <= getLevel(round + 1);
   }
@@ -38,6 +54,31 @@ public class Helper {
       }
     }
     return -1;
+  }
+
+  static void tryBuildToward(RobotType type, MapLocation loc) throws GameActionException {
+    if (!rc.isReady()) {
+      return;
+    }
+
+    int min_dist = 9999999;
+    int min_dir = -1;
+
+    MapLocation cur_loc = rc.getLocation();
+
+    for (int i = 0; i < directions.length; i++) {
+      if (rc.canBuildRobot(type, directions[i])) {
+        MapLocation new_loc = cur_loc.add(directions[i]);
+        int dist = new_loc.distanceSquaredTo(loc);
+        if (dist < min_dist) {
+          min_dist = dist;
+          min_dir = i;
+        }
+      }
+    }
+    if (min_dir != -1) {
+      rc.buildRobot(type, directions[min_dir]);
+    }
   }
 
   static int tryBuild(RobotType type) throws GameActionException {

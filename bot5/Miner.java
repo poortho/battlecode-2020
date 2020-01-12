@@ -41,6 +41,8 @@ public class Miner {
   static int blocked = 0;
   static int mine_count = -1;
 
+  static MapLocation closest_rush_enemy = null;
+
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 		in_danger = false;
@@ -66,20 +68,32 @@ public class Miner {
 
 		// don't do anything if being rushed and i'm next to HQ
 		if (HQ.rushed && near_hq) {
-			if (cur_loc.distanceSquaredTo(hq) <= 2) {
-				return;
-			} else {
+			if (cur_loc.distanceSquaredTo(hq) > 2) {
 				greedy_walk(hq);
+			} else if (closest_rush_enemy != null) {
+				Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
 			}
 		}
 
+		boolean dont_move = HQ.rushed && near_hq;
+
+/*
+		if (HQ.rushed && near_hq) {
+			// try to check if miners already surrounded HQ
+			for (int i = 0; i < directions.length; i++) {
+				MapLocation next_loc = HQ.our_hq.add(directions[i]);
+				Robotinfo rob = rc.senseRobotAtLocation(next_loc);
+				if (rc.senseRobotAtLocation(next_loc))
+			}
+		}*/
+
 		// move away from hq if turtling
-		if (turtling && cur_loc.distanceSquaredTo(HQ.our_hq) <= 8) {
+		if (!dont_move && turtling && cur_loc.distanceSquaredTo(HQ.our_hq) <= 8) {
 			Helper.greedy_move_away(HQ.our_hq, cur_loc);
 			return;
 		}
 
-		if (in_danger) {
+		if ((dont_move) && in_danger) {
 			// move in a direction such that you are not in danger
 			// TODO change so that it moves towards destination
 			for (int i = 0; i < directions.length; i++) {
@@ -122,6 +136,11 @@ public class Miner {
 					}
 				}
 			}
+		}
+
+		if (dont_move) {
+			// don't want to do exploring or mining if we're being rushed and we're near hq
+			return;
 		}
 
 		if (target_explore != null) {
@@ -192,6 +211,7 @@ public class Miner {
 		nearby_fulfillment = false;
 		nearby_netgun = false;
 		nearby_design = false;
+		int min_dist = 999999;
 		for (int i = 0; i < robots.length; i++) {
 			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
 			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && (temp_dist < hq_dist || turtling)) {
@@ -224,6 +244,13 @@ public class Miner {
 						break;
 					case LANDSCAPER:
 						num_enemy_landscapers++;
+						if (HQ.our_hq != null) {
+							int tmp_dist = robots[i].location.distanceSquaredTo(HQ.our_hq);
+							if (tmp_dist < min_dist) {
+								min_dist = tmp_dist;
+								closest_rush_enemy = robots[i].location;
+							}
+						}
 						break;
 					case HQ:
 					case NET_GUN:
