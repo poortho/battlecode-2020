@@ -77,24 +77,31 @@ public class Miner {
 					Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
 				}
 			} else {
-				// miner hug the enemy refinery lmao
+				// miner hug the enemy design school lmao
 			}
 		}
 
 		boolean dont_move = HQ.rushed && near_hq;
 
 		if (HQ.rushed && near_hq) {
-			// try to check if miners already surrounded HQ
-			int c = 0;
-			for (int i = 0; i < directions.length; i++) {
-				MapLocation next_loc = HQ.our_hq.add(directions[i]);
-				RobotInfo rob = rc.senseRobotAtLocation(next_loc);
-				if (rob.team == rc.getTeam()) {
-					c++;
+			if (!gay_rush_alert) {
+				// try to check if miners already surrounded HQ
+				int c = 0;
+				for (int i = 0; i < directions.length; i++) {
+					MapLocation next_loc = HQ.our_hq.add(directions[i]);
+					if (!rc.canSenseLocation(next_loc)) {
+						break;
+					}
+					RobotInfo rob = rc.senseRobotAtLocation(next_loc);
+					if (rob != null && rob.team == rc.getTeam()) {
+						c++;
+					}
 				}
-			}
-			if (c == 8 && cur_loc.distanceSquaredTo(HQ.our_hq) > 2) {
-				dont_move = false;
+				if (c == 8 && cur_loc.distanceSquaredTo(HQ.our_hq) > 2) {
+					dont_move = false;
+				}
+			} else {
+				// check if miners already surround enemy design school, if so
 			}
 		}
 
@@ -116,7 +123,6 @@ public class Miner {
 				}
 			}
 		}
-
 
 		RobotType toBuild = calcBuilding();
 
@@ -182,6 +188,7 @@ public class Miner {
 
 		if (dont_move) {
 			// don't want to do exploring or mining if we're being rushed and we're near hq
+			try_deposit_soup_without_moving();
 			return;
 		}
 
@@ -220,6 +227,13 @@ public class Miner {
 					}
 				}
 			}
+		}
+	}
+
+	static void try_deposit_soup_without_moving() throws GameActionException {
+		if (HQ.our_hq != null && cur_loc.distanceSquaredTo(HQ.our_hq) <= 2 && rc.getSoupCarrying() > 0) {
+			Direction d = cur_loc.directionTo(HQ.our_hq);
+			tryDepositSoup(d);
 		}
 	}
 

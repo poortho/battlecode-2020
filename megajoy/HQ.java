@@ -198,6 +198,7 @@ public class HQ {
                 closest_rush_enemy = nearby[i].location;
                 if (dist <= 2) {
                   gay_rush_alert = true;
+                  System.out.println("FUCK YOU BATTLEGAODE");
                 }
               }
             }
