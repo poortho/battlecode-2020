@@ -126,6 +126,11 @@ public class Landscaper {
                         return;
                     }
                 }
+                if (rc.senseElevation(new_loc) < rc.senseElevation(my_hq) + 2 && rc.canDepositDirt(directions[i]) &&
+                        new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0) {
+                    rc.depositDirt(directions[i]);
+                    return;
+                }
 
                 // if further away place from design school is movable, then sice
                 if (my_design != null && new_loc.distanceSquaredTo(my_hq) <= 3 &&
