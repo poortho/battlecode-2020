@@ -73,10 +73,13 @@ public class DeliveryDrone {
                 if (Helper.onTheMap(next_loc) && netgun_map[x + distx_35[l]][y + disty_35[l]] != 0 &&
                         netgun_map[x + distx_35[l]][y + disty_35[l]] > rc.getRoundNum() - 400) { //timeout
                     // ouo theres a netgun here, blacklist all necessary
+                    //System.out.println("!!!!");
                     for (int j = directions.length; --j >= 0; ) {
                         if (cur_loc.add(directions[j]).distanceSquaredTo(next_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
                             blacklist[j] = true;
                         }
+                        //System.out.println(directions[j]);
+                        //System.out.println(blacklist[j]);
                     }
                 }
                 l++;
