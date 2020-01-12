@@ -161,7 +161,7 @@ public class HQ {
             }
             break;
           case DESIGN_SCHOOL:
-            if (nearby[i].team != rc.getTeam() && cur_loc.distanceSquaredTo(nearby[i].location) <= e) {
+            if (nearby[i].team != rc.getTeam() && cur_loc.distanceSquaredTo(nearby[i].location) <= 8) {
               enemy_design++;
               int dist = nearby[i].location.distanceSquaredTo(cur_loc);
               if (dist < min_dist) {
