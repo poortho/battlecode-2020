@@ -25,6 +25,11 @@ public class Comms {
   static boolean[] must_reach = new boolean[20];
   static int next_idx = 0, poll_idx = 0;
 
+  static MapLocation[] design_schools = new MapLocation[10];
+  static int design_school_idx = 0;
+  static MapLocation[] fulfillment_centers = new MapLocation[10];
+  static int fulfillment_center_idx = 0;
+
 	public static void getBlocks() throws GameActionException {
 		// received all new messages
 		while (blockRound < round) {
@@ -82,54 +87,80 @@ public class Comms {
 						// System.out.println("Received message: " + Integer.toString(temp_msg[j]));
 
 						int opcode = temp_msg[j] & 0xf;
+						int x, y, n;
 
-						if (opcode == 0x1) {
-							// add to queue
-							int x = (temp_msg[j] >> 16) & 0xff;
-							int y = (temp_msg[j] >> 8) & 0xff;
-							int n = (temp_msg[j] >> 4) & 0xf;
-							int reach_dest = (temp_msg[j] >> 24) & 1;
-							if (n > 0) {
-								miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
-							}
+						switch (opcode) {
+							case 0x1:
+								x = (temp_msg[j] >> 16) & 0xff;
+								y = (temp_msg[j] >> 8) & 0xff;
+								n = (temp_msg[j] >> 4) & 0xf;
+								int reach_dest = (temp_msg[j] >> 24) & 1;
+								if (n > 0) {
+									miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
+								}
 
-							if (rc.getType() == RobotType.MINER && blockRound != 1) {
-								// this is so we don't broadcast patches near locations that are already going to be explored
-								Miner.explored[Miner.explored_count] = new MapLocation(x, y);
-								//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
-								Miner.explored_count++;
-							}
-						} else if (opcode == 0x2) {
-							//int x = (temp_msg[j] >> 8) & 0xf;
-							//int y = (temp_msg[j] >> 12) & 0xf;
-							//int n = (temp_msg[j] >> 4) & 0xf;
-							miner_queue_remove();
-						} else if (opcode == 0x3) {
-							// found enemy HQ
-							int x = (temp_msg[j] >> 12) & 0xff;
-							int y = (temp_msg[j] >> 4) & 0xff;
-							HQ.enemy_hq = new MapLocation(x, y);
-							//System.out.println("Received enemy HQ: " + HQ.enemy_hq.toString());
-						} else if (opcode == 0x4) {
-							// friendy HQ
-							int x = (temp_msg[j] >> 12) & 0xff;
-							int y = (temp_msg[j] >> 4) & 0xff;
-							HQ.our_hq = new MapLocation(x, y);
-							//System.out.println("Received our HQ: " + HQ.our_hq.toString());
-						} else if (opcode == 0x5) {
-							HQ.rushed = true;
-							if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
+								if (rc.getType() == RobotType.MINER && blockRound != 1) {
+									// this is so we don't broadcast patches near locations that are already going to be explored
+									Miner.explored[Miner.explored_count] = new MapLocation(x, y);
+									//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
+									Miner.explored_count++;
+								}
+								break;
+
+							case 0x2:
+								miner_queue_remove();
+								break;
+
+							case 0x3:
+								x = (temp_msg[j] >> 12) & 0xff;
+								y = (temp_msg[j] >> 4) & 0xff;
+								HQ.enemy_hq = new MapLocation(x, y);
+								//System.out.println("Received enemy HQ: " + HQ.enemy_hq.toString());
+								break;
+
+							case 0x4:
+								// friendy HQ
+								x = (temp_msg[j] >> 12) & 0xff;
+								y = (temp_msg[j] >> 4) & 0xff;
+								HQ.our_hq = new MapLocation(x, y);
+								//System.out.println("Received our HQ: " + HQ.our_hq.toString());
+								break;
+
+							case 0x5:
+								HQ.rushed = true;
+								if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
+									HQ.rushed = false;
+								}
+								break;
+
+							case 0x6:
 								HQ.rushed = false;
-							}
-						} else if (opcode == 0x6) {
-							HQ.rushed = false;
-						} else if (opcode == 0x7) {
-							HQ.patrol_broadcast_round = blockRound;
-							HQ.broadcasted_patrol = true;
-						} else if (opcode == 0x8) {
-							int x = (temp_msg[j] >> 12) & 0xff;
-							int y = (temp_msg[j] >> 4) & 0xff;
-							RobotPlayer.netgun_map[x][y] = blockRound;
+								break;
+
+							case 0x7:
+								HQ.patrol_broadcast_round = blockRound;
+								HQ.broadcasted_patrol = true;
+								break;
+
+							case 0x8:
+								x = (temp_msg[j] >> 12) & 0xff;
+								y = (temp_msg[j] >> 4) & 0xff;
+								RobotPlayer.netgun_map[x][y] = blockRound;
+								break;
+
+							case 0x9:
+								x = (temp_msg[j] >> 12) & 0xff;
+								y = (temp_msg[j] >> 4) & 0xff;
+								int val1 = (temp_msg[j] >> 20) & 0x1;
+								int val2 = (temp_msg[j] >> 21) & 0x1;
+								if (val1 == 1) {
+									design_schools[design_school_idx] = new MapLocation(x, y);
+									design_school_idx++;
+								} else if (val2 == 1) {
+									fulfillment_centers[fulfillment_center_idx] = new MapLocation(x, y);
+									fulfillment_center_idx++;
+								}
+								break;
 						}
 
 						temp_msg[j] ^= key;
@@ -139,6 +170,20 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static void broadcast_building(MapLocation hq, RobotType type) throws GameActionException {
+		int val = 0x9 | (hq.y << 4) | (hq.x << 12);
+		switch (type) {
+			case DESIGN_SCHOOL:
+				val |= 1 << 20;
+				break;
+			case FULFILLMENT_CENTER:
+				val |= 1 << 21;
+				break;
+		}
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+		addMessage(msg, 1, 2);
 	}
 
 	public static boolean broadcast_patrol_enemy_hq() throws GameActionException {

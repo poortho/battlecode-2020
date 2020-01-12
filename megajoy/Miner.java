@@ -41,6 +41,7 @@ public class Miner {
   static boolean[] turtle_blocked = new boolean[directions.length];
   static int blocked = 0;
   static int mine_count = -1;
+  static boolean duplicate_building;
 
   static MapLocation closest_rush_enemy = null;
 
@@ -114,17 +115,42 @@ public class Miner {
 
 
 		RobotType toBuild = calcBuilding();
+
 		// if drones, build netgun
 		// if landscapers, build drone
 		// if buildings, build landscape
 
+		// check for duplicate
+		duplicate_building = false;
+		if (toBuild != null) {
+			switch (toBuild) {
+				case DESIGN_SCHOOL:
+					for (int i = 0; i < Comms.design_school_idx; i++) {
+						if (Comms.design_schools[i].equals(hq)) {
+							duplicate_building = true;
+							break;
+						}
+					}
+					break;
+
+				case FULFILLMENT_CENTER:
+					for (int i = 0; i < Comms.fulfillment_center_idx; i++) {
+						if (Comms.fulfillment_centers[i].equals(hq)) {
+							duplicate_building = true;
+							break;
+						}
+					}
+					break;
+			}
+		}
+
 		// build thing
-		if (toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5 && num_enemies != 0) ||
+		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5 && num_enemies != 0) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4))) {
 			// build if none nearby and (nearby enemies or close to hq)
-			if (cur_loc.distanceSquaredTo(hq) <= 8) {
+			if (cur_loc.distanceSquaredTo(hq) <= 13) {
 				for (int i = 0; i < directions.length; i++) {
-					MapLocation new_loc = rc.getLocation().add(directions[i]);
+					MapLocation new_loc = cur_loc.add(directions[i]);
 					if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
 						new_loc.distanceSquaredTo(hq) > 3) {
 
@@ -141,7 +167,10 @@ public class Miner {
 						if (!valid) {
 							continue;
 						}
-						Helper.tryBuild(toBuild, directions[i]);
+						boolean res = Helper.tryBuild(toBuild, directions[i]);
+						if (res) {
+							Comms.broadcast_building(hq, toBuild);
+						}
 					}
 				}
 			}
@@ -179,6 +208,7 @@ public class Miner {
 				if (target_explore != null) {
 					miner_walk(target_explore);
 				} else {
+					hq = HQ.our_hq;
 					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
 						Helper.greedy_move_away(hq, cur_loc);
 					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 13) {
