@@ -1,13 +1,13 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.MapLocation;
 
-import static no_drone_rush_bot5.RobotPlayer.rc;
-import static no_drone_rush_bot5.Helper.distx_35;
-import static no_drone_rush_bot5.Helper.disty_35;
+import static megajoy.RobotPlayer.rc;
+import static megajoy.Helper.distx_35;
+import static megajoy.Helper.disty_35;
 
 public class DesignSchool {
 

@@ -1,10 +1,10 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.*;
 
-import static no_drone_rush_bot5.Helper.directions;
-import static no_drone_rush_bot5.RobotPlayer.rc;
-import static no_drone_rush_bot5.RobotPlayer.turnCount;
+import static megajoy.Helper.directions;
+import static megajoy.RobotPlayer.rc;
+import static megajoy.RobotPlayer.turnCount;
 
 public class Landscaper {
     static MapLocation cur_loc;

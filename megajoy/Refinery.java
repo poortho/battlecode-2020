@@ -1,4 +1,4 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.GameActionException;
 

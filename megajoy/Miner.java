@@ -1,9 +1,9 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.*;
 
-import static no_drone_rush_bot5.Helper.*;
-import static no_drone_rush_bot5.RobotPlayer.rc;
+import static megajoy.Helper.*;
+import static megajoy.RobotPlayer.rc;
 
 public class Miner {
 

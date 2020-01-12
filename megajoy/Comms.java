@@ -1,13 +1,13 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
 import battlecode.common.Transaction;
 
-import static no_drone_rush_bot5.Helper.directions;
-import static no_drone_rush_bot5.RobotPlayer.rc;
-import static no_drone_rush_bot5.RobotPlayer.round;
+import static megajoy.Helper.directions;
+import static megajoy.RobotPlayer.rc;
+import static megajoy.RobotPlayer.round;
 
 public class Comms {
 

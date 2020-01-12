@@ -1,9 +1,9 @@
-package no_drone_rush_bot5;
+package megajoy;
 import battlecode.common.*;
 
 import java.sql.SQLOutput;
 
-import static no_drone_rush_bot5.RobotPlayer.rc;
+import static megajoy.RobotPlayer.rc;
 
 public strictfp class RobotPlayer {
     static RobotController rc;

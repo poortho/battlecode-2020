@@ -1,13 +1,13 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
-import static no_drone_rush_bot5.Helper.distx_35;
-import static no_drone_rush_bot5.Helper.disty_35;
-import static no_drone_rush_bot5.RobotPlayer.*;
+import static megajoy.Helper.distx_35;
+import static megajoy.Helper.disty_35;
+import static megajoy.RobotPlayer.*;
 
 public class HQ {
     // used in determining which of 3 directions to send...

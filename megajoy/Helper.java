@@ -1,8 +1,8 @@
-package no_drone_rush_bot5;
+package megajoy;
 
 import battlecode.common.*;
 
-import static no_drone_rush_bot5.RobotPlayer.*;
+import static megajoy.RobotPlayer.*;
 
 public class Helper {
 
