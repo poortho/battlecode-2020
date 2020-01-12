@@ -72,7 +72,7 @@ public class Miner {
 		// don't do anything if being rushed and i'm next to HQ
 		if (HQ.rushed && near_hq) {
 			if (!gay_rush_alert) {
-				if (cur_loc.distanceSquaredTo(hq) > 2 && closest_rush_enemy.distanceSquaredTo(hq) > 2) {
+				if (cur_loc.distanceSquaredTo(hq) > 2 && (closest_rush_enemy == null || closest_rush_enemy.distanceSquaredTo(hq) > 2)) {
 					greedy_walk(hq);
 				} else if (closest_rush_enemy != null) {
 					Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
