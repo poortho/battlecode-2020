@@ -1,7 +1,6 @@
 package megajoy;
 
 import battlecode.common.*;
-import java.util.Arrays;
 
 import static megajoy.Helper.*;
 import static megajoy.RobotPlayer.*;
@@ -46,13 +45,9 @@ public class DeliveryDrone {
                             Comms.broadcast_enemy_hq(temp_loc);
                         }
                         // avoid netgun
-                        if (HQ.patrol_broadcast_round == -1 && round >= HQ.patrol_broadcast_round + 130) {
-                            for (int j = 0; j < directions.length; j++) {
-                                if (cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED ||
-                                   (HQ.enemy_hq != null && cur_loc.add(directions[j]).distanceSquaredTo(HQ.enemy_hq) <=
-                                        GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
-                                    blacklist[j] = true;
-                                }
+                        if (HQ.patrol_broadcast_round == -1 || round < HQ.patrol_broadcast_round + 130) {
+                            for (int j = directions.length; --j >= 0; ) {
+                                blacklist[j] = cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED;
                             }
                         }
                         break;
@@ -60,11 +55,18 @@ public class DeliveryDrone {
             }
         }
 
-        if (HQ.patrol_broadcast_round == -1 && round >= HQ.patrol_broadcast_round + 130) {
+        if (HQ.patrol_broadcast_round == -1 || round < HQ.patrol_broadcast_round + 130) {
+            // check enemy hq
+            for (int i = directions.length; --i >= 0; ) {
+                if (HQ.enemy_hq != null && cur_loc.add(directions[i]).distanceSquaredTo(HQ.enemy_hq) <=
+                        GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                    blacklist[i] = true;
+                }
+            }
             // now, iterate over directions within distance 25 to check for netguns lol
             int x = cur_loc.x;
             int y = cur_loc.y;
-            int l = 26; // start at distance 9
+            int l = 45; // start at distance 16
             MapLocation next_loc = null;
 
             //System.out.println(Clock.getBytecodesLeft());
@@ -134,10 +136,12 @@ public class DeliveryDrone {
             return;
         }
 
+        //System.out.println(Clock.getBytecodesLeft());
         // sense nearby deets for flood
         int k = 1;
-        while (k < distx_35.length) {
-            MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
+        MapLocation new_loc = null;
+        do {
+            new_loc = new MapLocation(cur_loc.x + distx_35[k], cur_loc.y + disty_35[k]);
             if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
                 if (nearest_flood_curloc == null || cur_loc.distanceSquaredTo(new_loc) < cur_loc.distanceSquaredTo(nearest_flood_curloc)) {
                     nearest_flood_curloc = new_loc;
@@ -147,7 +151,8 @@ public class DeliveryDrone {
                 }
             }
             k++;
-        }
+        } while (rc.canSenseLocation(new_loc) || (!Helper.onTheMap(new_loc)));
+        //System.out.println(Clock.getBytecodesLeft());
 
         // if enemy HQ was never found
         if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq == null) {
