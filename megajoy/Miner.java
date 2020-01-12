@@ -178,6 +178,8 @@ public class Miner {
 				} else {
 					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
 						Helper.greedy_move_away(hq, cur_loc);
+					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 13) {
+						miner_walk(hq);
 					}
 				}
 			}

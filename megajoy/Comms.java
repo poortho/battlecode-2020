@@ -118,6 +118,9 @@ public class Comms {
 							//System.out.println("Received our HQ: " + HQ.our_hq.toString());
 						} else if (opcode == 0x5) {
 							HQ.rushed = true;
+							if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
+								HQ.rushed = false;
+							}
 						} else if (opcode == 0x6) {
 							HQ.rushed = false;
 						} else if (opcode == 0x7) {
