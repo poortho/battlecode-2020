@@ -198,7 +198,7 @@ public class Miner {
 					blocked++;
 				}
 			}
-			if (blocked == 8) {
+			if (blocked >= 5) {
 				return true;
 			}
 		}
