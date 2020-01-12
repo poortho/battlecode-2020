@@ -23,6 +23,8 @@ public class HQ {
     static int patrol_broadcast_round = -1;
     static boolean broadcasted_patrol = false;
 
+    static MapLocation closest_rush_enemy = null;
+
     static void runHQ() throws GameActionException {
 
       cur_loc = rc.getLocation();
@@ -107,7 +109,7 @@ public class HQ {
 
         shootNetGun();
         if (rushed) {
-          build_defensive_miner();
+          build_defensive_miner(closest_rush_enemy);
         } else {
           handle_miners();
         }
@@ -136,23 +138,40 @@ public class HQ {
         }
       }
 
-    static void build_defensive_miner() throws GameActionException {
-      Helper.tryBuild(RobotType.MINER);
+    static void build_defensive_miner(MapLocation closest_enemy) throws GameActionException {
+      Helper.tryBuildToward(RobotType.MINER, closest_enemy);
     }
 
     static boolean checkRush() throws GameActionException {
       RobotInfo[] nearby = rc.senseNearbyRobots();
-      int enemy = 0;
+      int enemy_land = 0;
+      int enemy_design = 0;
+
+      int min_dist = 999999;
       for (int i = 0; i < nearby.length; i++) {
         switch (nearby[i].type) {
           case LANDSCAPER:
             if (nearby[i].team != rc.getTeam()) {
-              enemy++;
+              enemy_land++;
+              int dist = nearby[i].location.distanceSquaredTo(cur_loc);
+              if (dist < min_dist) {
+                min_dist = dist;
+                closest_rush_enemy = nearby[i].location;
+              }
             }
             break;
+          case DESIGN_SCHOOL:
+            if (nearby[i].team != rc.getTeam() && cur_loc.distanceSquaredTo(nearby[i].location) <= 8) {
+              enemy_design++;
+              int dist = nearby[i].location.distanceSquaredTo(cur_loc);
+              if (dist < min_dist) {
+                min_dist = dist;
+                closest_rush_enemy = nearby[i].location;
+              }
+            }
         }
       }
-      return enemy >= 3;
+      return enemy_land >= 1 || enemy_design >= 1;
     }
 
     static boolean queue_close_soup() throws GameActionException {
