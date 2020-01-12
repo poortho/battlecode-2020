@@ -21,6 +21,7 @@ public class HQ {
     static boolean rushed = false;
 
     static int patrol_broadcast_round = -1;
+    static int friendly_drones = 0;
     static boolean broadcasted_patrol = false;
 
     static MapLocation closest_rush_enemy = null;
@@ -30,6 +31,13 @@ public class HQ {
       cur_loc = rc.getLocation();
 
       RobotInfo[] robots = rc.senseNearbyRobots();
+      friendly_drones = 0;
+      for (int i = 0; i < robots.length; i++) {
+        RobotInfo r = robots[i];
+        if (r.team == rc.getTeam() && r.type == RobotType.DELIVERY_DRONE) {
+          friendly_drones++;
+        }
+      }
       if (turnCount == 1) {
           int width = rc.getMapWidth();
           int height = rc.getMapHeight();
@@ -171,7 +179,7 @@ public class HQ {
             }
         }
       }
-      return enemy_land >= 1 || enemy_design >= 1;
+      return (enemy_land >= 1 || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design);
     }
 
     static boolean queue_close_soup() throws GameActionException {
