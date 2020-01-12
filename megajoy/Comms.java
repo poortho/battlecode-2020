@@ -69,7 +69,7 @@ public class Comms {
 			}
 
 
-			for (int i = 0; i < messages.length; i++) {
+			for (int i = messages.length; --i >= 0; ) {
 				int[] temp_msg = messages[i].getMessage();
 				//System.out.println(blockRound);
 				//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
@@ -81,7 +81,7 @@ public class Comms {
 						// bad message
 						continue;
 					}
-					for (int j = 0; j < temp_msg.length; j++) {
+					for (int j = temp_msg.length; --j >= 0; ) {
 						// process message
 						temp_msg[j] ^= key;
 						// System.out.println("Received message: " + Integer.toString(temp_msg[j]));
