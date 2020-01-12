@@ -259,7 +259,8 @@ public class Landscaper {
                 Helper.tryDig();
             }
             counter++;
-        } else if (destination != null && rc.canSenseLocation(destination)) {
+        }
+        if (destination != null && rc.canSenseLocation(destination)) {
             aggressive_landscaper_walk(destination);
         } else {
             walk_to_dest();
