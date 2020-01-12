@@ -255,16 +255,18 @@ public class Miner {
 		if (!rc.canSenseLocation(HQ.our_hq)) {
 			return false;
 		}
+
 		if (near_hq && hq.equals(HQ.our_hq)) {
+			int hq_elevation = rc.senseElevation(hq);
 			int blocked = 0;
 			for (int i = 0; i < directions.length; i++) {
 				MapLocation next_loc = hq.add(directions[i]);
-				if (rc.canSenseLocation(next_loc) && rc.senseElevation(next_loc) > rc.senseElevation(hq) + 3) {
+				if (rc.canSenseLocation(next_loc) && rc.senseElevation(next_loc) > hq_elevation + 3) {
 					blocked++;
+					if (blocked == 5) {
+						return true;
+					}
 				}
-			}
-			if (blocked >= 5) {
-				return true;
 			}
 		}
 		return false;
@@ -283,18 +285,8 @@ public class Miner {
 		friendy_landscapers = 0;
 		int min_dist = 999999;
 		for (int i = 0; i < robots.length; i++) {
-			int temp_dist = robots[i].location.distanceSquaredTo(cur_loc);
-			if (robots[i].type == RobotType.REFINERY && robots[i].team == rc.getTeam() && (temp_dist < hq_dist || turtling)) {
-				hq = robots[i].location;
-				hq_dist = temp_dist;
-			} else if (HQ.enemy_hq == null && robots[i].type == RobotType.HQ && robots[i].team != rc.getTeam()) {
-				// found enemy hq broadcast it
-				//System.out.println("Found enemy hq! " + robots[i].location);
-				Comms.broadcast_enemy_hq(robots[i].location);
-			} else if (robots[i].type == RobotType.HQ && robots[i].team == rc.getTeam()) {
-				HQ.our_hq = robots[i].location;
-				near_hq = true;
-			}
+			MapLocation rob_loc = robots[i].location;
+			int temp_dist = rob_loc.distanceSquaredTo(cur_loc);
 
 			// calculations for building stuff
 			if (robots[i].team != rc.getTeam()) {
@@ -318,11 +310,14 @@ public class Miner {
 							int tmp_dist = robots[i].location.distanceSquaredTo(HQ.our_hq);
 							if (tmp_dist < min_dist) {
 								min_dist = tmp_dist;
-								closest_rush_enemy = robots[i].location;
+								closest_rush_enemy = rob_loc;
 							}
 						}
 						break;
 					case HQ:
+						if (HQ.enemy_hq == null) {
+							Comms.broadcast_enemy_hq(rob_loc);
+						}
 					case NET_GUN:
 					case REFINERY:
 					case VAPORATOR:
@@ -340,6 +335,11 @@ public class Miner {
 			}
 			if (robots[i].team == rc.getTeam()) {
 				switch (robots[i].type) {
+					case REFINERY:
+						if (temp_dist < hq_dist || turtling) {
+							hq = rob_loc;
+							hq_dist = temp_dist;
+						}
 					case FULFILLMENT_CENTER:
 						nearby_fulfillment = true;
 						break;
@@ -352,7 +352,7 @@ public class Miner {
 					case HQ:
 						if (turtling) {
 							for (int a = 0; a < Helper.directions.length; a++) {
-								MapLocation temp_loc = robots[i].location.add(Helper.directions[a]);
+								MapLocation temp_loc = rob_loc.add(Helper.directions[a]);
 								if (cur_loc.distanceSquaredTo(temp_loc) <= 2) {
 									Direction d = cur_loc.directionTo(temp_loc);
 									for (int j = 0; j < Helper.directions.length; j++) {
@@ -364,6 +364,8 @@ public class Miner {
 								}
 							}
 						}
+						HQ.our_hq = rob_loc;
+						near_hq = true;
 						break;
 					}
 			}
