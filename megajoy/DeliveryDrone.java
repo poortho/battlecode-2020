@@ -131,10 +131,10 @@ public class DeliveryDrone {
         }
 
         // if i'm ever next to hq, move away
-        if (HQ.our_hq != null && hq.equals(HQ.our_hq) && cur_loc.distanceSquaredTo(hq) <= 2) {
+        /*if (HQ.our_hq != null && hq.equals(HQ.our_hq) && cur_loc.distanceSquaredTo(hq) <= 2) {
             Helper.greedy_move_away(hq, cur_loc);
             return;
-        }
+        }*/
 
         //System.out.println(Clock.getBytecodesLeft());
         // sense nearby deets for flood
@@ -177,7 +177,8 @@ public class DeliveryDrone {
             for (int i = 0; i < robots.length; i++) {
                 if (robots[i].team != rc.getTeam() && robots[i].type.canBePickedUp()) {
                     num_enemies++;
-                    if (cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist) {
+                    if ((cur_loc.distanceSquaredTo(robots[i].getLocation()) < closest_dist && robots[i].type != RobotType.COW) ||
+                            (closest_robot == null || closest_robot.type == RobotType.COW)) {
                         if (HQ.enemy_hq != null && robots[i].type == RobotType.COW &&
                                 robots[i].getLocation().distanceSquaredTo(HQ.enemy_hq) < 25) {
 
