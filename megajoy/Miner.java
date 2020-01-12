@@ -42,6 +42,7 @@ public class Miner {
   static int blocked = 0;
   static int mine_count = -1;
   static boolean duplicate_building, gay_rush_alert = false;
+  static MapLocation gay_rush_design_school = null;
 
   static MapLocation closest_rush_enemy = null;
 
@@ -71,13 +72,26 @@ public class Miner {
 		// don't do anything if being rushed and i'm next to HQ
 		if (HQ.rushed && near_hq) {
 			if (!gay_rush_alert) {
-				if (cur_loc.distanceSquaredTo(hq) > 2) {
+				if (cur_loc.distanceSquaredTo(hq) > 2 && closest_rush_enemy.distanceSquaredTo(hq) > 2) {
 					greedy_walk(hq);
 				} else if (closest_rush_enemy != null) {
 					Helper.greedy_move_adjacent_HQ(closest_rush_enemy, cur_loc);
 				}
 			} else {
 				// miner hug the enemy design school lmao
+				for (int i = 0; i < directions.length; i++) {
+					MapLocation temp = HQ.our_hq.add(directions[i]);
+					if (rc.canSenseLocation(temp)) {
+						RobotInfo rob = rc.senseRobotAtLocation(temp);
+						if (rob != null && rob.type == RobotType.DESIGN_SCHOOL && rob.team != rc.getTeam()) {
+							gay_rush_design_school = temp;
+							break;
+						}
+					}
+				}
+
+				// miner hug!
+
 			}
 		}
 
@@ -101,7 +115,7 @@ public class Miner {
 					dont_move = false;
 				}
 			} else {
-				// check if miners already surround enemy design school, if so
+				// check if miners already surround enemy design school
 			}
 		}
 
@@ -212,7 +226,7 @@ public class Miner {
 			if (target_mine == null){
 				find_mine();
 			}
-			if (target_mine != null) {
+			if (target_mine != null || rc.getSoupCarrying() > 0) {
 				do_mine();
 			} else {
 				target_explore = get_explore_target();
@@ -357,7 +371,7 @@ public class Miner {
 	}
 
 	static void do_mine() throws GameActionException {
-		if (rc.canSenseLocation(target_mine) && rc.senseFlooding(target_mine)) {
+		if (target_mine != null && rc.canSenseLocation(target_mine) && rc.senseFlooding(target_mine)) {
 			target_mine = find_mine();
 			if (target_mine == null) {
 				target_explore = get_explore_target();
@@ -368,7 +382,7 @@ public class Miner {
 			}
 		}
 		// try mining it lol
-		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || target_mine == null) {
 			// check if HQ has landscapers around it
 			/*
 			if (!turtling && HQ.our_hq != null && hq.equals(HQ.our_hq) && rc.canSenseLocation(hq)) {
@@ -402,7 +416,7 @@ public class Miner {
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
 				// deposit
 				tryDepositSoup(cur_loc.directionTo(hq));
-			} else {
+			} else if (target_mine != null) {
 				// heuristic for building refinery
 				int distance = target_mine.distanceSquaredTo(hq);
 				int distance2 = target_mine.distanceSquaredTo(cur_loc);
@@ -415,6 +429,8 @@ public class Miner {
 					//System.out.println("Walking Back To HQ");
 					miner_walk(hq);
 				}
+			} else {
+				miner_walk(hq);
 			}
 		} else {
 			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {

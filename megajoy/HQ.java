@@ -23,6 +23,8 @@ public class HQ {
 
     static int patrol_broadcast_round = -1;
     static int friendly_drones = 0;
+    static int friendly_miner = 0;
+    static int friendly_turtle = 0;
     static boolean broadcasted_patrol = false;
     static boolean turtling = false;
 
@@ -38,10 +40,25 @@ public class HQ {
 
       RobotInfo[] robots = rc.senseNearbyRobots();
       friendly_drones = 0;
+      friendly_miner = 0;
       for (int i = 0; i < robots.length; i++) {
         RobotInfo r = robots[i];
-        if (r.team == rc.getTeam() && r.type == RobotType.DELIVERY_DRONE) {
-          friendly_drones++;
+        if (r.team == rc.getTeam()) {
+          switch(r.type) {
+            case DELIVERY_DRONE:
+              friendly_drones++;
+              break;
+
+            case MINER:
+              friendly_miner++;
+              break;
+
+            case LANDSCAPER:
+              if (r.location.distanceSquaredTo(cur_loc) <= 2) {
+                friendly_turtle++;
+              }
+              break;
+          }
         }
       }
       if (turnCount == 1) {
@@ -122,7 +139,7 @@ public class HQ {
         }
 
         shootNetGun();
-        if (rushed) {
+        if (rushed && friendly_miner + friendly_turtle < 8) {
           build_defensive_miner(closest_rush_enemy);
         } else if (!turtling) {
           handle_miners();
