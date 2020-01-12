@@ -1,13 +1,13 @@
-package bot5;
+package no_drone_rush_bot5;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
-import static bot5.Helper.distx_35;
-import static bot5.Helper.disty_35;
-import static bot5.RobotPlayer.*;
+import static no_drone_rush_bot5.Helper.distx_35;
+import static no_drone_rush_bot5.Helper.disty_35;
+import static no_drone_rush_bot5.RobotPlayer.*;
 
 public class HQ {
     // used in determining which of 3 directions to send...
@@ -134,7 +134,7 @@ public class HQ {
         } while (next_loc.distanceSquaredTo(cur_loc) <= 15);
         if (flooded_count > nonflooded_count) {
             //System.out.println("broadcasted!");
-            Comms.broadcast_patrol_enemy_hq();
+            // Comms.broadcast_patrol_enemy_hq();
         }
       }
 
@@ -161,7 +161,7 @@ public class HQ {
             }
             break;
           case DESIGN_SCHOOL:
-            if (nearby[i].team != rc.getTeam() && cur_loc.distanceSquaredTo(nearby[i].location) <= e) {
+            if (nearby[i].team != rc.getTeam() && cur_loc.distanceSquaredTo(nearby[i].location) <= 8) {
               enemy_design++;
               int dist = nearby[i].location.distanceSquaredTo(cur_loc);
               if (dist < min_dist) {
