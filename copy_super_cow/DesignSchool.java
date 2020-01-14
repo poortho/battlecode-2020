@@ -63,7 +63,8 @@ public class DesignSchool {
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
         // build more if close to HQ
 
-        if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 && num_landscapers == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
+        if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 &&
+                num_landscapers == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 

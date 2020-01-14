@@ -156,7 +156,7 @@ public class Comms {
 							case 0x8:
 								x = (temp_msg[j] >> 12) & 0xff;
 								y = (temp_msg[j] >> 4) & 0xff;
-								RobotPlayer.netgun_map[x][y] = blockRound;
+								RobotPlayer.netgun_map[x][y] = (temp_msg[j] >> 20);
 								break;
 
 							case 0x9:
@@ -242,7 +242,7 @@ public class Comms {
 		// 0x00000000
 		//          3 <- opcode
 		//      XXYY  <- patch location / 4
-		int val = (loc.x << 12) | (loc.y << 4) | 8;
+		int val = (round << 20) | (loc.x << 12) | (loc.y << 4) | 8;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
 		addMessage(msg, 1, 2);

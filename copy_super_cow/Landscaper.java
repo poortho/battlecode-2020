@@ -26,7 +26,7 @@ public class Landscaper {
     static MapLocation[] explore_locs = null;
 
     static void runLandscaper() throws GameActionException {
-        lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()), 5);
+        lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()) + 3, 5);
         move_counter++;
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
@@ -83,7 +83,11 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        do_lattice();
+        if (destination != null) {
+            do_offense();
+        } else {
+            do_lattice();
+        }
         /*
         if (defensive) {
             do_defense();
@@ -356,9 +360,9 @@ public class Landscaper {
     }
 
     static void do_offense() throws GameActionException {
-        if (HQ.enemy_hq != null && (destination == null || cur_loc.distanceSquaredTo(HQ.enemy_hq) < cur_loc.distanceSquaredTo(destination))) {
+        /*if (HQ.enemy_hq != null && (destination == null || cur_loc.distanceSquaredTo(HQ.enemy_hq) < cur_loc.distanceSquaredTo(destination))) {
             destination = HQ.enemy_hq;
-        }
+        }*/
 
         // adjacent, cuck em asap
         if (destination != null && cur_loc.distanceSquaredTo(destination) <= 3) {

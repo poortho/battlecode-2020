@@ -36,14 +36,14 @@ public class DeliveryDrone {
         // compute blacklist (dont move adjacent to enemy drones, and stay out of shooting range of HQ/netgun
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team != rc.getTeam()) {
+                MapLocation temp_loc = robots[i].getLocation();
                 switch (robots[i].type) {
-                    case NET_GUN:
                     case HQ:
-                        MapLocation temp_loc = robots[i].getLocation();
                         if (HQ.enemy_hq == null) {
                             HQ.enemy_hq = temp_loc;
                             Comms.broadcast_enemy_hq(temp_loc);
                         }
+                    case NET_GUN:
                         // avoid netgun
                         if (HQ.patrol_broadcast_round == -1 || round < HQ.patrol_broadcast_round + 130) {
                             for (int j = directions.length; --j >= 0; ) {
