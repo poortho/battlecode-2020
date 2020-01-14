@@ -17,7 +17,7 @@ public class DesignSchool {
     static int mine_count;
 
     static void runDesignSchool() throws GameActionException {
-        mine_count = count_mine();
+        /*mine_count = count_mine();
         RobotInfo[] robots = rc.senseNearbyRobots();
         int num_enemy_buildings = 0;
         int num_landscapers = 0;
@@ -78,7 +78,7 @@ public class DesignSchool {
                     Helper.tryBuild(RobotType.LANDSCAPER);
                 }
             }
-        }
+        }*/
     }
 
     static int count_mine() throws GameActionException {

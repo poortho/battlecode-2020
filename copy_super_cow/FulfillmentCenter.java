@@ -15,7 +15,7 @@ public class FulfillmentCenter {
     static MapLocation cur_loc;
 
     static void runFulfillmentCenter() throws GameActionException {
-        cur_loc = rc.getLocation();
+        /*cur_loc = rc.getLocation();
         RobotInfo[] robots = rc.senseNearbyRobots();
         int num_enemy_units = 0;
         int num_drones = 0;
@@ -61,6 +61,6 @@ public class FulfillmentCenter {
                 Helper.tryBuild(RobotType.DELIVERY_DRONE);
                 drones_produced++;
             }
-        }
+        }*/
     }
 }

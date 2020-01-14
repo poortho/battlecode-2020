@@ -67,6 +67,68 @@ public class Miner {
 
 		sense();
 
+		RobotType toBuild = calcBuilding();
+
+		// if drones, build netgun
+		// if landscapers, build drone
+		// if buildings, build landscape
+
+		// check for duplicate
+		duplicate_building = false;
+		if (toBuild != null) {
+			switch (toBuild) {
+				case DESIGN_SCHOOL:
+					for (int i = 0; i < Comms.design_school_idx; i++) {
+						if (Comms.design_schools[i].equals(hq)) {
+							duplicate_building = true;
+							break;
+						}
+					}
+					break;
+
+				case FULFILLMENT_CENTER:
+					for (int i = 0; i < Comms.fulfillment_center_idx; i++) {
+						if (Comms.fulfillment_centers[i].equals(hq)) {
+							duplicate_building = true;
+							break;
+						}
+					}
+					break;
+			}
+		}
+
+		// build thing
+		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5 && num_enemies != 0) ||
+				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
+			// build if none nearby and (nearby enemies or close to hq)
+			if (cur_loc.distanceSquaredTo(hq) <= 13) {
+				for (int i = 0; i < directions.length; i++) {
+					MapLocation new_loc = cur_loc.add(directions[i]);
+					if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
+						new_loc.distanceSquaredTo(hq) > 4) {
+
+						boolean valid = true;
+						for (int j = 0; j < directions.length; j++) {
+							if (rc.canSenseLocation(new_loc.add(directions[j]))) {
+								RobotInfo robot = rc.senseRobotAtLocation(new_loc.add(directions[j]));
+								if (robot != null && robot.type.isBuilding()) {
+									valid = false;
+									break;
+								}
+							}
+						}
+						if (!valid) {
+							continue;
+						}
+						boolean res = Helper.tryBuild(toBuild, directions[i]);
+						if (res) {
+							Comms.broadcast_building(hq, toBuild);
+						}
+					}
+				}
+			}
+		}
+
 		if (target_explore != null) {
 			find_mine();
 			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
@@ -265,9 +327,16 @@ public class Miner {
 				}
 			}*/
 
+			int res = -1;
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
 				// deposit
 				tryDepositSoup(cur_loc.directionTo(hq));
+			} else if (target_mine.distanceSquaredTo(hq) > 80 && target_mine.distanceSquaredTo(cur_loc) < 24
+					&& mine_count > 600 && num_enemy_landscapers == 0 &&
+					(res = tryBuild(RobotType.REFINERY)) != -1) {
+				// build refinery
+				hq = cur_loc.add(directions[res]);
+				//System.out.println("New HQ: " + hq.toString());
 			} else {
 				miner_walk(hq);
 			}
@@ -306,18 +375,7 @@ public class Miner {
 	}
 
 	static int get_num_workers_needed() throws GameActionException {
-		return 3;
-		/*
-		int total_soup = mine_count;
-		if (total_soup > 900) {
-			return 1;
-		} else if (total_soup > 2500) {
-			return 2;
-		} else if (total_soup > 5000) {
-			return 3;
-		} else {
-			return 0;
-		}*/
+		return mine_count / 50;
 	}
 
 	// get next target coordinate to explore to
@@ -490,7 +548,7 @@ public class Miner {
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (!nearby_design && near_hq && hq.equals(HQ.our_hq) && rc.getTeamSoup() > 300) {
 		  return RobotType.DESIGN_SCHOOL;
-		}
-	  return null;
+	  }
+	  return RobotType.VAPORATOR;
   }
 }

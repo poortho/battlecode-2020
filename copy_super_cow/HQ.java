@@ -12,7 +12,7 @@ import static copy_super_cow.RobotPlayer.*;
 
 public class HQ {
 
-    static int TOTAL_MINERS = 20;
+    static int TOTAL_MINERS = 3;
 
     // used in determining which of 3 directions to send...
     static int rotation = 0;
@@ -145,7 +145,7 @@ public class HQ {
         shootNetGun();
         if (rushed && friendly_miner + friendly_turtle < 8) {
           build_defensive_miner(closest_rush_enemy);
-        } else if (!turtling && miner_count < TOTAL_MINERS) {
+        } else if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           handle_miners();
         }
 	    }

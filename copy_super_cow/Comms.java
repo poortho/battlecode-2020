@@ -95,6 +95,7 @@ public class Comms {
 								x = (temp_msg[j] >> 16) & 0xff;
 								y = (temp_msg[j] >> 8) & 0xff;
 								n = (temp_msg[j] >> 4) & 0xf;
+								HQ.TOTAL_MINERS = Math.max(HQ.TOTAL_MINERS, n);
 								int reach_dest = (temp_msg[j] >> 24) & 1;
 								if (n > 0) {
 									miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
