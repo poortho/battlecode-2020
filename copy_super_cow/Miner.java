@@ -115,8 +115,7 @@ public class Miner {
 			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
-					//if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
-						//new_loc.distanceSquaredTo(hq) > 4) {
+					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 8) {
 
 						boolean valid = true;
 						for (int j = 0; j < directions.length; j++) {
@@ -135,7 +134,7 @@ public class Miner {
 						if (res) {
 							Comms.broadcast_building(hq, toBuild);
 						}
-					//}
+					}
 				}
 			}
 		}
@@ -394,7 +393,7 @@ public class Miner {
 	// get next target coordinate to explore to
 	// this gets called when miner is created and there are no patches around miner, or when miner reaches current target and needs a new target
 	static MapLocation get_explore_target() throws GameActionException {
-		must_reach_dest = (Comms.miner_queue_num[Comms.poll_idx] & (1 << 16)) == 1;
+		must_reach_dest = false;//(Comms.miner_queue_num[Comms.poll_idx] & (1 << 16)) == 1;
 		if (Comms.poll_idx + 1 < 20 && !new_loc)
 			Comms.broadcast_miner_remove(Comms.poll_idx + 1);
 		return Comms.miner_queue_peek();
@@ -555,7 +554,7 @@ public class Miner {
   	} else if (((num_enemy_landscapers > 0)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || rc.getTeamSoup() > 1300) && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || rc.getTeamSoup() > 1300 || near_hq) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun && !near_hq) {
 		  return RobotType.NET_GUN;

@@ -2,12 +2,13 @@ package copy_super_cow;
 
 import battlecode.common.*;
 
-import static copy_super_cow.Helper.directions;
+import static copy_super_cow.Helper.*;
 import static copy_super_cow.RobotPlayer.rc;
 import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Landscaper {
     static MapLocation cur_loc;
+    static int lattice_elevation = 5;
     static MapLocation previous_location;
     static boolean bugpath_blocked;
     static boolean[] blacklist = new boolean[directions.length];
@@ -22,8 +23,10 @@ public class Landscaper {
     static int nearby_landscapers_not_adjacent_hq = 0;
     static int move_counter = 0;
     static MapLocation my_design = null;
+    static MapLocation[] explore_locs = null;
 
     static void runLandscaper() throws GameActionException {
+        lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()), 5);
         move_counter++;
         cur_loc = rc.getLocation();
         robots = rc.senseNearbyRobots();
@@ -63,11 +66,132 @@ public class Landscaper {
             }
         }
 
+        if (explore_locs == null && HQ.our_hq != null) {
+            explore_locs = new MapLocation[6];
+            int width = rc.getMapWidth();
+            int height = rc.getMapHeight();
+            MapLocation middle = new MapLocation(width / 2, height / 2);
+
+            // set locations
+            int delta_x = middle.x + (middle.x - HQ.our_hq.x);
+            int delta_y = middle.y + (middle.y - HQ.our_hq.y);
+            explore_locs[0] = new MapLocation(middle.x, middle.y);
+            explore_locs[1] = new MapLocation(delta_x, delta_y);
+            explore_locs[2] = new MapLocation(delta_x, HQ.our_hq.y);
+            explore_locs[3] = new MapLocation(HQ.our_hq.x, delta_y);
+            explore_locs[4] = new MapLocation(delta_x, middle.y);
+            explore_locs[5] = new MapLocation(middle.x, delta_y);
+        }
+
+        do_lattice();
+        /*
         if (defensive) {
             do_defense();
         } else {
             do_offense();
         }
+         */
+    }
+
+    static void lattice_walk(MapLocation loc) throws GameActionException {
+        // bugpath walk but dont fall into lattice holes
+        if (!rc.isReady()) {
+            return;
+        }
+        Direction greedy;
+
+        int least_dist = cur_loc.distanceSquaredTo(loc);
+        int next = -1;
+        int greedy_dist = 9999999;
+        int greedy_idx = -1;
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation next_loc = cur_loc.add(directions[i]);
+            int temp_dist = next_loc.distanceSquaredTo(loc);
+            if (rc.canMove(directions[i])) {
+                if (temp_dist < least_dist && !rc.senseFlooding(next_loc) && !blacklist[i]) {
+                    least_dist = temp_dist;
+                    next = i;
+                }
+            }
+            if (temp_dist < greedy_dist) {
+                greedy_dist = temp_dist;
+                greedy_idx = i;
+            }
+        }
+
+        if (!bugpath_blocked && next != -1 && isLattice(cur_loc.add(directions[next]))) {
+            rc.move(directions[next]);
+        } else {
+            if (bugpath_blocked) {
+                Direction start_dir = cur_loc.directionTo(previous_location);
+                for (int i = 0; i < Helper.directions.length; i++) {
+                    if (Helper.directions[i] == start_dir) {
+                        next = i;
+                        break;
+                    }
+                }
+            }
+            bugpath_blocked = true;
+            if (next == -1) {
+                next = greedy_idx;
+            }
+            for (int i = 0; i < 7; i++) {
+                next = (next + 1) % directions.length;
+                Direction cw = directions[next];
+                MapLocation next_loc = cur_loc.add(cw);
+                if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc) &&
+                    isLattice(cur_loc.add(directions[next]))) {
+                    if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
+                        bugpath_blocked = false;
+                    }
+                    rc.move(cw);
+                    previous_location = cur_loc;
+                    break;
+                }
+            }
+        }
+    }
+
+    static void do_lattice() throws GameActionException {
+        if (cur_loc.distanceSquaredTo(HQ.our_hq) <= 8) {
+            // greedy move away
+            // this shouldnt be an issue later, cuz we will add turtle
+            greedy_move_away(HQ.our_hq, cur_loc);
+            return;
+        }
+        // if any tile not up to spec, find it
+        for (int i = 0; i < distx_35.length; i++) {
+            MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[i], cur_loc.y + disty_35[i]);
+            if (rc.canSenseLocation(new_loc)) {
+                if (new_loc.distanceSquaredTo(HQ.our_hq) > 8 &&
+                        rc.senseElevation(new_loc) < lattice_elevation &&
+                        isLattice(new_loc)) {
+                    RobotInfo r = rc.senseRobotAtLocation(new_loc);
+                    if (r == null || !r.type.isBuilding()) {
+                        if (cur_loc.distanceSquaredTo(new_loc) <= 3) {
+                            // adjacent
+                            if (rc.getDirtCarrying() > 0) {
+                                // deposit
+                                if (rc.canDepositDirt(cur_loc.directionTo(new_loc))) {
+                                    rc.depositDirt(cur_loc.directionTo(new_loc));
+                                }
+                            } else {
+                                // dig
+                                Helper.digLattice(cur_loc);
+                            }
+                        } else {
+                            // not adjacent, walk to it pepega
+                            lattice_walk(new_loc);
+                        }
+                        return;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        // move in random direction i guess?
+        lattice_walk(explore_locs[rc.getID() % explore_locs.length]);
     }
 
     static void do_defense() throws GameActionException {

@@ -275,7 +275,7 @@ public class Helper {
     RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam() == Team.A ? Team.B : Team.A);
     for (int i = 0; i < robots.length; i++) {
       if ((robots[i].type == RobotType.NET_GUN || robots[i].type == RobotType.HQ) &&
-              RobotPlayer.netgun_map[robots[i].location.x][robots[i].location.y] <= Math.max(rc.getRoundNum() - 100, 0)) {
+              RobotPlayer.netgun_map[robots[i].location.x][robots[i].location.y] >= Math.max(rc.getRoundNum() - 100, 0)) {
         // netgun, broadcast it :O
         Comms.broadcast_enemy_netgun(robots[i].location);
       }
@@ -284,5 +284,20 @@ public class Helper {
 
   static boolean onTheMap(MapLocation loc) {
     return loc.x >= 0 && loc.y >= 0 && loc.x < rc.getMapWidth() && loc.y < rc.getMapHeight();
+  }
+
+  static boolean digLattice(MapLocation cur_loc) throws GameActionException {
+    for (int i = 0; i < directions.length; i++) {
+      MapLocation new_loc = cur_loc.add(directions[i]);
+      if (Math.abs(new_loc.x - HQ.our_hq.x) % 2 == 1 && Math.abs(new_loc.y - HQ.our_hq.y) % 2 == 1 && rc.canDigDirt(directions[i])) {
+        rc.digDirt(directions[i]);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static boolean isLattice(MapLocation loc) {
+    return Math.abs(loc.x - HQ.our_hq.x) % 2 != 1 || Math.abs(loc.y - HQ.our_hq.y) % 2 != 1;
   }
 }

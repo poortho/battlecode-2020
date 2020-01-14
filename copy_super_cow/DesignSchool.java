@@ -17,7 +17,6 @@ public class DesignSchool {
     static int mine_count;
 
     static void runDesignSchool() throws GameActionException {
-        /*
         mine_count = count_mine();
         RobotInfo[] robots = rc.senseNearbyRobots();
         int num_enemy_buildings = 0;
@@ -68,11 +67,11 @@ public class DesignSchool {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
-        if (rc.getTeamSoup() >= 1000) {
+        if (rc.getTeamSoup() >= 3000) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
-        if ((num_enemy_design > 0 && num_enemy_drones == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1)))
+        /*if ((num_enemy_design > 0 && num_enemy_drones == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1)))
             || rc.getTeamSoup() >= 500*(near_hq ? 0.5 : 1)) {
             if (near_hq && num_landscapers >= 8) {
                 // do nothing
@@ -83,8 +82,7 @@ public class DesignSchool {
                     Helper.tryBuild(RobotType.LANDSCAPER);
                 }
             }
-        }
-*/
+        }*/
     }
 
     static int count_mine() throws GameActionException {
