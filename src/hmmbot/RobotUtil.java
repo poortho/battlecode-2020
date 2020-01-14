@@ -6,21 +6,48 @@ import java.util.function.Function;
 
 public class RobotUtil {
     RobotController rc;
+
+    GameState gameState;
+    CommunicationManager comms;
+
     boolean bugClockwise;
 
     final boolean DEBUG_MODE = true;
 
+    int lastRound = -1;
+    int birthRound = -1;
+
     public RobotUtil(RobotController rc) {
         this.rc = rc;
+        this.gameState = new GameState(rc.getMapWidth(), rc.getMapHeight());
+        this.comms = new CommunicationManager(this.rc, this.gameState);
+
         this.bugClockwise = rc.getID() % 2 == 0;
 
         this.log(this.bugClockwise ? "Clockwise!" : "Counterclockwise!");
     }
 
-    public void waitCooldown() {
+    public void waitCooldown() throws GameActionException {
         while (!this.rc.isReady()) {
-            Clock.yield();
+            yield();
         }
+    }
+
+    public void preTurn() throws GameActionException {
+        this.comms.catchUp();
+        if (lastRound != -1) {
+            if (rc.getRoundNum() != lastRound + 1) {
+                this.log("TURN WAS SKIPPED -- BYTECODE OVERFLOW???\n");
+            }
+        } else {
+            birthRound = lastRound;
+        }
+        lastRound = rc.getRoundNum();
+    }
+
+    public void yield() throws GameActionException {
+        Clock.yield();
+        this.preTurn();
     }
 
     public MapLocation tryBuild(RobotType type, Direction dir) throws GameActionException {
@@ -40,14 +67,6 @@ public class RobotUtil {
             }
         }
         return null;
-    }
-
-    public boolean broadcast(RobotMessage message, int txfee) throws GameActionException {
-        int[] encodedMessage = message.encode();
-        if (!this.rc.canSubmitTransaction(encodedMessage, txfee))
-            return false;
-        this.rc.submitTransaction(encodedMessage, txfee);
-        return true;
     }
 
     public RobotInfo[] seeRobots() {
@@ -225,6 +244,11 @@ public class RobotUtil {
         return new MapLocation((int) (Math.random() * rc.getMapWidth()), (int) (Math.random() * rc.getMapHeight()));
     }
 
+    public MapLocation randomLocation(int w, int h, MapLocation c) {
+        // todo: replace hardcode 64 with getMapWidth/getMapHeight
+        return new MapLocation((int) (Math.random() * w) + c.x - w/2, (int) (Math.random() * h) + c.y - h/2);
+    }
+
     public RobotInfo closestRobot(RobotInfo[] robots, RobotType type, boolean sameTeam) {
         RobotInfo closest = null;
         int closestDist = 1 << 30;
@@ -243,5 +267,33 @@ public class RobotUtil {
     public void log(String s) {
         if (DEBUG_MODE)
             System.out.println(s);
+    }
+
+    public boolean isGoodPosition(MapLocation loc) {
+        if (distanceLinf(this.gameState.hqLocation, loc) <= 2) {
+            return true;
+        }
+        for (Direction baseDir : Direction.allDirections()) {
+            MapLocation center = new MapLocation(this.gameState.hqLocation.x + baseDir.dx * 6,this.gameState.hqLocation.y + baseDir.dy * 6);
+            int dx = Math.abs(center.x - loc.x);
+            int dy = Math.abs(center.y - loc.y);
+            if (dx == 2 && dy == 1 || dx == 1 && dy == 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public MapLocation closestCenter(MapLocation loc) {
+        int closestDist = 1 << 30;
+        MapLocation closest = null;
+        for (Direction baseDir : Direction.allDirections()) {
+            MapLocation center = new MapLocation(this.gameState.hqLocation.x + baseDir.dx * 6,this.gameState.hqLocation.y + baseDir.dy * 6);
+            if (closest == null || distanceLinf(center, loc) < closestDist) {
+                closest = center;
+                closestDist = distanceLinf(center, loc);
+            }
+        }
+        return closest;
     }
 }

@@ -16,22 +16,28 @@ public class FulfillmentCenter {
         this.rc = rc;
 
         this.util = new RobotUtil(this.rc);
-        this.gameState = new GameState();
+        this.gameState = util.gameState;
 
     }
 
     public void run() throws GameActionException {
+        util.preTurn();
         while (true) {
             this.util.waitCooldown();
-            if (dronesCreated < 100) {
+            if (dronesCreated < 100 && (rc.getTeamSoup() > 1100 || rc.getRoundNum() > 400)) {
                 if (this.util.tryBuild(RobotType.DELIVERY_DRONE) != null) {
                     dronesCreated += 1;
+
+                    for (int i = 0; i < 30; i++) {
+                        util.yield();
+                    }
+
                     continue;
                 } else {
                     this.util.log("Failed to create landscaper!");
                 }
             }
-            Clock.yield();
+            util.yield();
         }
     }
 

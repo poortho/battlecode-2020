@@ -57,6 +57,10 @@ public strictfp class RobotPlayer {
                         FulfillmentCenter fulfillmentCenter = new FulfillmentCenter(rc);
                         fulfillmentCenter.run();
                         break;
+                    case NET_GUN:
+                        NetGun netGun = new NetGun(rc);
+                        netGun.run();
+                        break;
                     default:
                         while (true) {
                             Clock.yield();

@@ -15,60 +15,64 @@ public class HQ {
     }
 
     public void run() throws GameActionException {
+        this.util.preTurn();
+        this.util.comms.broadcastHqLocation(rc.getLocation().x, rc.getLocation().y);
 
         while (minersCreated < 3) {
             this.util.waitCooldown();
             if (this.checkDrones()) {
-                Clock.yield();
+                util.yield();
                 continue;
             }
             if (this.util.tryBuild(RobotType.MINER) != null) {
                 minersCreated += 1;
-                Clock.yield();
+                util.yield();
                 continue;
             }
 
-            Clock.yield();
+            util.yield();
         }
 
-        while (rc.getTeamSoup() < 500) {
+        while (rc.getTeamSoup() < 300 || rc.getRoundNum() < 20) {
             if (this.checkDrones()) {
-                Clock.yield();
+                util.yield();
                 continue;
             }
-            Clock.yield();
+            util.yield();
         }
 
-        while (minersCreated < rc.getTeamSoup() / 700) {
+        // try to build a miner to build a design school!
+        while (true) {
             this.util.waitCooldown();
             if (this.checkDrones()) {
-                Clock.yield();
+                util.yield();
                 continue;
             }
             if (this.util.tryBuild(RobotType.MINER) != null) {
                 minersCreated += 1;
-                for (int i = 0; i < 20; i++)
-                    Clock.yield();
+                for (int i = 0; i < 11; i++)
+                    util.yield();
 
-                continue;
+                break;
             }
 
-            Clock.yield();
+            util.yield();
         }
 
         while (true) {
             this.util.waitCooldown();
             if (this.checkDrones()) {
-                Clock.yield();
+                util.yield();
                 continue;
             }
-            if (rc.getTeamSoup() / minersCreated > 400) {
+            if (minersCreated < 15 && minersCreated < rc.getRoundNum() / 10|| rc.getTeamSoup() / minersCreated > 300 - rc.getRoundNum() / 10) {
                 if (this.util.tryBuild(RobotType.MINER) != null) {
                     minersCreated += 1;
+                    util.yield();
                     continue;
                 }
             }
-            Clock.yield();
+            util.yield();
         }
     }
 
