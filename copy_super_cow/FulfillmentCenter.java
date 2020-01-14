@@ -15,7 +15,7 @@ public class FulfillmentCenter {
     static MapLocation cur_loc;
 
     static void runFulfillmentCenter() throws GameActionException {
-        /*cur_loc = rc.getLocation();
+        cur_loc = rc.getLocation();
         RobotInfo[] robots = rc.senseNearbyRobots();
         int num_enemy_units = 0;
         int num_drones = 0;
@@ -55,12 +55,12 @@ public class FulfillmentCenter {
         // scale threshold based on number of drones nearby
         if (enemy_hq == 0 && enemy_net_gun == 0) {
             if ((num_enemy_units > 0 && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost*(1+num_drones)) ||
-                    (near_hq && (num_drones < num_enemy_units) && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost) ||
-                    (rc.getTeamSoup() >= 450 && near_hq) ||
+                    //(near_hq && (num_drones < num_enemy_units) && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost) ||
+                    //(rc.getTeamSoup() >= 450 && near_hq) ||
                     (Helper.getLevel(round) + 1 == rc.senseElevation(cur_loc) && near_hq)) {
                 Helper.tryBuild(RobotType.DELIVERY_DRONE);
                 drones_produced++;
             }
-        }*/
+        }
     }
 }

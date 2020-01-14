@@ -24,6 +24,7 @@ public class Miner {
   static boolean check_new_patch = false;
   static boolean must_reach_dest = false;
   static boolean first_target = false;
+  static boolean near_refinery = false;
   static RobotInfo[] robots;
   static boolean[] blacklist = new boolean[directions.length];
   static boolean in_danger;
@@ -73,8 +74,9 @@ public class Miner {
 		// if landscapers, build drone
 		// if buildings, build landscape
 
-		// check for duplicate
 		duplicate_building = false;
+		// check for duplicate
+
 		if (toBuild != null) {
 			switch (toBuild) {
 				case DESIGN_SCHOOL:
@@ -94,18 +96,27 @@ public class Miner {
 						}
 					}
 					break;
+				/*
+				case NET_GUN:
+					for (int i = 0; i < Comms.netgun_idx; i++) {
+						if (Comms.netguns[i].equals(hq)) {
+							duplicate_building = true;
+							break;
+						}
+					}
+					break;*/
 			}
 		}
 
 		// build thing
-		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5 && num_enemies != 0) ||
+		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
 			// build if none nearby and (nearby enemies or close to hq)
-			if (cur_loc.distanceSquaredTo(hq) <= 13) {
+			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
-					if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
-						new_loc.distanceSquaredTo(hq) > 4) {
+					//if (new_loc.distanceSquaredTo(hq) < GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED &&
+						//new_loc.distanceSquaredTo(hq) > 4) {
 
 						boolean valid = true;
 						for (int j = 0; j < directions.length; j++) {
@@ -124,7 +135,7 @@ public class Miner {
 						if (res) {
 							Comms.broadcast_building(hq, toBuild);
 						}
-					}
+					//}
 				}
 			}
 		}
@@ -208,6 +219,7 @@ public class Miner {
 		nearby_fulfillment = false;
 		nearby_netgun = false;
 		nearby_design = false;
+		near_refinery = false;
 		friendy_landscapers = 0;
 		int min_dist = 999999;
 		for (int i = 0; i < robots.length; i++) {
@@ -266,6 +278,7 @@ public class Miner {
 							hq = rob_loc;
 							hq_dist = temp_dist;
 						}
+						near_refinery = true;
 					case FULFILLMENT_CENTER:
 						nearby_fulfillment = true;
 						break;
@@ -331,8 +344,8 @@ public class Miner {
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
 				// deposit
 				tryDepositSoup(cur_loc.directionTo(hq));
-			} else if (target_mine.distanceSquaredTo(hq) > 80 && target_mine.distanceSquaredTo(cur_loc) < 24
-					&& mine_count > 600 && num_enemy_landscapers == 0 &&
+			} else if (((target_mine.distanceSquaredTo(hq) > 40 && target_mine.distanceSquaredTo(cur_loc) < 24
+					&& mine_count > 400 && num_enemy_landscapers == 0)) &&
 					(res = tryBuild(RobotType.REFINERY)) != -1) {
 				// build refinery
 				hq = cur_loc.add(directions[res]);
@@ -537,17 +550,15 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-	  if (((num_enemy_landscapers > num_enemy_drones && num_enemy_landscapers > num_enemy_buildings) || near_hq) && !nearby_fulfillment) {
+  	if (num_enemy_drones >= 1 && !nearby_netgun) {
+  		return RobotType.NET_GUN;
+  	} else if (((num_enemy_landscapers > 0)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || num_enemy_miners > 0) && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || rc.getTeamSoup() > 1300) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun && !near_hq) {
 		  return RobotType.NET_GUN;
-	  } else if (!nearby_fulfillment && near_hq && hq.equals(HQ.our_hq) && rc.getTeamSoup() > 300) {
-		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (!nearby_design && near_hq && hq.equals(HQ.our_hq) && rc.getTeamSoup() > 300) {
-		  return RobotType.DESIGN_SCHOOL;
 	  }
 	  return RobotType.VAPORATOR;
   }

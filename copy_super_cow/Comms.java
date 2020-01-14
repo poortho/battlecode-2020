@@ -29,6 +29,8 @@ public class Comms {
   static int design_school_idx = 0;
   static MapLocation[] fulfillment_centers = new MapLocation[10];
   static int fulfillment_center_idx = 0;
+  static MapLocation[] netguns = new MapLocation[100];
+  static int netgun_idx = 0;
 
 	public static void getBlocks() throws GameActionException {
 		// received all new messages
@@ -162,12 +164,16 @@ public class Comms {
 								y = (temp_msg[j] >> 4) & 0xff;
 								int val1 = (temp_msg[j] >> 20) & 0x1;
 								int val2 = (temp_msg[j] >> 21) & 0x1;
+								int val3 = (temp_msg[j] >> 22) & 0x1;
 								if (val1 == 1) {
 									design_schools[design_school_idx] = new MapLocation(x, y);
 									design_school_idx++;
 								} else if (val2 == 1) {
 									fulfillment_centers[fulfillment_center_idx] = new MapLocation(x, y);
 									fulfillment_center_idx++;
+								} else if (val3 == 1) {
+									netguns[netgun_idx] = new MapLocation(x, y);
+									netgun_idx++;
 								}
 								break;
 						}
@@ -189,6 +195,9 @@ public class Comms {
 				break;
 			case FULFILLMENT_CENTER:
 				val |= 1 << 21;
+				break;
+			case NET_GUN:
+				val |= 1 << 22;
 				break;
 		}
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};

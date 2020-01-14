@@ -111,7 +111,7 @@ public class HQ {
             MapLocation loc = possible_enemy_locs[i];
             int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
             val |= 3 << 24;
-            msg[i] = val;
+            msg[3 - i] = val;
           }
           Comms.addMessage(msg, 1, 2);
           //for (int i = 5; i >= 0; i--) {
