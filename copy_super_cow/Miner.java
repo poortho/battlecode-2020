@@ -14,6 +14,7 @@ public class Miner {
   static MapLocation hq = null;
   static int target_idx = -1;
   static int drone_factories_built = 0;
+  static MapLocation find_mine_loc;
 
   static boolean new_loc = false;
 
@@ -57,16 +58,22 @@ public class Miner {
 			hq = find_hq();
 		}
 
-		for (int i = 0; i < blacklist.length; i++) {
+		for (int i = blacklist.length; --i >= 0; ) {
 			blacklist[i] = false;
 		}
 		Comms.getBlocks();
 
 		robots = rc.senseNearbyRobots();
 
-		mine_count = count_mine();
-
 		sense();
+
+		if (in_danger) {
+			for (int i = directions.length; --i >= 0; ) {
+				if (!blacklist[i] && rc.canMove(directions[i]) && !rc.senseFlooding(cur_loc.add(directions[i]))) {
+					Helper.tryMove(directions[i]);
+				}
+			}
+		}
 
 		RobotType toBuild = calcBuilding();
 
@@ -80,7 +87,7 @@ public class Miner {
 		if (toBuild != null) {
 			switch (toBuild) {
 				case DESIGN_SCHOOL:
-					for (int i = 0; i < Comms.design_school_idx; i++) {
+					for (int i = Comms.design_school_idx; --i >= 0; ) {
 						if (Comms.design_schools[i].equals(hq)) {
 							duplicate_building = true;
 							break;
@@ -89,7 +96,7 @@ public class Miner {
 					break;
 
 				case FULFILLMENT_CENTER:
-					for (int i = 0; i < Comms.fulfillment_center_idx; i++) {
+					for (int i = Comms.fulfillment_center_idx; --i >= 0; ) {
 						if (Comms.fulfillment_centers[i].equals(hq)) {
 							duplicate_building = true;
 							break;
@@ -109,7 +116,7 @@ public class Miner {
 		}
 
 		// build thing
-		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= (int)toBuild.cost*1.5) ||
+		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*1.5) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
 			// build if none nearby and (nearby enemies or close to hq)
 			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
@@ -118,7 +125,7 @@ public class Miner {
 					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 8) {
 
 						boolean valid = true;
-						for (int j = 0; j < directions.length; j++) {
+						for (int j = directions.length; --j >= 0; ) {
 							if (rc.canSenseLocation(new_loc.add(directions[j]))) {
 								RobotInfo robot = rc.senseRobotAtLocation(new_loc.add(directions[j]));
 								if (robot != null && robot.type.isBuilding()) {
@@ -139,8 +146,13 @@ public class Miner {
 			}
 		}
 
+		//System.out.println(Clock.getBytecodesLeft());
+		mine_count = count_mine();
+		//System.out.println(Clock.getBytecodesLeft());
+
 		if (target_explore != null) {
 			find_mine();
+			//System.out.println(Clock.getBytecodesLeft());
 			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
 				target_explore = get_explore_target();
 			}
@@ -221,7 +233,7 @@ public class Miner {
 		near_refinery = false;
 		friendy_landscapers = 0;
 		int min_dist = 999999;
-		for (int i = 0; i < robots.length; i++) {
+		for (int i = robots.length; --i >= 0; ) {
 			MapLocation rob_loc = robots[i].location;
 			int temp_dist = rob_loc.distanceSquaredTo(cur_loc);
 
@@ -230,13 +242,13 @@ public class Miner {
 				num_enemies++;
 				switch (robots[i].type) {
 					case DELIVERY_DRONE:
-						if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-							in_danger = true;
-						}
-						for (int j = 0; j < directions.length; j++) {
-							if (cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
-									<= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
-								blacklist[j] = true;
+						if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= 8) {
+							if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+								in_danger = true;
+							}
+							for (int j = directions.length; --j >= 0; ) {
+								blacklist[j] = blacklist[j] || cur_loc.add(directions[j]).distanceSquaredTo(robots[i].getLocation())
+										<= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED;
 							}
 						}
 						num_enemy_drones++;
@@ -374,7 +386,7 @@ public class Miner {
 
 		// make sure this patch wasn't already broadcasted
 		//System.out.println("broadcast patch: " + target_mine.toString());
-		for (int c = 0; c < explored_count; c++) {
+		for (int c = explored_count; --c >= 0; ) {
 			if (target_mine.distanceSquaredTo(explored[c]) <= 45) {
 				return;
 			}
@@ -400,7 +412,7 @@ public class Miner {
 	}
 
 	static MapLocation find_hq() throws GameActionException {
-		for (int i = 0; i < 9; i++) {
+		for (int i = 9; --i >= 0; ) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
 			RobotInfo temp = rc.senseRobotAtLocation(next_loc);
 			if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
@@ -414,36 +426,28 @@ public class Miner {
 
 	static int count_mine() throws GameActionException {
 		int total_soup = 0;
+		find_mine_loc = null;
 		for (int i = 0; i < distx_35.length; i++) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
 			if (rc.canSenseLocation(next_loc)) {
 				int count = rc.senseSoup(next_loc);
 				total_soup += count;
+				if (find_mine_loc == null && count > 0) {
+					find_mine_loc = next_loc;
+				}
 			}
 		}
 		return total_soup;
 	}
 
 	static MapLocation find_mine() throws GameActionException {
-		for (int i = 0; i < distx_35.length; i++) {
-			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-			if (rc.canSenseLocation(next_loc) && !rc.senseFlooding(next_loc)) {
-				int count = rc.senseSoup(next_loc);
-				if (count > 0) {
-					//System.out.println("Found mine at:" + next_loc.toString());
-					check_new_patch = true;
-					target_mine = next_loc;
-					if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
-						broadcast_patch();
-					}
-					return next_loc;
-					/*
-					if (rc.isReady()) {
-						miner_walk(next_loc);
-					}
-					return;*/
-				}
+		if (find_mine_loc != null) {
+			check_new_patch = true;
+			target_mine = find_mine_loc;
+			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
+				broadcast_patch();
 			}
+			return target_mine;
 		}
 		return null;
 	}

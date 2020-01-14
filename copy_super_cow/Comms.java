@@ -187,6 +187,13 @@ public class Comms {
 		}
 	}
 
+	public static boolean broadcast_done_turtle() throws GameActionException {
+		int val = 0xa;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		return addMessage(msg, 1, 2);
+	}
+
 	public static void broadcast_building(MapLocation hq, RobotType type) throws GameActionException {
 		int val = 0x9 | (hq.y << 4) | (hq.x << 12);
 		switch (type) {

@@ -47,7 +47,8 @@ public class DeliveryDrone {
                         // avoid netgun
                         if (HQ.patrol_broadcast_round == -1 || round < HQ.patrol_broadcast_round + 130) {
                             for (int j = directions.length; --j >= 0; ) {
-                                blacklist[j] = cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED;
+                                blacklist[j] = blacklist[j] ||
+                                        cur_loc.add(directions[j]).distanceSquaredTo(temp_loc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED;
                             }
                         }
                         break;

@@ -37,7 +37,6 @@ public class HQ {
     static MapLocation closest_rush_enemy = null;
 
     static void runHQ() throws GameActionException {
-
       cur_loc = rc.getLocation();
 
       turtling = check_turtling();
