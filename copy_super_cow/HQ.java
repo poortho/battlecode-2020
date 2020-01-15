@@ -13,6 +13,7 @@ import static copy_super_cow.RobotPlayer.*;
 public class HQ {
 
     static int TOTAL_MINERS = 3;
+    static boolean done_turtling = false;
 
     // used in determining which of 3 directions to send...
     static int rotation = 0;
@@ -147,8 +148,27 @@ public class HQ {
         } else if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           handle_miners();
         }
+
+        if (!HQ.done_turtling) {
+            check_turtle();
+        }
 	    }
 	  }
+
+	  static void check_turtle() throws GameActionException {
+        boolean is_full = true;
+        for (int i = 1; Math.pow(distx_35[i], 2) + Math.pow(disty_35[i], 2) <= 8; i++) {
+            RobotInfo r;
+            MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+            if (rc.canSenseLocation(new_loc)) {
+                r = rc.senseRobotAtLocation(new_loc);
+                is_full = is_full && r != null && r.type == RobotType.LANDSCAPER;
+            }
+        }
+        if (is_full) {
+            Comms.broadcast_done_turtle();
+        }
+      }
 
     static boolean check_turtling() throws GameActionException {
       int blocked = 0;

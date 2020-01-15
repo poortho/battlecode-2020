@@ -26,6 +26,9 @@ public class Landscaper {
     static MapLocation[] explore_locs = null;
 
     static void runLandscaper() throws GameActionException {
+        if (my_hq == null && HQ.our_hq != null) {
+            my_hq = HQ.our_hq;
+        }
         lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()) + 3, 5);
         move_counter++;
         cur_loc = rc.getLocation();
@@ -83,7 +86,9 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (destination != null) {
+        if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8)) {
+            do_defense_new();
+        } else if (destination != null) {
             do_offense();
         } else {
             do_lattice();
@@ -196,6 +201,146 @@ public class Landscaper {
         }
         // move in random direction i guess?
         lattice_walk(explore_locs[rc.getID() % explore_locs.length]);
+    }
+
+    static void do_defense_new() throws GameActionException {
+        // TODO: make landscapers attack adjacent enemy buildings...
+        int dist_from_hq = cur_loc.distanceSquaredTo(my_hq);
+        if (dist_from_hq == 1) {
+            // edge, stay
+            // check if pair landscaper exists
+            RobotInfo r = rc.senseRobotAtLocation(cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq))));
+            if ((r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) ||
+                    rc.senseFlooding(cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq))))) {
+                // can start digging!
+                do_turtle();
+            }
+            // else wait...
+        } else if (dist_from_hq == 2) {
+            // corner of HQ
+            // first, check if there is an edge or 2nd ring edge that is empty...
+            MapLocation dest = search_for_dest();
+            if (dest != null) {
+                if (cur_loc.distanceSquaredTo(dest) <= 3) {
+                    aggressive_landscaper_walk(dest);
+                } else {
+                    bugpath_walk(dest);
+                }
+            } else {
+                // can start digging!
+                do_turtle();
+            }
+        } else if (dist_from_hq == 4) {
+            // edge, 2nd ring
+            RobotInfo r = rc.senseRobotAtLocation(cur_loc.add(cur_loc.directionTo(my_hq)));
+            if (r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) {
+                // can start digging!
+                do_turtle();
+            }
+        } else if (dist_from_hq <= 8) {
+            // second ring, not edge
+            // first, check if there is an edge or 2nd ring edge that is empty...
+            MapLocation dest = search_for_dest();
+            if (dest != null) {
+                if (cur_loc.distanceSquaredTo(dest) <= 3) {
+                    aggressive_landscaper_walk(dest);
+                } else {
+                    bugpath_walk(dest);
+                }
+            } else {
+                // can start digging!
+                do_turtle();
+            }
+        } else {
+            // far away
+            bugpath_walk(my_hq);
+        }
+    }
+
+    static void do_turtle() throws GameActionException {
+        // check if any flood near me
+        boolean near_flood = false;
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation new_loc = cur_loc.add(directions[i]);
+            if (rc.canSenseLocation(new_loc)) {
+                if (rc.senseFlooding(new_loc)) {
+                    near_flood = true;
+                    break;
+                }
+            }
+        }
+
+        if (rc.getDirtCarrying() > 0) {
+            if (near_flood || HQ.done_turtling) {
+                // REEEE fill in lowest elevation adjacent to HQ
+                int min_el = 999999999;
+                Direction min_d = null;
+                for (int i = 0; i < directions.length; i++) {
+                    MapLocation new_loc = cur_loc.add(directions[i]);
+                    if (new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
+                            min_el > rc.senseElevation(new_loc)) {
+                        min_el = rc.senseElevation(new_loc);
+                        //System.out.println(cur_loc.add(directions[i]));
+                        min_d = directions[i];
+                    }
+                }
+                if (min_d != null && rc.canDepositDirt(min_d)) {
+                    rc.depositDirt(min_d);
+                }
+            } else {
+                // flood not nearby, just deposit near HQ
+                if (cur_loc.distanceSquaredTo(my_hq) <= 3) {
+                    // adjacent, deposit center
+                    if (rc.canDepositDirt(Direction.CENTER)) {
+                        rc.depositDirt(Direction.CENTER);
+                    }
+                } else {
+                    // deposit
+                    if (rc.canDepositDirt(cur_loc.directionTo(my_hq))) {
+                        rc.depositDirt(cur_loc.directionTo(my_hq));
+                    }
+                }
+            }
+        } else {
+            if (!Helper.tryDigEdges()) {
+                // in second ring corner... dig center
+                if (rc.canDigDirt(Direction.CENTER)) {
+                    rc.digDirt(Direction.CENTER);
+                }
+            }
+        }
+    }
+
+    static MapLocation search_for_dest() throws GameActionException {
+        int min_dist = 99999;
+        MapLocation ret = null;
+        for (int i = 0; i < edges_x.length; i++) {
+            MapLocation loc_1 = my_hq.translate(edges_x[i]/2, edges_y[i]/2);
+            MapLocation loc_2 = loc_1.translate(edges_x[i]/2, edges_y[i]/2);
+            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && !rc.senseFlooding(loc_2) && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
+                min_dist = loc_1.distanceSquaredTo(cur_loc);
+                ret = loc_1;
+            }
+            if (rc.canSenseLocation(loc_2) && rc.senseRobotAtLocation(loc_2) == null && !rc.senseFlooding(loc_2) && loc_2.distanceSquaredTo(cur_loc) < min_dist) {
+                min_dist = loc_2.distanceSquaredTo(cur_loc);
+                ret = loc_2;
+            }
+        }
+
+        if (ret == null && cur_loc.distanceSquaredTo(my_hq) > 3) {
+            // not adjacent, check for adjacent corner
+            for (int i = directions.length; --i >= 0; ) {
+                MapLocation new_loc = my_hq.add(directions[i]);
+                if (rc.canSenseLocation(new_loc) && (rc.senseRobotAtLocation(new_loc) == null) &&
+                        cur_loc.distanceSquaredTo(new_loc) < min_dist) {
+                    min_dist = cur_loc.distanceSquaredTo(my_hq.add(directions[i]));
+                    ret = new_loc;
+                }
+            }
+        }
+
+        //System.out.println(ret);
+        return ret;
     }
 
     static void do_defense() throws GameActionException {

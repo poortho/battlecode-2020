@@ -176,6 +176,9 @@ public class Comms {
 									netgun_idx++;
 								}
 								break;
+							case 0xa:
+								HQ.done_turtling = true;
+								break;
 						}
 
 						temp_msg[j] ^= key;
