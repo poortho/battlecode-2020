@@ -4,6 +4,7 @@ import battlecode.common.*;
 
 import static copy_super_cow.Helper.*;
 import static copy_super_cow.RobotPlayer.rc;
+import static copy_super_cow.RobotPlayer.round;
 
 public class Miner {
 
@@ -49,10 +50,15 @@ public class Miner {
   static MapLocation gay_rush_design_school = null;
 
   static MapLocation closest_rush_enemy = null;
+  static boolean first_miner = false;
 
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 		in_danger = false;
+
+		if (round == 3) {
+			first_miner = true;
+		}
 
 		if (hq == null) {
 			hq = find_hq();
@@ -152,7 +158,7 @@ public class Miner {
 
 		if (target_mine != null) {
 			do_mine();
-		} else if (target_explore != null) {
+		} else if (target_explore != null && !first_miner) {
 			find_mine();
 			//System.out.println(Clock.getBytecodesLeft());
 			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
@@ -180,7 +186,7 @@ public class Miner {
 				do_mine();
 			} else {
 				target_explore = get_explore_target();
-				if (target_explore != null) {
+				if (target_explore != null && !first_miner) {
 					miner_walk(target_explore);
 				} else {
 					hq = HQ.our_hq;
@@ -619,7 +625,7 @@ public class Miner {
   static RobotType calcBuilding() {
   	if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if (((num_enemy_landscapers > 0)) && !nearby_fulfillment) {
+  	} else if (((num_enemy_landscapers > 0 || near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || rc.getTeamSoup() > 1300 || near_hq) && !nearby_design) {

@@ -143,9 +143,13 @@ public class HQ {
         }
 
         shootNetGun();
+        /*
         if (rushed && friendly_miner + friendly_turtle < 8) {
           build_defensive_miner(closest_rush_enemy);
         } else if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
+          handle_miners();
+        }*/
+        if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           handle_miners();
         }
 
