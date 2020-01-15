@@ -150,7 +150,9 @@ public class Miner {
 		mine_count = count_mine();
 		//System.out.println(Clock.getBytecodesLeft());
 
-		if (target_explore != null) {
+		if (target_mine != null) {
+			do_mine();
+		} else if (target_explore != null) {
 			find_mine();
 			//System.out.println(Clock.getBytecodesLeft());
 			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
