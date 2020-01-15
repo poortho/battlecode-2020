@@ -17,6 +17,7 @@ public class DesignSchool {
     static int mine_count;
 
     static void runDesignSchool() throws GameActionException {
+        Comms.getBlocks();
         mine_count = count_mine();
         RobotInfo[] robots = rc.senseNearbyRobots();
         int num_enemy_buildings = 0;
@@ -68,7 +69,7 @@ public class DesignSchool {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
-        if (rc.getTeamSoup() >= 3000) {
+        if (rc.getTeamSoup() >= 3000 || (!HQ.done_turtling && rc.getRoundNum() > 500 && HQ.our_hq != null && rc.getLocation().distanceSquaredTo(HQ.our_hq) < 100)) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 

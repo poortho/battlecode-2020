@@ -26,9 +26,6 @@ public class Landscaper {
     static MapLocation[] explore_locs = null;
 
     static void runLandscaper() throws GameActionException {
-        if (my_hq == null && HQ.our_hq != null) {
-            my_hq = HQ.our_hq;
-        }
         lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()) + 3, 5);
         move_counter++;
         cur_loc = rc.getLocation();
@@ -46,6 +43,10 @@ public class Landscaper {
         }
 
         Comms.getBlocks();
+
+        if (my_hq == null && HQ.our_hq != null) {
+            my_hq = HQ.our_hq;
+        }
 
         // if near destination and its empty, set destination to null
         if (destination != null && rc.canSenseLocation(destination)) {
@@ -251,9 +252,76 @@ public class Landscaper {
                 // can start digging!
                 do_turtle();
             }
+        } else if (Math.abs(cur_loc.x - my_hq.x) <= 3 && Math.abs(cur_loc.y - my_hq.y) <= 3) {
+            // third ring...
+            // basically, set elevation of third ring to lattice elevation lol
+            // also, fill in flood in 2nd ring if visible
+
+            // first, fill in 3rd ring...
+            fight_flood();
+            MapLocation dest = search_for_dest();
+            if (dest != null) {
+                if (cur_loc.distanceSquaredTo(dest) <= 3) {
+                    aggressive_landscaper_walk(dest);
+                } else {
+                    bugpath_walk(dest);
+                }
+            } else {
+                bugpath_walk(my_hq);
+            }
         } else {
             // far away
             bugpath_walk(my_hq);
+        }
+    }
+
+    static void fight_flood() throws GameActionException {
+        // check center
+        if (rc.senseElevation(cur_loc) < lattice_elevation) {
+            if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(Direction.CENTER)) {
+                rc.depositDirt(Direction.CENTER);
+            } else {
+                Helper.digLattice(cur_loc);
+            }
+            return;
+        }
+
+        // check adjacent
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation new_loc = cur_loc.add(directions[i]);
+            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
+                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) && rc.senseElevation(new_loc) < lattice_elevation) {
+                if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
+                    rc.depositDirt(directions[i]);
+                } else {
+                    Helper.digLattice(cur_loc);
+                }
+                return;
+            }
+        }
+
+
+        // check adjacent to adjacent
+        for (int i = 9; i < 25; i++) {
+            MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
+                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) &&
+                    rc.senseElevation(new_loc) < lattice_elevation) {
+                bugpath_walk(new_loc);
+                return;
+            }
+        }
+
+        // check 2nd ring
+        for (int i = 0; i < directions.length; i++) {
+            MapLocation new_loc = cur_loc.add(directions[i]);
+            if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.senseFlooding(new_loc)) {
+                if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
+                    rc.depositDirt(directions[i]);
+                } else {
+                    Helper.digLattice(cur_loc);
+                }
+            }
         }
     }
 
@@ -270,42 +338,44 @@ public class Landscaper {
             }
         }
 
-        if (rc.getDirtCarrying() > 0) {
-            if (near_flood || HQ.done_turtling) {
-                // REEEE fill in lowest elevation adjacent to HQ
-                int min_el = 999999999;
-                Direction min_d = null;
-                for (int i = 0; i < directions.length; i++) {
-                    MapLocation new_loc = cur_loc.add(directions[i]);
-                    if (new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
-                            min_el > rc.senseElevation(new_loc)) {
-                        min_el = rc.senseElevation(new_loc);
-                        //System.out.println(cur_loc.add(directions[i]));
-                        min_d = directions[i];
+        if (!near_flood || rc.getRoundNum() > 1000) {
+            if (rc.getDirtCarrying() > 0) {
+                if (near_flood || HQ.done_turtling) {
+                    // REEEE fill in lowest elevation adjacent to HQ
+                    int min_el = 999999999;
+                    Direction min_d = null;
+                    for (int i = 0; i < directions.length; i++) {
+                        MapLocation new_loc = cur_loc.add(directions[i]);
+                        if (new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
+                                min_el > rc.senseElevation(new_loc)) {
+                            min_el = rc.senseElevation(new_loc);
+                            //System.out.println(cur_loc.add(directions[i]));
+                            min_d = directions[i];
+                        }
                     }
-                }
-                if (min_d != null && rc.canDepositDirt(min_d)) {
-                    rc.depositDirt(min_d);
-                }
-            } else {
-                // flood not nearby, just deposit near HQ
-                if (cur_loc.distanceSquaredTo(my_hq) <= 3) {
-                    // adjacent, deposit center
-                    if (rc.canDepositDirt(Direction.CENTER)) {
-                        rc.depositDirt(Direction.CENTER);
+                    if (min_d != null && rc.canDepositDirt(min_d)) {
+                        rc.depositDirt(min_d);
                     }
                 } else {
-                    // deposit
-                    if (rc.canDepositDirt(cur_loc.directionTo(my_hq))) {
-                        rc.depositDirt(cur_loc.directionTo(my_hq));
+                    // flood not nearby, just deposit near HQ
+                    if (cur_loc.distanceSquaredTo(my_hq) <= 3) {
+                        // adjacent, deposit center
+                        if (rc.canDepositDirt(Direction.CENTER)) {
+                            rc.depositDirt(Direction.CENTER);
+                        }
+                    } else {
+                        // deposit
+                        if (rc.canDepositDirt(cur_loc.directionTo(my_hq))) {
+                            rc.depositDirt(cur_loc.directionTo(my_hq));
+                        }
                     }
                 }
-            }
-        } else {
-            if (!Helper.tryDigEdges()) {
-                // in second ring corner... dig center
-                if (rc.canDigDirt(Direction.CENTER)) {
-                    rc.digDirt(Direction.CENTER);
+            } else {
+                if (!Helper.tryDigEdges()) {
+                    // in second ring corner... dig center
+                    if (rc.canDigDirt(Direction.CENTER)) {
+                        rc.digDirt(Direction.CENTER);
+                    }
                 }
             }
         }
@@ -317,7 +387,7 @@ public class Landscaper {
         for (int i = 0; i < edges_x.length; i++) {
             MapLocation loc_1 = my_hq.translate(edges_x[i]/2, edges_y[i]/2);
             MapLocation loc_2 = loc_1.translate(edges_x[i]/2, edges_y[i]/2);
-            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && !rc.senseFlooding(loc_2) && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
+            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && !rc.senseFlooding(loc_1) && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
                 min_dist = loc_1.distanceSquaredTo(cur_loc);
                 ret = loc_1;
             }
@@ -334,6 +404,18 @@ public class Landscaper {
                 if (rc.canSenseLocation(new_loc) && (rc.senseRobotAtLocation(new_loc) == null) &&
                         cur_loc.distanceSquaredTo(new_loc) < min_dist) {
                     min_dist = cur_loc.distanceSquaredTo(my_hq.add(directions[i]));
+                    ret = new_loc;
+                }
+            }
+        }
+
+        if (ret == null && cur_loc.distanceSquaredTo(my_hq) > 8) {
+            // pepega search for anything
+            for (int i = 13; i < 25; i++) {
+                MapLocation new_loc = my_hq.translate(distx_35[i], disty_35[i]);
+                if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null &&
+                    cur_loc.distanceSquaredTo(new_loc) < min_dist) {
+                    min_dist = cur_loc.distanceSquaredTo(new_loc);
                     ret = new_loc;
                 }
             }

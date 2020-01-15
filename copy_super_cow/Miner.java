@@ -20,7 +20,7 @@ public class Miner {
 
   // patches already explored by other miners
   static MapLocation previous_location;
-  static MapLocation[] explored = new MapLocation[20];
+  static MapLocation[] explored = new MapLocation[Comms.arr_len];
   static int explored_count = 0;
   static boolean check_new_patch = false;
   static boolean must_reach_dest = false;
@@ -122,7 +122,7 @@ public class Miner {
 			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
-					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 8) {
+					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 18) {
 
 						boolean valid = true;
 						for (int j = directions.length; --j >= 0; ) {
@@ -182,9 +182,9 @@ public class Miner {
 					miner_walk(target_explore);
 				} else {
 					hq = HQ.our_hq;
-					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
+					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 18) {
 						Helper.greedy_move_away(hq, cur_loc);
-					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 13) {
+					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 25) {
 						miner_walk(hq);
 					}
 				}
