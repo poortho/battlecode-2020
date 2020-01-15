@@ -86,7 +86,7 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8)) {
+        if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
             do_defense_new();
         } else if (destination != null) {
             do_offense();

@@ -20,14 +20,15 @@ public class Comms {
 	public static MapLocation[] explore = new MapLocation[6];
 	public static boolean[] map_explore = new boolean[6];
 
-  static MapLocation[] miner_queue = new MapLocation[20];
-  static int[] miner_queue_num = new int[20];
-  static boolean[] must_reach = new boolean[20];
+	static int arr_len = 40;
+  static MapLocation[] miner_queue = new MapLocation[arr_len];
+  static int[] miner_queue_num = new int[arr_len];
+  static boolean[] must_reach = new boolean[arr_len];
   static int next_idx = 0, poll_idx = 0;
 
-  static MapLocation[] design_schools = new MapLocation[10];
+  static MapLocation[] design_schools = new MapLocation[arr_len/2];
   static int design_school_idx = 0;
-  static MapLocation[] fulfillment_centers = new MapLocation[10];
+  static MapLocation[] fulfillment_centers = new MapLocation[arr_len/2];
   static int fulfillment_center_idx = 0;
   static MapLocation[] netguns = new MapLocation[100];
   static int netgun_idx = 0;

@@ -284,7 +284,7 @@ public class Helper {
   static boolean digLattice(MapLocation cur_loc) throws GameActionException {
     for (int i = 0; i < directions.length; i++) {
       MapLocation new_loc = cur_loc.add(directions[i]);
-      if (Math.abs(new_loc.x - HQ.our_hq.x) % 2 == 1 && Math.abs(new_loc.y - HQ.our_hq.y) % 2 == 1 && rc.canDigDirt(directions[i])) {
+      if (!isLattice(new_loc) && rc.canDigDirt(directions[i])) {
         rc.digDirt(directions[i]);
         return true;
       }

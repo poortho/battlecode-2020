@@ -530,7 +530,69 @@ public class Miner {
 	}
 
 	static void miner_walk(MapLocation loc) throws GameActionException {
-		bugpath_walk(loc);
+		if (HQ.done_turtling) {
+			lattice_walk(loc);
+		} else {
+			bugpath_walk(loc);
+		}
+	}
+	static void lattice_walk(MapLocation loc) throws GameActionException {
+		// bugpath walk but dont fall into lattice holes
+		if (!rc.isReady()) {
+			return;
+		}
+		Direction greedy;
+
+		int least_dist = cur_loc.distanceSquaredTo(loc);
+		int next = -1;
+		int greedy_dist = 9999999;
+		int greedy_idx = -1;
+		for (int i = 0; i < directions.length; i++) {
+			MapLocation next_loc = cur_loc.add(directions[i]);
+			int temp_dist = next_loc.distanceSquaredTo(loc);
+			if (rc.canMove(directions[i])) {
+				if (temp_dist < least_dist && !rc.senseFlooding(next_loc) && !blacklist[i]) {
+					least_dist = temp_dist;
+					next = i;
+				}
+			}
+			if (temp_dist < greedy_dist) {
+				greedy_dist = temp_dist;
+				greedy_idx = i;
+			}
+		}
+
+		if (!bugpath_blocked && next != -1 && isLattice(cur_loc.add(directions[next]))) {
+			rc.move(directions[next]);
+		} else {
+			if (bugpath_blocked) {
+				Direction start_dir = cur_loc.directionTo(previous_location);
+				for (int i = 0; i < Helper.directions.length; i++) {
+					if (Helper.directions[i] == start_dir) {
+						next = i;
+						break;
+					}
+				}
+			}
+			bugpath_blocked = true;
+			if (next == -1) {
+				next = greedy_idx;
+			}
+			for (int i = 0; i < 7; i++) {
+				next = (next + 1) % directions.length;
+				Direction cw = directions[next];
+				MapLocation next_loc = cur_loc.add(cw);
+				if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc) &&
+						isLattice(cur_loc.add(directions[next]))) {
+					if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
+						bugpath_blocked = false;
+					}
+					rc.move(cw);
+					previous_location = cur_loc;
+					break;
+				}
+			}
+		}
 	}
 
   static boolean tryMine(Direction dir) throws GameActionException {
