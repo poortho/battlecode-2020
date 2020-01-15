@@ -54,7 +54,7 @@ public class FulfillmentCenter {
 
         // scale threshold based on number of drones nearby
         if (enemy_hq == 0 && enemy_net_gun == 0) {
-            if ((num_enemy_units > 0 && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost*(5+num_drones))) {
+            if ((num_enemy_units > 0 && num_drones / 2 < num_enemy_units && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost*(1+num_drones))) {
                     //(near_hq && (num_drones < num_enemy_units) && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost) ||
                     //(rc.getTeamSoup() >= 450 && near_hq) ||
                 Helper.tryBuild(RobotType.DELIVERY_DRONE);

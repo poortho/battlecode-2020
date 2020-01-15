@@ -293,7 +293,7 @@ public class Miner {
 			if (robots[i].team == rc.getTeam()) {
 				switch (robots[i].type) {
 					case REFINERY:
-						if (temp_dist < hq_dist || turtling) {
+						if (temp_dist < hq_dist || turtling || (rc.canSenseLocation(hq) && rc.senseRobotAtLocation(hq) == null)) {
 							hq = rob_loc;
 							hq_dist = temp_dist;
 						}
@@ -362,6 +362,10 @@ public class Miner {
 			int res = -1;
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
 				// deposit
+				if (rc.canSenseLocation(hq) && rc.senseRobotAtLocation(hq) == null) {
+					// refinery/hq was killed :(
+					tryBuild(RobotType.REFINERY);
+				}
 				tryDepositSoup(cur_loc.directionTo(hq));
 			} else if (((target_mine.distanceSquaredTo(hq) > 40 && target_mine.distanceSquaredTo(cur_loc) < 24
 					&& mine_count > 400 && num_enemy_landscapers == 0)) &&
@@ -628,9 +632,9 @@ public class Miner {
   	} else if (((num_enemy_landscapers > 0 || near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || rc.getTeamSoup() > 1300 || near_hq) && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || near_hq) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
-	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun && !near_hq) {
+	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
 	  }
 	  return RobotType.VAPORATOR;

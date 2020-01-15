@@ -26,9 +26,9 @@ public class Comms {
   static boolean[] must_reach = new boolean[arr_len];
   static int next_idx = 0, poll_idx = 0;
 
-  static MapLocation[] design_schools = new MapLocation[arr_len/2];
+  static MapLocation[] design_schools = new MapLocation[arr_len];
   static int design_school_idx = 0;
-  static MapLocation[] fulfillment_centers = new MapLocation[arr_len/2];
+  static MapLocation[] fulfillment_centers = new MapLocation[arr_len];
   static int fulfillment_center_idx = 0;
   static MapLocation[] netguns = new MapLocation[100];
   static int netgun_idx = 0;
