@@ -6,7 +6,7 @@ import sun.tools.tree.ThisExpression;
 
 public class RobotMessage {
 
-    public static final int MESSAGE_LENGTH = GameConstants.MAX_BLOCKCHAIN_TRANSACTION_LENGTH;
+    public static final int MESSAGE_LENGTH = 7;
     public static final int BODY_LENGTH = MESSAGE_LENGTH - 1;
 
     int secret;

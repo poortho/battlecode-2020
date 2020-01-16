@@ -36,6 +36,7 @@ public class Comms {
 	public static void getBlocks() throws GameActionException {
 		// received all new messages
 		while (blockRound < round) {
+			boolean removed = false;
 
 			// miners get their first target
 			if (rc.getType() == RobotType.MINER) {
@@ -114,9 +115,12 @@ public class Comms {
 
 							case 0x2:
 								//miner_queue_remove();
-								n = temp_msg[j] >> 4;
-								poll_idx = n;
-								Miner.new_loc = true;
+								if (!removed) {
+									n = temp_msg[j] >> 4;
+									poll_idx = n;
+									Miner.new_loc = true;
+									removed = true;
+								}
 								break;
 
 							case 0x3:
