@@ -5,6 +5,7 @@ import battlecode.common.*;
 import static copy_super_cow.Helper.*;
 import static copy_super_cow.RobotPlayer.rc;
 import static copy_super_cow.RobotPlayer.round;
+import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Miner {
 
@@ -56,7 +57,7 @@ public class Miner {
 		cur_loc = rc.getLocation();
 		in_danger = false;
 
-		if (round == 3) {
+		if (round == 3 && turnCount == 1) {
 			first_miner = true;
 		}
 
@@ -334,10 +335,6 @@ public class Miner {
 		if (target_mine != null && rc.canSenseLocation(target_mine) && rc.senseFlooding(target_mine)) {
 			target_mine = find_mine();
 			if (target_mine == null) {
-				target_explore = get_explore_target();
-				if (target_explore != null) {
-					miner_walk(target_explore);
-				}
 				return;
 			}
 		}
@@ -399,7 +396,7 @@ public class Miner {
 		// make sure this patch wasn't already broadcasted
 		//System.out.println("broadcast patch: " + target_mine.toString());
 		for (int c = explored_count; --c >= 0; ) {
-			if (target_mine.distanceSquaredTo(explored[c]) <= 45) {
+			if (target_mine.distanceSquaredTo(explored[c]) <= 25) {
 				return;
 			}
 		}
@@ -418,8 +415,10 @@ public class Miner {
 	// this gets called when miner is created and there are no patches around miner, or when miner reaches current target and needs a new target
 	static MapLocation get_explore_target() throws GameActionException {
 		must_reach_dest = false;//(Comms.miner_queue_num[Comms.poll_idx] & (1 << 16)) == 1;
-		if (Comms.poll_idx + 1 < 20 && !new_loc)
+		if (Comms.poll_idx + 1 < 20 && !new_loc && target_mine == null) {
 			Comms.broadcast_miner_remove(Comms.poll_idx + 1);
+			Comms.poll_idx++;
+		}
 		return Comms.miner_queue_peek();
 	}
 
