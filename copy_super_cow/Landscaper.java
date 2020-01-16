@@ -240,6 +240,9 @@ public class Landscaper {
             if (r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) {
                 // can start digging!
                 do_turtle();
+            } else if (r == null) {
+                // move towards it...
+                aggressive_landscaper_walk(cur_loc.add(cur_loc.directionTo(my_hq)));
             }
         } else if (dist_from_hq <= 8) {
             // second ring, not edge
@@ -319,11 +322,14 @@ public class Landscaper {
         // check 2nd ring
         for (int i = 0; i < directions.length; i++) {
             MapLocation new_loc = cur_loc.add(directions[i]);
-            if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
-                if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
-                    rc.depositDirt(directions[i]);
-                } else {
-                    Helper.digLattice(cur_loc);
+            if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.canSenseLocation(new_loc)) {
+                if (rc.senseFlooding(new_loc) || (rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) - 3 &&
+                        rc.senseRobotAtLocation(new_loc) == null)) {
+                    if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
+                        rc.depositDirt(directions[i]);
+                    } else {
+                        Helper.digLattice(cur_loc);
+                    }
                 }
             }
         }

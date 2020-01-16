@@ -36,7 +36,15 @@ public class Helper {
 
   static boolean willFlood(MapLocation loc) throws GameActionException {
     int elevation = rc.senseElevation(loc);
-    return elevation <= getLevel(round + 1);
+    if (elevation <= getLevel(round + 1)) {
+      for (int i = directions.length; --i >= 0; ) {
+        MapLocation new_loc = loc.add(directions[i]);
+        if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   // -1 means didn't build
