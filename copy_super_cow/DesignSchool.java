@@ -61,6 +61,10 @@ public class DesignSchool {
             seen_enemy_drone = false;
         }
 
+        if (HQ.rushed && HQ.gay_rush_alert) {
+            Helper.tryBuild(RobotType.LANDSCAPER);
+        }
+
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
         // build more if close to HQ
 

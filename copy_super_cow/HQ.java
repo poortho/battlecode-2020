@@ -150,7 +150,10 @@ public class HQ {
           handle_miners();
         }*/
         if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
-          handle_miners();
+          if (Comms.design_school_idx != 0 || miner_count < 3) {
+            System.out.println("PRODUCE");
+            handle_miners();
+          }
         }
 
         if (!HQ.done_turtling) {
@@ -242,7 +245,6 @@ public class HQ {
                 closest_rush_enemy = nearby[i].location;
                 if (dist <= 2) {
                   gay_rush_alert = true;
-                  System.out.println("FUCK YOU BATTLEGAODE");
                 }
               }
             }
@@ -269,13 +271,8 @@ public class HQ {
       // handle building miners from queue
       if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0 && (round <= 150 || rc.getTeamSoup() > 270)) {
         int res = Helper.tryBuild(RobotType.MINER);
-        if (res != -1) {
-          miner_count++;
-          Comms.miner_queue_num[Comms.poll_idx] -= 1;
-          if ((Comms.miner_queue_num[Comms.poll_idx] & 0xff) == 0) {
-            remove_num++;
-          }
-        }
+        miner_count++;
+        Comms.miner_queue_num[Comms.poll_idx] -= 1;
       }
     }
 
