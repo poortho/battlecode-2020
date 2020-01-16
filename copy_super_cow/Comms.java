@@ -354,7 +354,7 @@ public class Comms {
 
     //System.out.println(Comms.HARDCODE);
 		//System.out.println("Locations: " + Integer.toString(loc1) + " " + Integer.toString(loc2));
-		int[] msg = {(total), ((total) ^ HARDCODE), (locs[1].x << 24) | (locs[1].y << 16) | (locs[0].x << 8) | (locs[0].y), (locs[3].x << 24) | (locs[3].y << 16) | (locs[2].x << 8) | (locs[2].y), (locs[5].x << 24) | (locs[5].y << 16) | (locs[4].x << 8) | (locs[4].y)};
+		int[] msg = {(total), ((total) ^ HARDCODE), (locs[1].x << 24) | (locs[1].y << 16) | (locs[0].x << 8) | (locs[0].y), (locs[3].x << 24) | (locs[3].y << 16) | (locs[2].x << 8) | (locs[2].y), (locs[5].x << 24) | (locs[5].y << 16) | (locs[4].x << 8) | (locs[4].y), 0, 0};
 		//System.out.println("Submit seed bid");
 		seed = total;
 		rc.submitTransaction(msg, INITIAL_BID);
