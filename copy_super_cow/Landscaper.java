@@ -169,6 +169,8 @@ public class Landscaper {
             greedy_move_away(HQ.our_hq, cur_loc);
             return;
         }
+        int min_dist = 9999999;
+        MapLocation next_loc = null;
         // if any tile not up to spec, find it
         for (int i = 0; i < distx_35.length; i++) {
             MapLocation new_loc = new MapLocation(cur_loc.x + distx_35[i], cur_loc.y + disty_35[i]);
@@ -189,19 +191,29 @@ public class Landscaper {
                                 // dig
                                 Helper.digLattice(cur_loc);
                             }
+                            return;
                         } else {
+                            if (next_loc != null && new_loc.distanceSquaredTo(cur_loc) > next_loc.distanceSquaredTo(cur_loc)) {
+                                break;
+                            }
                             // not adjacent, walk to it pepega
-                            lattice_walk(new_loc);
+                            if (min_dist > new_loc.distanceSquaredTo(my_hq)) {
+                                min_dist = new_loc.distanceSquaredTo(my_hq);
+                                next_loc = new_loc;
+                            }
                         }
-                        return;
                     }
                 }
             } else {
                 break;
             }
         }
-        // move in random direction i guess?
-        lattice_walk(explore_locs[rc.getID() % explore_locs.length]);
+        if (next_loc != null) {
+            lattice_walk(next_loc);
+        } else {
+            // move in random direction i guess?
+            lattice_walk(explore_locs[rc.getID() % explore_locs.length]);
+        }
     }
 
     static void do_defense_new() throws GameActionException {
