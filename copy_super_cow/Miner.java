@@ -456,9 +456,7 @@ public class Miner {
 		if (find_mine_loc != null) {
 			check_new_patch = true;
 			target_mine = find_mine_loc;
-			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
-				broadcast_patch();
-			}
+			broadcast_patch();
 			return target_mine;
 		}
 		return null;

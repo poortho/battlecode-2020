@@ -210,11 +210,14 @@ public class Landscaper {
         if (dist_from_hq == 1) {
             // edge, stay
             // check if pair landscaper exists
-            RobotInfo r = rc.senseRobotAtLocation(cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq))));
-            if ((r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) ||
-                    rc.senseFlooding(cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq))))) {
-                // can start digging!
-                do_turtle();
+            MapLocation new_loc = cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq)));
+            if (rc.canSenseLocation(new_loc)) {
+                RobotInfo r = rc.senseRobotAtLocation(new_loc);
+                if ((r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) ||
+                        rc.senseFlooding(new_loc)) {
+                    // can start digging!
+                    do_turtle();
+                }
             }
             // else wait...
         } else if (dist_from_hq == 2) {
@@ -290,7 +293,8 @@ public class Landscaper {
         for (int i = 0; i < directions.length; i++) {
             MapLocation new_loc = cur_loc.add(directions[i]);
             if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
-                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) && rc.senseElevation(new_loc) < lattice_elevation) {
+                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) && rc.canSenseLocation(new_loc) &&
+                    rc.senseElevation(new_loc) < lattice_elevation) {
                 if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
                     rc.depositDirt(directions[i]);
                 } else {
@@ -306,7 +310,7 @@ public class Landscaper {
             MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
             if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
                     (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) &&
-                    rc.senseElevation(new_loc) < lattice_elevation) {
+                    rc.canSenseLocation(new_loc) && rc.senseElevation(new_loc) < lattice_elevation) {
                 bugpath_walk(new_loc);
                 return;
             }
@@ -315,7 +319,7 @@ public class Landscaper {
         // check 2nd ring
         for (int i = 0; i < directions.length; i++) {
             MapLocation new_loc = cur_loc.add(directions[i]);
-            if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.senseFlooding(new_loc)) {
+            if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc)) {
                 if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
                     rc.depositDirt(directions[i]);
                 } else {
@@ -387,11 +391,11 @@ public class Landscaper {
         for (int i = 0; i < edges_x.length; i++) {
             MapLocation loc_1 = my_hq.translate(edges_x[i]/2, edges_y[i]/2);
             MapLocation loc_2 = loc_1.translate(edges_x[i]/2, edges_y[i]/2);
-            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && !rc.senseFlooding(loc_1) && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
+            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
                 min_dist = loc_1.distanceSquaredTo(cur_loc);
                 ret = loc_1;
             }
-            if (rc.canSenseLocation(loc_2) && rc.senseRobotAtLocation(loc_2) == null && !rc.senseFlooding(loc_2) && loc_2.distanceSquaredTo(cur_loc) < min_dist) {
+            if (rc.canSenseLocation(loc_2) && rc.senseRobotAtLocation(loc_2) == null && loc_2.distanceSquaredTo(cur_loc) < min_dist) {
                 min_dist = loc_2.distanceSquaredTo(cur_loc);
                 ret = loc_2;
             }
