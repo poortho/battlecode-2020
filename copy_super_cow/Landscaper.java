@@ -219,47 +219,15 @@ public class Landscaper {
     static void do_defense_new() throws GameActionException {
         // TODO: make landscapers attack adjacent enemy buildings...
         int dist_from_hq = cur_loc.distanceSquaredTo(my_hq);
-        if (dist_from_hq == 1) {
+        if (dist_from_hq <= 3) {
             // edge, stay
             // check if pair landscaper exists
-            MapLocation new_loc = cur_loc.add(Helper.oppositeDirection(cur_loc.directionTo(my_hq)));
-            if (rc.canSenseLocation(new_loc)) {
-                RobotInfo r = rc.senseRobotAtLocation(new_loc);
-                if ((r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) ||
-                        rc.senseFlooding(new_loc)) {
-                    // can start digging!
-                    do_turtle();
-                }
-            }
-            // else wait...
-        } else if (dist_from_hq == 2) {
-            // corner of HQ
-            // first, check if there is an edge or 2nd ring edge that is empty...
-            MapLocation dest = search_for_dest();
-            if (dest != null) {
-                if (cur_loc.distanceSquaredTo(dest) <= 3) {
-                    aggressive_landscaper_walk(dest);
-                } else {
-                    bugpath_walk(dest);
-                }
-            } else {
-                // can start digging!
-                do_turtle();
-            }
-        } else if (dist_from_hq == 4) {
-            // edge, 2nd ring
-            RobotInfo r = rc.senseRobotAtLocation(cur_loc.add(cur_loc.directionTo(my_hq)));
-            if (r != null && r.type == RobotType.LANDSCAPER && r.team == rc.getTeam()) {
-                // can start digging!
-                do_turtle();
-            } else if (r == null) {
-                // move towards it...
-                aggressive_landscaper_walk(cur_loc.add(cur_loc.directionTo(my_hq)));
-            }
+            do_defense();
         } else if (dist_from_hq <= 8) {
             // second ring, not edge
             // first, check if there is an edge or 2nd ring edge that is empty...
             MapLocation dest = search_for_dest();
+            //System.out.println(dest);
             if (dest != null) {
                 if (cur_loc.distanceSquaredTo(dest) <= 3) {
                     aggressive_landscaper_walk(dest);
@@ -335,7 +303,8 @@ public class Landscaper {
         for (int i = 0; i < directions.length; i++) {
             MapLocation new_loc = cur_loc.add(directions[i]);
             if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.canSenseLocation(new_loc)) {
-                if (rc.senseFlooding(new_loc) || (rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) - 3 &&
+                if (rc.senseFlooding(new_loc) || (rc.senseElevation(new_loc) > -10 &&
+                        rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) - 3 &&
                         rc.senseRobotAtLocation(new_loc) == null)) {
                     if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
                         rc.depositDirt(directions[i]);
@@ -404,46 +373,21 @@ public class Landscaper {
     }
 
     static MapLocation search_for_dest() throws GameActionException {
-        int min_dist = 99999;
+        int min_dist = 999999;
+        int threshold = cur_loc.distanceSquaredTo(my_hq) <= 8 ? 3 : 99999;
         MapLocation ret = null;
-        for (int i = 0; i < edges_x.length; i++) {
-            MapLocation loc_1 = my_hq.translate(edges_x[i]/2, edges_y[i]/2);
-            MapLocation loc_2 = loc_1.translate(edges_x[i]/2, edges_y[i]/2);
-            if (rc.canSenseLocation(loc_1) && rc.senseRobotAtLocation(loc_1) == null && loc_1.distanceSquaredTo(cur_loc) < min_dist) {
-                min_dist = loc_1.distanceSquaredTo(cur_loc);
-                ret = loc_1;
-            }
-            if (rc.canSenseLocation(loc_2) && rc.senseRobotAtLocation(loc_2) == null && loc_2.distanceSquaredTo(cur_loc) < min_dist) {
-                min_dist = loc_2.distanceSquaredTo(cur_loc);
-                ret = loc_2;
+
+        // pepega search for anything
+        for (int i = 1; i < 25; i++) {
+            MapLocation new_loc = my_hq.translate(distx_35[i], disty_35[i]);
+            if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null &&
+                new_loc.distanceSquaredTo(cur_loc) < min_dist && rc.senseElevation(new_loc) > -10 &&
+                new_loc.distanceSquaredTo(my_hq) <= threshold) {
+                min_dist = new_loc.distanceSquaredTo(cur_loc);
+                ret = new_loc;
             }
         }
 
-        if (ret == null && cur_loc.distanceSquaredTo(my_hq) > 3) {
-            // not adjacent, check for adjacent corner
-            for (int i = directions.length; --i >= 0; ) {
-                MapLocation new_loc = my_hq.add(directions[i]);
-                if (rc.canSenseLocation(new_loc) && (rc.senseRobotAtLocation(new_loc) == null) &&
-                        cur_loc.distanceSquaredTo(new_loc) < min_dist) {
-                    min_dist = cur_loc.distanceSquaredTo(my_hq.add(directions[i]));
-                    ret = new_loc;
-                }
-            }
-        }
-
-        if (ret == null && cur_loc.distanceSquaredTo(my_hq) > 8) {
-            // pepega search for anything
-            for (int i = 13; i < 25; i++) {
-                MapLocation new_loc = my_hq.translate(distx_35[i], disty_35[i]);
-                if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null &&
-                    cur_loc.distanceSquaredTo(new_loc) < min_dist) {
-                    min_dist = cur_loc.distanceSquaredTo(new_loc);
-                    ret = new_loc;
-                }
-            }
-        }
-
-        //System.out.println(ret);
         return ret;
     }
 
