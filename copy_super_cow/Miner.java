@@ -89,6 +89,11 @@ public class Miner {
 		if (timeout_explore >= TIMEOUT_THRESHOLD) {
 			target_explore = get_explore_target();
 			timeout_explore = 0;
+			if (rush) {
+				rush_idx++;
+				if (rush_idx < 3)
+					target_explore = locs[rush_idx];
+			}
 		}
 
 		if (timeout_mine >= TIMEOUT_THRESHOLD && target_mine != null) {
@@ -145,6 +150,7 @@ public class Miner {
 							break;
 						}
 					}
+					greedy_walk(HQ.enemy_hq);
 				}
 			}
 			return;
