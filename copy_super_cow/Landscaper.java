@@ -818,7 +818,7 @@ public class Landscaper {
                 // dig edges
                 Helper.tryDigEdges();
             } else {
-                if (!Helper.digLattice(loc)) {
+                if (!Helper.digLattice(loc) && rc.canSenseLocation(loc) && rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {
                     // failed to dig lattice. dig self
                     Helper.tryDig(Direction.CENTER);
                 }
