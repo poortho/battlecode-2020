@@ -150,7 +150,7 @@ public class Miner {
 							break;
 						}
 					}
-					greedy_walk(HQ.enemy_hq);
+					miner_walk(HQ.enemy_hq);
 				}
 			}
 			return;
