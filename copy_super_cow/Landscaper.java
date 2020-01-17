@@ -7,6 +7,7 @@ import static copy_super_cow.RobotPlayer.rc;
 import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Landscaper {
+    static boolean near_enemy_hq = false;
     static MapLocation cur_loc;
     static int lattice_elevation = 5;
     static MapLocation previous_location;
@@ -20,10 +21,13 @@ public class Landscaper {
     static int counter = 0;
     static boolean defensive = false;
     static MapLocation my_hq;
+    static int nearby_enemy_landscapers = 0;
     static int nearby_landscapers_not_adjacent_hq = 0;
     static int move_counter = 0;
     static MapLocation my_design = null;
     static MapLocation[] explore_locs = null;
+    static boolean rush_defended = false;
+    static MapLocation closest_nonhq_enemy_build = null;
 
     static void runLandscaper() throws GameActionException {
         lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()) + 3, 5);
@@ -87,7 +91,9 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
+        if (near_enemy_hq) {
+            do_rush();
+        } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
             do_defense_new();
         } else if (destination != null) {
             do_offense();
@@ -101,6 +107,70 @@ public class Landscaper {
             do_offense();
         }
          */
+    }
+
+    static void do_rush() throws GameActionException {
+        if (!rc.isReady() || HQ.enemy_hq == null) {
+            return;
+        }
+        if (cur_loc.distanceSquaredTo(HQ.enemy_hq) <= 3) {
+            // adjacent...
+            int count = 0;
+            for (int i = directions.length; --i >= 0; ) {
+                MapLocation new_loc = HQ.enemy_hq.add(directions[i]);
+                if (rc.canSenseLocation(new_loc)) {
+                    RobotInfo r = rc.senseRobotAtLocation(new_loc);
+                    if (r != null && r.team != rc.getTeam() && r.type == RobotType.LANDSCAPER) {
+                        count++;
+                    }
+                }
+            }
+
+            if (count >= 4) {
+                // defended, go somewhere else
+                rush_defended = true;
+            } else {
+                // dump on em lmao
+                if (rc.canDepositDirt(cur_loc.directionTo(HQ.enemy_hq))) {
+                    rc.depositDirt(cur_loc.directionTo(HQ.enemy_hq));
+                } else {
+                    Helper.tryDigAway(HQ.enemy_hq);
+                }
+            }
+        }
+        if (!rush_defended) {
+            // im near hq, so find an adjacent spot near it
+            int min_dist = 9999999;
+            MapLocation best_loc = null;
+            for (int i = 0; i < directions.length; i++) {
+                MapLocation new_loc = HQ.enemy_hq.add(directions[i]);
+                if (rc.canSenseLocation(new_loc) &&
+                        rc.senseRobotAtLocation(new_loc) == null &&
+                        min_dist > cur_loc.distanceSquaredTo(new_loc)) {
+                    min_dist = cur_loc.distanceSquaredTo(new_loc);
+                    best_loc = new_loc;
+                }
+            }
+
+            if (best_loc != null) {
+                // open adjacent spot, move closer
+                bugpath_walk(best_loc);
+            }
+        } else {
+            // they "defended" rush, now go destroy their other buildings LMAO
+            if (closest_nonhq_enemy_build != null) {
+                if (cur_loc.distanceSquaredTo(closest_nonhq_enemy_build) <= 3) {
+                    // KILL
+                    if (rc.canDepositDirt(cur_loc.directionTo(closest_nonhq_enemy_build))) {
+                        rc.depositDirt(cur_loc.directionTo(closest_nonhq_enemy_build));
+                    } else {
+                        Helper.tryDigAway(closest_nonhq_enemy_build);
+                    }
+                }
+            } else {
+                bugpath_walk(closest_nonhq_enemy_build);
+            }
+        }
     }
 
     static void lattice_walk(MapLocation loc) throws GameActionException {
@@ -382,7 +452,7 @@ public class Landscaper {
             MapLocation new_loc = my_hq.translate(distx_35[i], disty_35[i]);
             if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null &&
                 new_loc.distanceSquaredTo(cur_loc) < min_dist && rc.senseElevation(new_loc) > -10 &&
-                new_loc.distanceSquaredTo(my_hq) <= threshold) {
+                new_loc.distanceSquaredTo(my_hq) <= threshold && !rc.senseFlooding(new_loc)) {
                 min_dist = new_loc.distanceSquaredTo(cur_loc);
                 ret = new_loc;
             }
@@ -612,6 +682,7 @@ public class Landscaper {
 
     static void sense() throws GameActionException {
         nearby_landscapers_not_adjacent_hq = 0;
+        nearby_enemy_landscapers = 0;
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team == rc.getTeam()) {
                 switch(robots[i].type) {
@@ -634,6 +705,9 @@ public class Landscaper {
             }
             if (robots[i].team != rc.getTeam()) {
                 switch (robots[i].type) {
+                    case LANDSCAPER:
+                        nearby_enemy_landscapers++;
+                        break;
                     case DELIVERY_DRONE:
                         if (cur_loc.distanceSquaredTo(robots[i].getLocation()) <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
                             in_danger = true;
@@ -649,6 +723,7 @@ public class Landscaper {
                         if (HQ.enemy_hq == null) {
                             Comms.broadcast_enemy_hq(robots[i].location);
                         }
+                        near_enemy_hq = true;
                     case NET_GUN:
                     case REFINERY:
                     case VAPORATOR:
@@ -658,6 +733,10 @@ public class Landscaper {
                         if (destination == null || (robots[i].type != RobotType.REFINERY &&
                                  robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc))) {
                             destination = robots[i].location;
+                        }
+                        if (robots[i].type != RobotType.HQ && (closest_nonhq_enemy_build == null ||
+                                robots[i].location.distanceSquaredTo(cur_loc) < closest_nonhq_enemy_build.distanceSquaredTo(cur_loc))) {
+                            closest_nonhq_enemy_build = robots[i].location;
                         }
                         break;
                 }
