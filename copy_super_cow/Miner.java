@@ -9,7 +9,6 @@ import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Miner {
 
-  static int turnCount;
   static MapLocation cur_loc;
   static MapLocation target_mine = null;
   static MapLocation target_explore = null;
@@ -63,6 +62,7 @@ public class Miner {
 		in_danger = false;
 
 		if (round == 3 && turnCount == 1) {
+			System.out.println("FIRST MINER");
 			first_miner = true;
 		}
 
@@ -121,8 +121,9 @@ public class Miner {
 					// try building a design school right next to enemy hq lmfao
 					for (int i = 0; i < directions.length; i++) {
 						MapLocation temp_loc = cur_loc.add(directions[i]);
-						if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2) {
+						if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
 							rush = !Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
+							break;
 						}
 					}
 				}
