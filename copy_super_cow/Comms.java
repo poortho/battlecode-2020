@@ -11,7 +11,7 @@ import static copy_super_cow.RobotPlayer.round;
 
 public class Comms {
 
-	private static final int INITIAL_BID = 2;
+	private static final int INITIAL_BID = 1;
 	public static int HARDCODE;
 	public static int blockRound = 1;
 	private static int c = 0;
@@ -184,6 +184,12 @@ public class Comms {
 							case 0xa:
 								HQ.done_turtling = true;
 								break;
+
+							case 0xb:
+								if (blockRound == round - 1 && RobotPlayer.turnCount == 1) {
+									Miner.rush = true;
+								}
+								break;
 						}
 
 						temp_msg[j] ^= key;
@@ -193,6 +199,14 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static boolean broadcast_rushing_miner() throws GameActionException {
+		int val = 0xb;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+		System.out.println("PENIS");
+
+		return addMessage(msg, 1, 1);
 	}
 
 	public static boolean broadcast_done_turtle() throws GameActionException {

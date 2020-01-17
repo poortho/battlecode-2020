@@ -17,6 +17,7 @@ public class Miner {
   static int target_idx = -1;
   static int drone_factories_built = 0;
   static MapLocation find_mine_loc;
+  static boolean rush = false;
 
   static boolean new_loc = false;
 
@@ -53,6 +54,10 @@ public class Miner {
   static MapLocation closest_rush_enemy = null;
   static boolean first_miner = false;
 
+  static MapLocation[] locs;
+  static int rush_idx;
+
+
 	static void runMiner() throws GameActionException {
 		cur_loc = rc.getLocation();
 		in_danger = false;
@@ -73,6 +78,58 @@ public class Miner {
 		robots = rc.senseNearbyRobots();
 
 		sense();
+
+		if (rush) {
+			if (locs == null) {
+				locs = new MapLocation[3];
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        MapLocation middle = new MapLocation(width / 2, height / 2);
+
+        // set locations
+        int delta_x = middle.x + (middle.x - HQ.our_hq.x);
+        int delta_y = middle.y + (middle.y - HQ.our_hq.y);
+        locs[0] = new MapLocation(delta_x, HQ.our_hq.y);
+        locs[1] = new MapLocation(delta_x, delta_y);
+        locs[2] = new MapLocation(HQ.our_hq.x, delta_x);
+        rush_idx = 0;
+        target_explore = locs[rush_idx];
+			}
+			if (HQ.enemy_hq == null) {
+				// explore lmao
+				if (target_explore != null && rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
+					rush_idx++;
+					if (rush_idx < 3)
+						target_explore = locs[rush_idx];
+				}
+
+				if (target_explore != null && cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
+					// i'm at explore location
+					rush_idx++;
+					if (rush_idx < 3)
+						target_explore = locs[rush_idx];
+				}
+				if (target_explore != null) {
+					miner_walk(target_explore);
+				} else {
+					System.out.println("IDK");
+				}
+			} else {
+				if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 8) {
+					miner_walk(HQ.enemy_hq);
+				} else {
+					// try building a design school right next to enemy hq lmfao
+					for (int i = 0; i < directions.length; i++) {
+						MapLocation temp_loc = cur_loc.add(directions[i]);
+						if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2) {
+							Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
+							rush = false;
+						}
+					}
+				}
+			}
+			return;
+		}
 
 		if (in_danger) {
 			for (int i = directions.length; --i >= 0; ) {

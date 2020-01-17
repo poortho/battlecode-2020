@@ -14,6 +14,7 @@ public class HQ {
 
     static int TOTAL_MINERS = 3;
     static boolean done_turtling = false;
+    static boolean broadcast_rush = false;
 
     // used in determining which of 3 directions to send...
     static int rotation = 0;
@@ -151,7 +152,6 @@ public class HQ {
         }*/
         if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           if (Comms.design_school_idx != 0 || miner_count < 3) {
-            System.out.println("PRODUCE");
             handle_miners();
           }
         }
@@ -275,9 +275,20 @@ public class HQ {
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
       if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0 && (round <= 150 || rc.getTeamSoup() > 270)) {
+        if (miner_count == 2 && rc.getTeamSoup() < 71) {
+          return;
+        }
         int res = Helper.tryBuild(RobotType.MINER);
-        miner_count++;
-        Comms.miner_queue_num[Comms.poll_idx] -= 1;
+        if (res != -1) {
+          System.out.println("PRODUCED");
+          miner_count++;
+          if (miner_count == 3) {
+            broadcast_rush = true;
+          }
+        }
+      }
+      if (broadcast_rush) {
+        broadcast_rush = Comms.broadcast_rushing_miner();
       }
     }
 
