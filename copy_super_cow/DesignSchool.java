@@ -13,6 +13,7 @@ public class DesignSchool {
 
     static boolean near_hq = false;
     static boolean seen_enemy_drone = false;
+    static boolean near_enemy_hq = false;
     static int seen_drone_timeout = 0;
     static int mine_count;
 
@@ -50,6 +51,9 @@ public class DesignSchool {
                         num_enemy_drones++;
                         seen_enemy_drone = true;
                         seen_drone_timeout = 0;
+                        break;
+                    case HQ:
+                        near_enemy_hq = true;
                         break;
                 }
             }
