@@ -7,7 +7,7 @@ import static copy_super_cow.RobotPlayer.rc;
 import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Landscaper {
-    static boolean near_enemy_hq = false;
+    static boolean rushing = false;
     static MapLocation cur_loc;
     static int lattice_elevation = 5;
     static MapLocation previous_location;
@@ -91,7 +91,7 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (near_enemy_hq) {
+        if (rushing && rc.getRoundNum() < 200) {
             do_rush();
         } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
             do_defense_new();
@@ -169,10 +169,14 @@ public class Landscaper {
                     } else {
                         Helper.tryDigAway(closest_nonhq_enemy_build);
                     }
+                } else {
+                    bugpath_walk(closest_nonhq_enemy_build);
                 }
             } else {
-                bugpath_walk(closest_nonhq_enemy_build);
+                // move around...
+                bugpath_walk(HQ.enemy_hq);
             }
+
         }
     }
 
@@ -726,7 +730,7 @@ public class Landscaper {
                         if (HQ.enemy_hq == null) {
                             Comms.broadcast_enemy_hq(robots[i].location);
                         }
-                        near_enemy_hq = true;
+                        rushing = true;
                     case NET_GUN:
                     case REFINERY:
                     case VAPORATOR:
