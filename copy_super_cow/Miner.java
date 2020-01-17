@@ -18,6 +18,11 @@ public class Miner {
   static MapLocation find_mine_loc;
   static boolean rush = false;
 
+  static int timeout_mine = 0, timeout_explore = 0;
+  static int TIMEOUT_THRESHOLD = 100;
+  static MapLocation[] timeout_mines = new MapLocation[20];
+  static int timeout_mine_idx = 0;
+
   static boolean new_loc = false;
 
   // patches already explored by other miners
@@ -58,6 +63,8 @@ public class Miner {
 
 
 	static void runMiner() throws GameActionException {
+		timeout_mine++;
+		timeout_explore++;
 		cur_loc = rc.getLocation();
 		in_danger = false;
 
@@ -78,6 +85,18 @@ public class Miner {
 		robots = rc.senseNearbyRobots();
 
 		sense();
+
+		if (timeout_explore >= TIMEOUT_THRESHOLD) {
+			target_explore = get_explore_target();
+			timeout_explore = 0;
+		}
+
+		if (timeout_mine >= TIMEOUT_THRESHOLD && target_mine != null) {
+			timeout_mines[timeout_mine_idx] = target_mine;
+			timeout_mine_idx++;
+			timeout_mine = 0;
+			target_mine = null;
+		}
 
 		if (rush) {
 			if (locs == null) {
@@ -415,6 +434,7 @@ public class Miner {
 
 			int res = -1;
 			if (cur_loc.distanceSquaredTo(hq) <= 2) {
+				timeout_mine = 0;
 				// deposit
 				if (rc.canSenseLocation(hq) && rc.senseRobotAtLocation(hq) == null) {
 					// refinery/hq was killed :(
@@ -476,6 +496,7 @@ public class Miner {
 			Comms.broadcast_miner_remove(Comms.poll_idx + 1);
 			Comms.poll_idx++;
 		}
+		timeout_explore = 0;
 		return Comms.miner_queue_peek();
 	}
 
@@ -503,7 +524,15 @@ public class Miner {
 				int count = rc.senseSoup(next_loc);
 				total_soup += count;
 				if (find_mine_loc == null && count > 0) {
-					find_mine_loc = next_loc;
+					boolean good = true;
+					for (int j = 0; j < timeout_mine_idx; j++) {
+						if (next_loc.distanceSquaredTo(timeout_mines[j]) <= 35) {
+							good = false;
+							break;
+						}
+					}
+					if (good)
+						find_mine_loc = next_loc;
 				}
 			}
 		}
