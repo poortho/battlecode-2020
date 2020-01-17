@@ -12,7 +12,7 @@ import static copy_super_cow.RobotPlayer.*;
 
 public class HQ {
 
-    static int TOTAL_MINERS = 3;
+    static int TOTAL_MINERS = 10;
     static boolean done_turtling = false;
     static boolean broadcast_rush = false;
 
@@ -274,7 +274,7 @@ public class HQ {
 
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
-      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0 && (round <= 150 || rc.getTeamSoup() > 270)) {
+      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
         if (miner_count == 2 && rc.getTeamSoup() < 71) {
           return;
         }
@@ -288,7 +288,7 @@ public class HQ {
         }
       }
       if (broadcast_rush) {
-        broadcast_rush = Comms.broadcast_rushing_miner();
+        broadcast_rush = !Comms.broadcast_rushing_miner();
       }
     }
 
