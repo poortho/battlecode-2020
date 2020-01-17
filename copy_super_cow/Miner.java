@@ -122,8 +122,7 @@ public class Miner {
 					for (int i = 0; i < directions.length; i++) {
 						MapLocation temp_loc = cur_loc.add(directions[i]);
 						if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2) {
-							Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
-							rush = false;
+							rush = !Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
 						}
 					}
 				}
