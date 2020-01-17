@@ -15,6 +15,7 @@ public class DesignSchool {
     static boolean seen_enemy_drone = false;
     static int seen_drone_timeout = 0;
     static int mine_count;
+    static boolean near_enemy_hq = false;
 
     static void runDesignSchool() throws GameActionException {
         Comms.getBlocks();
@@ -25,6 +26,7 @@ public class DesignSchool {
         int num_enemy_drones = 0;
         int num_enemy_fulfill = 0;
         int num_enemy_design = 0;
+        int num_netguns = 0;
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team != rc.getTeam() && robots[i].type.isBuilding()) {
                 num_enemy_buildings++;
@@ -36,6 +38,9 @@ public class DesignSchool {
                         break;
                     case HQ:
                         near_hq = true;
+                        break;
+                    case NET_GUN:
+                        num_netguns++;
                         break;
                 }
             } else {
@@ -50,6 +55,9 @@ public class DesignSchool {
                         num_enemy_drones++;
                         seen_enemy_drone = true;
                         seen_drone_timeout = 0;
+                        break;
+                    case HQ:
+                        near_enemy_hq = true;
                         break;
                 }
             }
@@ -67,6 +75,10 @@ public class DesignSchool {
 
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
         // build more if close to HQ
+
+        if (near_enemy_hq && !seen_enemy_drone && (num_enemy_fulfill == 0 || num_netguns > 0)) {
+            Helper.tryBuild(RobotType.LANDSCAPER);
+        }
 
         if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 &&
                 num_landscapers == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
