@@ -115,7 +115,7 @@ public class Miner {
         int delta_y = middle.y + (middle.y - HQ.our_hq.y);
         locs[0] = new MapLocation(delta_x, HQ.our_hq.y);
         locs[1] = new MapLocation(delta_x, delta_y);
-        locs[2] = new MapLocation(HQ.our_hq.x, delta_x);
+        locs[2] = new MapLocation(HQ.our_hq.x, delta_y);
         rush_idx = 0;
         target_explore = locs[rush_idx];
 			}

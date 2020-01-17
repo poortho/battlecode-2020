@@ -7,7 +7,7 @@ import static copy_super_cow.RobotPlayer.rc;
 import static copy_super_cow.RobotPlayer.turnCount;
 
 public class Landscaper {
-    static boolean near_enemy_hq = false;
+    static boolean rushing = false;
     static MapLocation cur_loc;
     static int lattice_elevation = 5;
     static MapLocation previous_location;
@@ -91,7 +91,7 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (near_enemy_hq) {
+        if (rushing && rc.getRoundNum() < 200) {
             do_rush();
         } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
             do_defense_new();
@@ -155,8 +155,11 @@ public class Landscaper {
             if (best_loc != null) {
                 // open adjacent spot, move closer
                 bugpath_walk(best_loc);
+            } else {
+                rush_defended = true;
             }
-        } else {
+        }
+        if (rush_defended) {
             // they "defended" rush, now go destroy their other buildings LMAO
             if (closest_nonhq_enemy_build != null) {
                 if (cur_loc.distanceSquaredTo(closest_nonhq_enemy_build) <= 3) {
@@ -166,10 +169,14 @@ public class Landscaper {
                     } else {
                         Helper.tryDigAway(closest_nonhq_enemy_build);
                     }
+                } else {
+                    bugpath_walk(closest_nonhq_enemy_build);
                 }
             } else {
-                bugpath_walk(closest_nonhq_enemy_build);
+                // move around...
+                bugpath_walk(HQ.enemy_hq);
             }
+
         }
     }
 
@@ -723,7 +730,7 @@ public class Landscaper {
                         if (HQ.enemy_hq == null) {
                             Comms.broadcast_enemy_hq(robots[i].location);
                         }
-                        near_enemy_hq = true;
+                        rushing = true;
                     case NET_GUN:
                     case REFINERY:
                     case VAPORATOR:
@@ -811,7 +818,7 @@ public class Landscaper {
                 // dig edges
                 Helper.tryDigEdges();
             } else {
-                if (!Helper.digLattice(loc)) {
+                if (!Helper.digLattice(loc) && rc.canSenseLocation(loc) && rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {
                     // failed to dig lattice. dig self
                     Helper.tryDig(Direction.CENTER);
                 }
