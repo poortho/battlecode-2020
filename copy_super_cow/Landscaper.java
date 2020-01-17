@@ -155,8 +155,11 @@ public class Landscaper {
             if (best_loc != null) {
                 // open adjacent spot, move closer
                 bugpath_walk(best_loc);
+            } else {
+                rush_defended = true;
             }
-        } else {
+        }
+        if (rush_defended) {
             // they "defended" rush, now go destroy their other buildings LMAO
             if (closest_nonhq_enemy_build != null) {
                 if (cur_loc.distanceSquaredTo(closest_nonhq_enemy_build) <= 3) {
