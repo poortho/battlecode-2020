@@ -337,7 +337,7 @@ public class Landscaper {
                     Direction min_d = null;
                     for (int i = 0; i < directions.length; i++) {
                         MapLocation new_loc = cur_loc.add(directions[i]);
-                        if (new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
+                        if (rc.canSenseLocation(new_loc) && new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
                                 min_el > rc.senseElevation(new_loc)) {
                             min_el = rc.senseElevation(new_loc);
                             //System.out.println(cur_loc.add(directions[i]));
@@ -432,7 +432,7 @@ public class Landscaper {
                         }
                     }
                 }
-                if (near_flood) {
+                if (near_flood && rc.canSenseLocation(new_loc)) {
                     RobotInfo r = rc.senseRobotAtLocation(new_loc);
                     if (num_nearby_nonadjacent == 0 &&
                             rc.canMove(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3 &&
@@ -447,7 +447,7 @@ public class Landscaper {
                         return;
                     }
                 }
-                if (rc.senseElevation(new_loc) < rc.senseElevation(my_hq) + 2 && rc.canDepositDirt(directions[i]) &&
+                if (rc.canSenseLocation(new_loc) && rc.senseElevation(new_loc) < rc.senseElevation(my_hq) + 2 && rc.canDepositDirt(directions[i]) &&
                         new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0) {
                     rc.depositDirt(directions[i]);
                     return;
@@ -732,7 +732,10 @@ public class Landscaper {
                 // dig edges
                 Helper.tryDigEdges();
             } else {
-                Helper.tryDigAway(loc);
+                if (!Helper.digLattice(loc)) {
+                    // failed to dig lattice. dig self
+                    Helper.tryDig(Direction.CENTER);
+                }
             }
         }
     }

@@ -425,10 +425,12 @@ public class Miner {
 	static MapLocation find_hq() throws GameActionException {
 		for (int i = 9; --i >= 0; ) {
 			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-			RobotInfo temp = rc.senseRobotAtLocation(next_loc);
-			if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
-				//System.out.println("FOUND HQ");
-				return next_loc;
+			if (rc.canSenseLocation(next_loc)) {
+				RobotInfo temp = rc.senseRobotAtLocation(next_loc);
+				if (temp != null && temp.type == RobotType.HQ && temp.team == rc.getTeam()) {
+					//System.out.println("FOUND HQ");
+					return next_loc;
+				}
 			}
 		}
 		//System.out.println("SHOULDNT HAPPEN EVER");

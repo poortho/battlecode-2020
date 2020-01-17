@@ -233,7 +233,8 @@ public class Helper {
   static boolean tryDigEdges() throws GameActionException {
     for (int i = 0; i < edges_x.length; i++) {
       MapLocation loc = new MapLocation(Landscaper.my_hq.x + edges_x[i], Landscaper.my_hq.y + edges_y[i]);
-      if (Landscaper.cur_loc.distanceSquaredTo(loc) <= 3 && rc.canDigDirt(Landscaper.cur_loc.directionTo(loc))) {
+      if (Landscaper.cur_loc.distanceSquaredTo(loc) <= 3 && rc.canDigDirt(Landscaper.cur_loc.directionTo(loc)) &&
+          rc.canSenseLocation(loc)) {
         rc.digDirt(Landscaper.cur_loc.directionTo(loc));
         return true;
       }

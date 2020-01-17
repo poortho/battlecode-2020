@@ -20,7 +20,7 @@ public class Comms {
 	public static MapLocation[] explore = new MapLocation[6];
 	public static boolean[] map_explore = new boolean[6];
 
-	static int arr_len = 40;
+	static int arr_len = 60;
   static MapLocation[] miner_queue = new MapLocation[arr_len];
   static int[] miner_queue_num = new int[arr_len];
   static boolean[] must_reach = new boolean[arr_len];
@@ -352,7 +352,9 @@ public class Comms {
 		int total = 0;
 		MapLocation cur_loc = rc.getLocation();
 		for (int i = 0; i < directions.length; i++) {
-			total += rc.senseElevation(cur_loc.add(directions[i])) << (i);
+			if (rc.canSenseLocation(cur_loc.add(directions[i]))) {
+				total += rc.senseElevation(cur_loc.add(directions[i])) << (i);
+			}
 		}
 		total += cur_loc.x*69 + cur_loc.y*69;
 

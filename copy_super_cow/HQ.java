@@ -165,14 +165,16 @@ public class HQ {
 	  static void check_turtle() throws GameActionException {
         boolean is_full = true;
         for (int i = 1; Math.pow(distx_35[i], 2) + Math.pow(disty_35[i], 2) <= 8; i++) {
-            if (i >= 9 && i < 13) {
-                continue;
-            }
             RobotInfo r;
             MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
             if (rc.canSenseLocation(new_loc)) {
+                if (i >= 9 && i < 13 && rc.senseElevation(new_loc) <= -10) {
+                    continue;
+                }
                 r = rc.senseRobotAtLocation(new_loc);
                 is_full = is_full && r != null && r.type == RobotType.LANDSCAPER;
+                //System.out.println(new_loc);
+                //System.out.println(is_full);
             }
         }
         if (is_full) {
