@@ -717,13 +717,13 @@ public class Miner {
   	} else if (((num_enemy_landscapers > 0)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || near_hq) && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
-	  } else if (near_hq && !nearby_design) {
+	  }/* else if (near_hq && !nearby_design) {
 	  	return RobotType.DESIGN_SCHOOL;
-	  }
+	  }*/
 	  return RobotType.VAPORATOR;
   }
 }

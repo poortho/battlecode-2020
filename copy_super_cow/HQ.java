@@ -282,7 +282,7 @@ public class HQ {
         if (res != -1) {
           System.out.println("PRODUCED");
           miner_count++;
-          if (miner_count == 3) {
+          if (miner_count == 1) {
             broadcast_rush = true;
           }
         }
