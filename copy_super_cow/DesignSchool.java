@@ -15,6 +15,7 @@ public class DesignSchool {
     static boolean seen_enemy_drone = false;
     static boolean near_enemy_hq = false;
     static int seen_drone_timeout = 0;
+    static MapLocation enemy_hq = null;
     static int mine_count;
 
     static void runDesignSchool() throws GameActionException {
@@ -58,6 +59,7 @@ public class DesignSchool {
                         break;
                     case HQ:
                         near_enemy_hq = true;
+                        enemy_hq = robots[i].location;
                         break;
                 }
             }
@@ -77,7 +79,7 @@ public class DesignSchool {
         // build more if close to HQ
 
         if (near_enemy_hq && !seen_enemy_drone && (num_enemy_fulfill == 0 || num_netguns > 0)) {
-            Helper.tryBuild(RobotType.LANDSCAPER);
+            Helper.tryBuildToward(RobotType.LANDSCAPER, enemy_hq);
         }
 
         if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 &&
