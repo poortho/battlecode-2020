@@ -280,21 +280,15 @@ public class HQ {
 
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
-      if (Comms.miner_queue_peek() != null && Comms.miner_queue_num[Comms.poll_idx] > 0) {
-        if (miner_count == 2 && rc.getTeamSoup() < 71) {
-          return;
-        }
+      if (Comms.miner_queue_peek() != null || miner_count == 0) {
         int res = Helper.tryBuild(RobotType.MINER);
         if (res != -1) {
           System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
-            broadcast_rush = true;
+            Comms.broadcast_rushing_miner();
           }
         }
-      }
-      if (broadcast_rush) {
-        broadcast_rush = !Comms.broadcast_rushing_miner();
       }
     }
 
