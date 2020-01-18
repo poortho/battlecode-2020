@@ -150,7 +150,9 @@ public class Miner {
 							break;
 						}
 					}
-					miner_walk(HQ.enemy_hq);
+					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
+						greedy_walk(HQ.enemy_hq);
+					}
 				}
 			}
 			return;
