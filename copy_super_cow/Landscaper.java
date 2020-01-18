@@ -519,7 +519,7 @@ public class Landscaper {
                     } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
                             && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
                             && rc.canDepositDirt(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3
-                            && new_loc.distanceSquaredTo(my_hq) > 0 && (r == null || r.type == RobotType.LANDSCAPER || rc.senseFlooding(new_loc))) {
+                            && new_loc.distanceSquaredTo(my_hq) > 0) {
                         rc.depositDirt(directions[i]);
                         return;
                     }
@@ -531,7 +531,7 @@ public class Landscaper {
                 }
 
                 // if further away place from design school is movable, then sice
-                if (my_design != null && new_loc.distanceSquaredTo(my_hq) <= 3 &&
+                if (!near_flood && my_design != null && new_loc.distanceSquaredTo(my_hq) <= 3 &&
                         new_loc.distanceSquaredTo(my_design) > cur_loc.distanceSquaredTo(my_design) &&
                         rc.canMove(directions[i])) {
                     rc.move(directions[i]);

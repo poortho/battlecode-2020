@@ -87,7 +87,7 @@ public class DesignSchool {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
-        if (rc.getTeamSoup() >= 3000 || (!HQ.done_turtling && rc.getRoundNum() > 500 && HQ.our_hq != null && rc.getLocation().distanceSquaredTo(HQ.our_hq) < 100)) {
+        if (rc.getTeamSoup() >= 2000 || (!HQ.done_turtling && rc.getRoundNum() > 400 && HQ.our_hq != null && rc.getLocation().distanceSquaredTo(HQ.our_hq) < 100)) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 

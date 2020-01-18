@@ -12,7 +12,9 @@ import static copy_super_cow.RobotPlayer.*;
 
 public class HQ {
 
-    static int TOTAL_MINERS = 10;
+    static boolean surrounded_by_flood = false;
+
+    static int TOTAL_MINERS = 3;
     static boolean done_turtling = false;
     static boolean broadcast_rush = false;
 
@@ -159,8 +161,32 @@ public class HQ {
         if (!HQ.done_turtling) {
             check_turtle();
         }
+        if (!HQ.surrounded_by_flood) {
+            check_trapped();
+        }
 	    }
 	  }
+
+	  static void check_trapped() throws GameActionException {
+        int[] ring_4_x = {4, 4, 4, 4, 4, 4, 4, 4, 4,
+                          3, 2, 1, 0, -1, -2, -3,
+                          -4, -4, -4, -4, -4, -4, -4, -4, -4,
+                          -3, -2, -1, 0, 1, 2, 3};
+        int[] ring_4_y = {3, 2, 1, 0, -1, -2, -3,
+                          -4, -4, -4, -4, -4, -4, -4, -4, -4,
+                          -3, -2, -1, 0, 1, 2, 3,
+                          4, 4, 4, 4, 4, 4, 4, 4, 4};
+        int non_flooded_count = 0;
+        for (int i = ring_4_x.length; --i >= 0; ) {
+            MapLocation new_loc = cur_loc.translate(ring_4_x[i], ring_4_y[i]);
+            if (!rc.canSenseLocation(new_loc) || !rc.senseFlooding(new_loc)) {
+                non_flooded_count++;
+            }
+        }
+        if (non_flooded_count <= 10) {
+            Comms.broadcast_hq_trapped();
+        }
+      }
 
 	  static void check_turtle() throws GameActionException {
         boolean is_full = true;

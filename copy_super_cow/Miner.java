@@ -207,18 +207,19 @@ public class Miner {
 		}
 
 		// build thing
+		int min_distance_from_hq = HQ.surrounded_by_flood && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
+		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
 		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*1.5) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
 			// build if none nearby and (nearby enemies or close to hq)
-			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
+			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= max_dist_from_hq) {
 				int highest_elevation = -99999;
 				Direction best_dir = null;
 				int valid_adjacents = (toBuild == RobotType.VAPORATOR || toBuild == RobotType.REFINERY) ? 0 :
 						(toBuild == RobotType.NET_GUN ? 8 : 2);
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
-					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 18) {
-
+					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > min_distance_from_hq) {
 						int valid = 0;
 						for (int j = directions.length; --j >= 0; ) {
 							if (rc.canSenseLocation(new_loc.add(directions[j]))) {

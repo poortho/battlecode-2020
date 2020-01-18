@@ -105,7 +105,7 @@ public class Comms {
 									miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
 								}
 
-								if (rc.getType() == RobotType.MINER && blockRound != 1) {
+								if (rc.getType() == RobotType.MINER) {
 									// this is so we don't broadcast patches near locations that are already going to be explored
 									Miner.explored[Miner.explored_count] = new MapLocation(x, y);
 									//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
@@ -190,6 +190,15 @@ public class Comms {
 									Miner.rush = true;
 								}
 								break;
+
+							case 0xc:
+								HQ.surrounded_by_flood = true;
+								for (int k = Comms.design_school_idx; --k >= 0; ) {
+									if (Comms.design_schools[k].equals(HQ.our_hq)) {
+										Comms.design_schools[k] = new MapLocation(0,0);
+									}
+								}
+								break;
 						}
 
 						temp_msg[j] ^= key;
@@ -199,6 +208,13 @@ public class Comms {
 			blockRound++;
 			c++;
 		}
+	}
+
+	public static boolean broadcast_hq_trapped() throws GameActionException {
+		int val = 0xc;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		return addMessage(msg, 1, 2);
 	}
 
 	public static boolean broadcast_rushing_miner() throws GameActionException {
