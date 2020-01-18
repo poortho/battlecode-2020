@@ -111,27 +111,27 @@ public class Miner {
         MapLocation middle = new MapLocation(width / 2, height / 2);
 
         // set locations
-        int delta_x = middle.x + (middle.x - HQ.our_hq.x);
-        int delta_y = middle.y + (middle.y - HQ.our_hq.y);
+        int delta_x = (width - 1) - HQ.our_hq.x;
+        int delta_y = (height - 1) - HQ.our_hq.y;
+        System.out.println(Integer.toString(delta_x));
+        System.out.println(Integer.toString(delta_y));
         locs[0] = new MapLocation(delta_x, HQ.our_hq.y);
         locs[1] = new MapLocation(delta_x, delta_y);
         locs[2] = new MapLocation(HQ.our_hq.x, delta_y);
+        System.out.println(locs[0].toString());
+        System.out.println(locs[1].toString());
+        System.out.println(locs[2].toString());
         rush_idx = 0;
-        target_explore = locs[rush_idx];
+        target_explore = locs[0];
 			}
 			if (HQ.enemy_hq == null) {
 				// explore lmao
-				if (target_explore != null && rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
+				if (target_explore != null && rc.canSenseLocation(target_explore)) {
+					timeout_explore = 0;
 					rush_idx++;
-					if (rush_idx < 3)
+					if (rush_idx < 3) {
 						target_explore = locs[rush_idx];
-				}
-
-				if (target_explore != null && cur_loc.distanceSquaredTo(target_explore) <= 10) {//rc.canSenseLocation(target_explore)) {
-					// i'm at explore location
-					rush_idx++;
-					if (rush_idx < 3)
-						target_explore = locs[rush_idx];
+					}
 				}
 				if (target_explore != null) {
 					miner_walk(target_explore);
@@ -358,6 +358,7 @@ public class Miner {
 						break;
 					case HQ:
 						if (HQ.enemy_hq == null) {
+							HQ.enemy_hq = rob_loc;
 							Comms.broadcast_enemy_hq(rob_loc);
 						}
 					case NET_GUN:
@@ -571,7 +572,7 @@ public class Miner {
 			MapLocation next_loc = cur_loc.add(directions[i]);
 			int temp_dist = next_loc.distanceSquaredTo(loc);
 			if (rc.canMove(directions[i])) {
-				if (temp_dist < least_dist && !rc.senseFlooding(next_loc) && !blacklist[i]) {
+				if (temp_dist < least_dist && rc.canSenseLocation(next_loc) && !rc.senseFlooding(next_loc) && !blacklist[i]) {
 					least_dist = temp_dist;
 					next = i;
 				}
