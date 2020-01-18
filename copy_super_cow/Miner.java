@@ -209,27 +209,38 @@ public class Miner {
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
 			// build if none nearby and (nearby enemies or close to hq)
 			if (toBuild == RobotType.NET_GUN || cur_loc.distanceSquaredTo(hq) <= 40) {
+				int highest_elevation = -99999;
+				Direction best_dir = null;
+				int valid_adjacents = (toBuild == RobotType.VAPORATOR || toBuild == RobotType.REFINERY) ? 0 :
+						(toBuild == RobotType.NET_GUN ? 8 : 2);
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
 					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > 18) {
 
-						boolean valid = true;
+						int valid = 0;
 						for (int j = directions.length; --j >= 0; ) {
 							if (rc.canSenseLocation(new_loc.add(directions[j]))) {
 								RobotInfo robot = rc.senseRobotAtLocation(new_loc.add(directions[j]));
 								if (robot != null && robot.type.isBuilding()) {
-									valid = false;
-									break;
+									valid++;
 								}
 							}
 						}
-						if (!valid) {
+						if (valid > valid_adjacents) {
 							continue;
 						}
-						boolean res = Helper.tryBuild(toBuild, directions[i]);
-						if (res) {
-							Comms.broadcast_building(hq, toBuild);
+						if (rc.canBuildRobot(toBuild, directions[i]) && rc.canSenseLocation(new_loc) &&
+								rc.senseElevation(new_loc) > highest_elevation) {
+							highest_elevation = rc.senseElevation(new_loc);
+							best_dir = directions[i];
 						}
+					}
+				}
+
+				if (best_dir != null) {
+					boolean res = Helper.tryBuild(toBuild, best_dir);
+					if (res) {
+						Comms.broadcast_building(hq, toBuild);
 					}
 				}
 			}
