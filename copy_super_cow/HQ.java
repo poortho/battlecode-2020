@@ -259,15 +259,21 @@ public class HQ {
     }
 
     static boolean queue_close_soup() throws GameActionException {
-      for (int i = 0; i < distx_35.length; i++) {
-        MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-        if (rc.canSenseLocation(next_loc)) {
-          int count = rc.senseSoup(next_loc);
-          if (count != 0) {
-            Comms.broadcast_miner_request(next_loc, TOTAL_MINERS, true);
-            return true;
-          }
+      MapLocation[] soup = rc.senseNearbySoup();
+      int max_dist = -1;
+      int idx = -1;
+      for (int i = 0; i < soup.length; i++) {
+        int temp_dist = soup[i].distanceSquaredTo(cur_loc);
+        if (temp_dist > max_dist) {
+          max_dist = temp_dist;
+          idx = i;
         }
+      }
+
+      if (idx != -1) {
+        System.out.println("FOUND SOUP " + soup[idx].toString());
+        Comms.broadcast_miner_request_double(soup[idx], TOTAL_MINERS, true);
+        return true;
       }
       return false;
     }

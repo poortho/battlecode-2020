@@ -319,15 +319,20 @@ public class Comms {
 	}
 
 	public static boolean broadcast_miner_request(MapLocation loc, int num, boolean must) throws GameActionException {
-		// 0x00000000
-		//          1 <- broadcast miner request
-		//         N  <- number of miners needed
-		//     XXYY   <- patch location / 4	
 		int val = (loc.x << 16) | (loc.y << 8) | (num << 4) | 0x1;
 		if (must) {
 			val |= 1 << 24;
 		}
 		int msg[] = {val, 0, 0, 0, 0, 0, 0};
+		return addMessage(msg, 1, 2);
+	}
+
+	public static boolean broadcast_miner_request_double(MapLocation loc, int num, boolean must) throws GameActionException {
+		int val = (loc.x << 16) | (loc.y << 8) | (num << 4) | 0x1;
+		if (must) {
+			val |= 1 << 24;
+		}
+		int msg[] = {val, val, 0, 0, 0, 0, 0};
 		return addMessage(msg, 1, 2);
 	}
 
