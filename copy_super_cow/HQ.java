@@ -271,7 +271,7 @@ public class HQ {
       }
 
       if (idx != -1) {
-        System.out.println("FOUND SOUP " + soup[idx].toString());
+        //System.out.println("FOUND SOUP " + soup[idx].toString());
         Comms.broadcast_miner_request_double(soup[idx], TOTAL_MINERS, true);
         return true;
       }
@@ -283,7 +283,7 @@ public class HQ {
       if (Comms.miner_queue_peek() != null || miner_count == 0) {
         int res = Helper.tryBuild(RobotType.MINER);
         if (res != -1) {
-          System.out.println("PRODUCED");
+          //System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
             Comms.broadcast_rushing_miner();

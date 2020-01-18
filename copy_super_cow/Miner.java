@@ -69,7 +69,7 @@ public class Miner {
 		in_danger = false;
 
 		if (round == 3 && turnCount == 1) {
-			System.out.println("FIRST MINER");
+			//System.out.println("FIRST MINER");
 			first_miner = true;
 		}
 
@@ -113,14 +113,14 @@ public class Miner {
         // set locations
         int delta_x = (width - 1) - HQ.our_hq.x;
         int delta_y = (height - 1) - HQ.our_hq.y;
-        System.out.println(Integer.toString(delta_x));
-        System.out.println(Integer.toString(delta_y));
+        //System.out.println(Integer.toString(delta_x));
+        //System.out.println(Integer.toString(delta_y));
         locs[0] = new MapLocation(delta_x, HQ.our_hq.y);
         locs[1] = new MapLocation(delta_x, delta_y);
         locs[2] = new MapLocation(HQ.our_hq.x, delta_y);
-        System.out.println(locs[0].toString());
-        System.out.println(locs[1].toString());
-        System.out.println(locs[2].toString());
+        //System.out.println(locs[0].toString());
+        //System.out.println(locs[1].toString());
+        //System.out.println(locs[2].toString());
         rush_idx = 0;
         target_explore = locs[0];
 			}

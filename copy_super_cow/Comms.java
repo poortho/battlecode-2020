@@ -204,7 +204,7 @@ public class Comms {
 	public static boolean broadcast_rushing_miner() throws GameActionException {
 		int val = 0xb;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
-		System.out.println("PENIS");
+		//System.out.println("PENIS");
 
 		return addMessage(msg, 1, 1);
 	}
