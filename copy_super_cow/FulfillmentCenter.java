@@ -53,7 +53,11 @@ public class FulfillmentCenter {
         }
 
         if (HQ.rushed && Miner.gay_rush_alert) {
-            Helper.tryBuild(RobotType.DELIVERY_DRONE);
+            if (HQ.our_hq != null) {
+                Helper.tryBuildToward(RobotType.DELIVERY_DRONE, HQ.our_hq);
+            } else {
+                Helper.tryBuild(RobotType.DELIVERY_DRONE);
+            }
             drones_produced++;
         }
 
