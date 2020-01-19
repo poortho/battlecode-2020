@@ -199,6 +199,10 @@ public class Comms {
 									}
 								}
 								break;
+
+							case 0xd:
+								Miner.all_in = true;
+								break;
 						}
 
 						temp_msg[j] ^= key;
@@ -210,11 +214,18 @@ public class Comms {
 		}
 	}
 
+	public static boolean broadcast_all_in() throws GameActionException {
+		int val = 0xd;
+		int[] msg = {val, 0, 0, 0, 0, 0, 0};
+
+		return addMessage(msg, 1, 1);
+	}
+
 	public static boolean broadcast_hq_trapped() throws GameActionException {
 		int val = 0xc;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		return addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 1);
 	}
 
 	public static boolean broadcast_rushing_miner() throws GameActionException {
@@ -229,7 +240,7 @@ public class Comms {
 		int val = 0xa;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		return addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_building(MapLocation hq, RobotType type) throws GameActionException {
@@ -246,7 +257,7 @@ public class Comms {
 				break;
 		}
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static boolean broadcast_patrol_enemy_hq() throws GameActionException {
@@ -256,7 +267,7 @@ public class Comms {
 		int val = 0x7;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		return addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_end_rushed() throws GameActionException {
@@ -266,7 +277,7 @@ public class Comms {
 		int val = 0x6;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_being_rushed(boolean gay_rush_alert) throws GameActionException {
@@ -276,7 +287,7 @@ public class Comms {
 		int val = 0x5 | (gay_rush_alert ? (1 << 4) : 0);
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_enemy_netgun(MapLocation loc) throws GameActionException {
@@ -290,7 +301,7 @@ public class Comms {
 		int val = (round << 20) | (loc.x << 12) | (loc.y << 4) | 8;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_enemy_hq(MapLocation loc) throws GameActionException {
@@ -300,7 +311,7 @@ public class Comms {
 		int val = (loc.x << 12) | (loc.y << 4) | 0x3;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static void broadcast_friendly_hq(MapLocation loc) throws GameActionException {
@@ -310,7 +321,7 @@ public class Comms {
 		int val = (loc.x << 12) | (loc.y << 4) | 0x4;
 		int[] msg = {val, 0, 0, 0, 0, 0, 0};
 
-		addMessage(msg, 1, 2);
+		addMessage(msg, 1, 1);
 	}
 
 	public static void miner_queue_push(MapLocation loc, int num) {
@@ -340,7 +351,7 @@ public class Comms {
 			val |= 1 << 24;
 		}
 		int msg[] = {val, 0, 0, 0, 0, 0, 0};
-		return addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 1);
 	}
 
 	public static boolean broadcast_miner_request_double(MapLocation loc, int num, boolean must) throws GameActionException {
@@ -349,7 +360,7 @@ public class Comms {
 			val |= 1 << 24;
 		}
 		int msg[] = {val, val, 0, 0, 0, 0, 0};
-		return addMessage(msg, 1, 2);
+		return addMessage(msg, 1, 1);
 	}
 
 	public static boolean broadcast_miner_remove(int n) throws GameActionException {
@@ -359,7 +370,7 @@ public class Comms {
 		//     XXYY   <- patch location / 4	
 		int val = 0x2 | (n << 4);
 		int msg[] = {val, 0, 0, 0, 0, 0, 0};
-		return addMessage(msg, 1, 2);	
+		return addMessage(msg, 1, 1);	
 	}
 
 	public static int xorKey(int round) {

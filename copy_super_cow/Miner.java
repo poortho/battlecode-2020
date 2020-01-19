@@ -52,7 +52,7 @@ public class Miner {
   static boolean[] turtle_blocked = new boolean[directions.length];
   static int blocked = 0;
   static int mine_count = -1;
-  static boolean duplicate_building, gay_rush_alert = false;
+  static boolean duplicate_building, gay_rush_alert = false, all_in = false;
   static MapLocation gay_rush_design_school = null;
 
   static MapLocation closest_rush_enemy = null;
@@ -85,6 +85,10 @@ public class Miner {
 		robots = rc.senseNearbyRobots();
 
 		sense();
+
+		if (gay_rush_alert && all_in) {
+			gay_rush_alert = false;
+		}
 
 		if (timeout_explore >= TIMEOUT_THRESHOLD) {
 			target_explore = get_explore_target();
@@ -139,6 +143,11 @@ public class Miner {
 					System.out.println("IDK");
 				}
 			} else {
+				if (!all_in && !gay_rush_alert) {
+					// broadcast all in
+					all_in = true;
+					Comms.broadcast_all_in();
+				}
 				if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 8) {
 					miner_walk(HQ.enemy_hq);
 				} else {
@@ -153,7 +162,7 @@ public class Miner {
 						}
 					}
 					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
-						greedy_walk(HQ.enemy_hq);
+						miner_walk(HQ.enemy_hq);
 					}
 				}
 			}
