@@ -174,7 +174,7 @@ public class Landscaper {
                 // no open adjacent spots... try to find nearest enemy building and kill it
                 if (cur_loc.distanceSquaredTo(closest_nonhq_enemy_build) <= 3) {
                     // kill it
-                    if (rc.getDirtCarrying() > 0) {
+                    if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(cur_loc.directionTo(closest_nonhq_enemy_build))) {
                         rc.depositDirt(cur_loc.directionTo(closest_nonhq_enemy_build));
                     } else {
                         Helper.tryDigAway(my_hq);
