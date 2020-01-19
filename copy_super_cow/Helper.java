@@ -149,12 +149,19 @@ public class Helper {
     boolean allow_design_adjacent = true;
     for (int i = 0; i < directions.length; i++) {
       MapLocation new_loc = Landscaper.cur_loc.add(directions[i]);
+      RobotInfo r;
+      if (rc.canSenseLocation(new_loc)) {
+        r = rc.senseRobotAtLocation(new_loc);
+        if (r != null && r.type.isBuilding() && r.team != rc.getTeam()) {
+          continue; // dont dig enemy buildings LMAO
+        }
+      }
       if (rc.canDigDirt(directions[i]) && new_loc.distanceSquaredTo(loc) > max_dist && (HQ.our_hq.distanceSquaredTo(new_loc) > 3)) {
         boolean adjacent = false;
         for (int j = 0; j < directions.length; j++) {
           MapLocation even_newer_loc = new_loc.add(directions[j]);
           if (rc.canSenseLocation(even_newer_loc)) {
-            RobotInfo r = rc.senseRobotAtLocation(even_newer_loc);
+            r = rc.senseRobotAtLocation(even_newer_loc);
             if (r != null && r.type == RobotType.DESIGN_SCHOOL && r.team == rc.getTeam()) {
               adjacent = true;
             }
