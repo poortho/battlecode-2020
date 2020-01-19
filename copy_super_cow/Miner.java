@@ -281,7 +281,7 @@ public class Miner {
 
 		if (target_mine != null) {
 			do_mine();
-		} else if (target_explore != null && !first_miner) {
+		} else if (target_explore != null && (!first_miner || target_explore.distanceSquaredTo(hq) < 48)) {
 			find_mine();
 			//System.out.println(Clock.getBytecodesLeft());
 			if (rc.canSenseLocation(target_explore) && rc.senseFlooding(target_explore)) {
@@ -309,7 +309,7 @@ public class Miner {
 				do_mine();
 			} else {
 				target_explore = get_explore_target();
-				if (target_explore != null && !first_miner) {
+				if (target_explore != null && (!first_miner || target_explore.distanceSquaredTo(hq) < 48)) {
 					miner_walk(target_explore);
 				} else {
 					hq = HQ.our_hq;
