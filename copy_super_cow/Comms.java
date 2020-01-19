@@ -6,8 +6,7 @@ import battlecode.common.RobotType;
 import battlecode.common.Transaction;
 
 import static copy_super_cow.Helper.directions;
-import static copy_super_cow.RobotPlayer.rc;
-import static copy_super_cow.RobotPlayer.round;
+import static copy_super_cow.RobotPlayer.*;
 
 public class Comms {
 
@@ -161,7 +160,9 @@ public class Comms {
 							case 0x8:
 								x = (temp_msg[j] >> 12) & 0xff;
 								y = (temp_msg[j] >> 4) & 0xff;
-								RobotPlayer.netgun_map[x][y] = (temp_msg[j] >> 20);
+								if (x < netgun_map.length && y < netgun_map[0].length) {
+									RobotPlayer.netgun_map[x][y] = (temp_msg[j] >> 20);
+								}
 								break;
 
 							case 0x9:
