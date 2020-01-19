@@ -277,7 +277,7 @@ public class HQ {
               if (dist < min_dist) {
                 min_dist = dist;
                 closest_rush_enemy = nearby[i].location;
-                if (dist <= 2) {
+                if (dist <= 4) {
                   gay_rush_alert = true;
                 }
               }
