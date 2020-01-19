@@ -21,6 +21,7 @@ public class DeliveryDrone {
 
     static MapLocation previous_location;
     static boolean bugpath_blocked = false;
+    static MapLocation[] explore_locs = null;
 
     static int search_idx = 0;
 
@@ -118,6 +119,24 @@ public class DeliveryDrone {
 
         }
 
+        if (explore_locs == null && HQ.our_hq != null) {
+            explore_locs = new MapLocation[7];
+            int width = rc.getMapWidth();
+            int height = rc.getMapHeight();
+            MapLocation middle = new MapLocation(width / 2, height / 2);
+
+            // set locations
+            int delta_x = middle.x + (middle.x - HQ.our_hq.x);
+            int delta_y = middle.y + (middle.y - HQ.our_hq.y);
+            explore_locs[0] = new MapLocation(middle.x, middle.y);
+            explore_locs[1] = new MapLocation(delta_x, delta_y);
+            explore_locs[2] = new MapLocation(delta_x, HQ.our_hq.y);
+            explore_locs[3] = new MapLocation(HQ.our_hq.x, delta_y);
+            explore_locs[4] = new MapLocation(delta_x, middle.y);
+            explore_locs[5] = new MapLocation(middle.x, delta_y);
+            explore_locs[6] = HQ.our_hq;
+        }
+
         if (nearest_flood != null && rc.canSenseLocation(nearest_flood) && !rc.senseFlooding(nearest_flood)) {
             nearest_flood = null;
         }
@@ -126,9 +145,9 @@ public class DeliveryDrone {
             nearest_flood_curloc = null;
         }
 
-        if (HQ.our_hq != null && rc.canSenseLocation(HQ.our_hq)) {
+        if (explore_locs != null) {
             // near hq, set to our hq
-            hq = HQ.our_hq;
+            hq = explore_locs[rc.getID() % explore_locs.length];
         }
 
         // if i'm ever next to hq, move away

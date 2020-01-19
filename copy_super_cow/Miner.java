@@ -216,10 +216,10 @@ public class Miner {
 				int highest_elevation = -99999;
 				Direction best_dir = null;
 				int valid_adjacents = (toBuild == RobotType.VAPORATOR || toBuild == RobotType.REFINERY) ? 0 :
-						(toBuild == RobotType.NET_GUN ? 8 : 2);
+						(toBuild == RobotType.NET_GUN ? 8 : 3);
 				for (int i = 0; i < directions.length; i++) {
 					MapLocation new_loc = cur_loc.add(directions[i]);
-					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > min_distance_from_hq) {
+					if (HQ.our_hq == null || new_loc.distanceSquaredTo(HQ.our_hq) > min_distance_from_hq || RobotType.NET_GUN == toBuild) {
 						int valid = 0;
 						for (int j = directions.length; --j >= 0; ) {
 							if (rc.canSenseLocation(new_loc.add(directions[j]))) {
@@ -742,7 +742,11 @@ public class Miner {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;
-	  }/* else if (near_hq && !nearby_design) {
+	  } else if (HQ.done_turtling && near_hq && !nearby_fulfillment) {
+		return RobotType.FULFILLMENT_CENTER;
+	  }
+
+  	/* else if (near_hq && !nearby_design) {
 	  	return RobotType.DESIGN_SCHOOL;
 	  }*/
 	  return RobotType.VAPORATOR;

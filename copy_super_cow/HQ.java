@@ -240,7 +240,7 @@ public class HQ {
         } while (next_loc.distanceSquaredTo(cur_loc) <= 15);
         if (flooded_count > nonflooded_count) {
             //System.out.println("broadcasted!");
-            // Comms.broadcast_patrol_enemy_hq();
+            Comms.broadcast_patrol_enemy_hq();
         }
       }
 
