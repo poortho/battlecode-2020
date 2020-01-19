@@ -96,10 +96,10 @@ public class Landscaper {
             do_rush_defense();
         } else if (rushing && rc.getRoundNum() < 200) {
             do_rush();
-        } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
-            do_defense_new();
         } else if (destination != null) {
             do_offense();
+        } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
+            do_defense_new();
         } else {
             do_lattice();
         }
