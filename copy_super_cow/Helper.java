@@ -65,9 +65,9 @@ public class Helper {
     return -1;
   }
 
-  static void tryBuildToward(RobotType type, MapLocation loc) throws GameActionException {
+  static boolean tryBuildToward(RobotType type, MapLocation loc) throws GameActionException {
     if (!rc.isReady()) {
-      return;
+      return false;
     }
 
     int min_dist = 9999999;
@@ -87,7 +87,9 @@ public class Helper {
     }
     if (min_dir != -1) {
       rc.buildRobot(type, directions[min_dir]);
+      return true;
     }
+    return false;
   }
 
   static int tryBuild(RobotType type) throws GameActionException {

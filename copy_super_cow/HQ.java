@@ -14,7 +14,7 @@ public class HQ {
 
     static boolean surrounded_by_flood = false;
 
-    static int TOTAL_MINERS = 3;
+    static int TOTAL_MINERS = 4;
     static boolean done_turtling = false;
     static boolean broadcast_rush = false;
 
@@ -136,6 +136,7 @@ public class HQ {
         if (!rushed) {
           rushed = checkRush();
           if (rushed) {
+            System.out.println("RUSHED FUCKER");
             Comms.broadcast_being_rushed(gay_rush_alert);
           }
         } else {
@@ -153,7 +154,7 @@ public class HQ {
           handle_miners();
         }*/
         if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
-          if (Comms.design_school_idx != 0 || miner_count < 3) {
+          if (Comms.design_school_idx != 0 || miner_count < 4) {
             handle_miners();
           }
         }
@@ -279,9 +280,13 @@ public class HQ {
                 }
               }
             }
+          case MINER:
+            if (nearby[i].team != rc.getTeam() && round < 200) {
+              gay_rush_alert = true;
+            }
         }
       }
-      return (enemy_land >= 1 || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design);
+      return ((enemy_land >= 1 || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design)) || gay_rush_alert;
     }
 
     static boolean queue_close_soup() throws GameActionException {
