@@ -1,10 +1,10 @@
-package copy_super_cow;
+package rush_bot;
 
 import battlecode.common.*;
 
-import static copy_super_cow.Helper.*;
-import static copy_super_cow.RobotPlayer.rc;
-import static copy_super_cow.RobotPlayer.turnCount;
+import static rush_bot.Helper.*;
+import static rush_bot.RobotPlayer.rc;
+import static rush_bot.RobotPlayer.turnCount;
 
 public class Landscaper {
     static boolean rushing = false;
@@ -28,7 +28,6 @@ public class Landscaper {
     static MapLocation[] explore_locs = null;
     static boolean rush_defended = false;
     static MapLocation closest_nonhq_enemy_build = null;
-    static MapLocation closest_enemy_build_to_hq = null;
 
     static void runLandscaper() throws GameActionException {
         lattice_elevation = Math.max(Helper.getLevel(rc.getRoundNum()) + 3, 5);
@@ -92,9 +91,7 @@ public class Landscaper {
             explore_locs[5] = new MapLocation(middle.x, delta_y);
         }
 
-        if (Miner.gay_rush_alert && my_hq != null && cur_loc.distanceSquaredTo(my_hq) <= 40) {
-            do_rush_defense();
-        } else if (rushing && rc.getRoundNum() < 200) {
+        if (rushing && rc.getRoundNum() < 200) {
             do_rush();
         } else if (my_hq != null && (!HQ.done_turtling || cur_loc.distanceSquaredTo(my_hq) <= 8) && cur_loc.distanceSquaredTo(my_hq) < 100) {
             do_defense_new();
@@ -110,84 +107,6 @@ public class Landscaper {
             do_offense();
         }
          */
-    }
-
-    static void do_rush_defense() throws GameActionException {
-        int dist_from_hq = cur_loc.distanceSquaredTo(my_hq);
-        if (dist_from_hq <= 3) {
-            // adjacent to HQ
-
-            // heal HQ if possible...
-            if (rc.canSenseLocation(my_hq)) {
-                if (rc.canDigDirt(cur_loc.directionTo(my_hq))) {
-                    rc.digDirt(cur_loc.directionTo(my_hq));
-                } else if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                    // deposit at enemy building if adjacent, else deposit under self
-                    if (closest_nonhq_enemy_build != null && closest_nonhq_enemy_build.distanceSquaredTo(cur_loc) <= 3 &&
-                            rc.canDepositDirt(cur_loc.directionTo(closest_nonhq_enemy_build))) {
-                        rc.depositDirt(cur_loc.directionTo(closest_nonhq_enemy_build));
-                    } else if (rc.canDepositDirt(Direction.CENTER)){
-                        rc.depositDirt(Direction.CENTER);
-                    }
-                } else if (closest_enemy_build_to_hq != null) {
-                    if (cur_loc.distanceSquaredTo(closest_enemy_build_to_hq) <= 3) {
-                        // attack nearby enemy buildings if adjacent...
-                        if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(cur_loc.directionTo(closest_enemy_build_to_hq))) {
-                            rc.depositDirt(cur_loc.directionTo(closest_enemy_build_to_hq));
-                        } else {
-                            Helper.tryDigAway(my_hq);
-                        }
-                    } else {
-                        // move while staying adjacent to HQ
-                        int min_dist = 9999999;
-                        int best_dir = -1;
-                        for (int i = directions.length; --i >= 0; ) {
-                            MapLocation new_loc = cur_loc.add(directions[i]);
-                            if (new_loc.distanceSquaredTo(my_hq) <= 3 &&
-                                    new_loc.distanceSquaredTo(closest_enemy_build_to_hq) < min_dist &&
-                                    rc.canMove(directions[i])) {
-                                min_dist = new_loc.distanceSquaredTo(closest_enemy_build_to_hq);
-                                best_dir = i;
-                            }
-                        }
-                        if (best_dir != -1) {
-                            rc.move(directions[best_dir]);
-                        }
-                    }
-                }
-            }
-        } else {
-            // not adjacent to HQ, find adjacent spot if available
-            int min_dist = 999999;
-            MapLocation closest = null;
-            for (int i = directions.length; --i >= 0; ) {
-                MapLocation new_loc = my_hq.add(directions[i]);
-                if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null && cur_loc.distanceSquaredTo(new_loc) < min_dist) {
-                    min_dist = cur_loc.distanceSquaredTo(new_loc);
-                    closest = new_loc;
-                }
-            }
-
-            if (closest != null) {
-                bugpath_walk(closest);
-            } else if (closest_nonhq_enemy_build != null) {
-                // no open adjacent spots... try to find nearest enemy building and kill it
-                if (cur_loc.distanceSquaredTo(closest_nonhq_enemy_build) <= 3) {
-                    // kill it
-                    if (rc.getDirtCarrying() > 0) {
-                        rc.depositDirt(cur_loc.directionTo(closest_nonhq_enemy_build));
-                    } else {
-                        Helper.tryDigAway(my_hq);
-                    }
-                } else {
-                    // move
-                    bugpath_walk(closest_nonhq_enemy_build);
-                }
-            } else {
-                // no enemy buildings, just walk around HQ i guess lol
-                bugpath_walk(my_hq);
-            }
-        }
     }
 
     static void do_rush() throws GameActionException {
@@ -826,11 +745,6 @@ public class Landscaper {
                                 robots[i].location.distanceSquaredTo(cur_loc) < closest_nonhq_enemy_build.distanceSquaredTo(cur_loc))) {
                             closest_nonhq_enemy_build = robots[i].location;
                         }
-                        if (robots[i].type.isBuilding() && my_hq != null &&
-                                (closest_enemy_build_to_hq == null || my_hq.distanceSquaredTo(robots[i].location) <
-                                        my_hq.distanceSquaredTo(closest_enemy_build_to_hq))) {
-                            closest_enemy_build_to_hq = robots[i].location;
-                        }
                         break;
                 }
             }
@@ -904,12 +818,9 @@ public class Landscaper {
                 // dig edges
                 Helper.tryDigEdges();
             } else {
-                if (!Helper.digLattice(loc) && rc.canSenseLocation(loc)) {
-                    if (rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {
-                        Helper.tryDig(Direction.CENTER);
-                    } else {
-                        Helper.tryDig(cur_loc.directionTo(loc));
-                    }
+                if (!Helper.digLattice(loc) && rc.canSenseLocation(loc) && rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {
+                    // failed to dig lattice. dig self
+                    Helper.tryDig(Direction.CENTER);
                 }
             }
         }
