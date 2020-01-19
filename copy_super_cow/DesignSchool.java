@@ -76,7 +76,7 @@ public class DesignSchool {
             Miner.gay_rush_alert = false;
         }
 
-        if (HQ.rushed && Miner.gay_rush_alert) {
+        if (HQ.rushed && Miner.gay_rush_alert && near_hq) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 
