@@ -22,6 +22,7 @@ public class FulfillmentCenter {
         int num_drones = 0;
         int enemy_hq = 0;
         int enemy_net_gun = 0;
+        int num_cows = 0;
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team == rc.getTeam()) {
                 switch(robots[i].type) {
@@ -41,6 +42,8 @@ public class FulfillmentCenter {
                         enemy_net_gun++;
                         break;
                     case COW:
+                        num_cows++;
+                        break;
                     case LANDSCAPER:
                     case MINER:
                         num_enemy_units++;
@@ -58,7 +61,7 @@ public class FulfillmentCenter {
         if (enemy_hq == 0 && enemy_net_gun == 0) {
             if ((num_enemy_units > 0 && num_drones / 2 < num_enemy_units && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost*(1+num_drones))
                 ||  (rc.getTeamSoup() >= 2100 && HQ.our_hq != null && cur_loc.distanceSquaredTo(HQ.our_hq) <= 40) ||
-                    (rc.getTeamSoup() >= 500 && num_enemy_units > 0)) {
+                    (rc.getTeamSoup() >= 500 && (num_enemy_units > 0 || num_cows > 0))) {
                     //(near_hq && (num_drones < num_enemy_units) && rc.getTeamSoup() >= RobotType.DELIVERY_DRONE.cost) ||
                     //(rc.getTeamSoup() >= 450 && near_hq) ||
                 Helper.tryBuild(RobotType.DELIVERY_DRONE);
