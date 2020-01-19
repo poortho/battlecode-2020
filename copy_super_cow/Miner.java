@@ -143,11 +143,13 @@ public class Miner {
 					miner_walk(HQ.enemy_hq);
 				} else {
 					// try building a design school right next to enemy hq lmfao
-					for (int i = 0; i < directions.length; i++) {
-						MapLocation temp_loc = cur_loc.add(directions[i]);
-						if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
-							rush = !Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
-							break;
+					if (!gay_rush_alert) {
+						for (int i = 0; i < directions.length; i++) {
+							MapLocation temp_loc = cur_loc.add(directions[i]);
+							if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
+								rush = !Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
+								break;
+							}
 						}
 					}
 					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
@@ -763,10 +765,10 @@ public class Miner {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if (((num_enemy_landscapers > 0)) && !nearby_fulfillment) {
+  	} else if ((num_enemy_landscapers > 0 || (first_miner && round > 150)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
-	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
+	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers)) && !nearby_design) {
 		  return RobotType.DESIGN_SCHOOL;
 	  } else if (num_enemy_drones > num_enemy_landscapers && num_enemy_drones > num_enemy_buildings && !nearby_netgun) {
 		  return RobotType.NET_GUN;

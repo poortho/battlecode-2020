@@ -72,7 +72,7 @@ public class DesignSchool {
             seen_enemy_drone = false;
         }
 
-        if (HQ.rushed && HQ.gay_rush_alert) {
+        if (HQ.rushed && Miner.gay_rush_alert) {
             Helper.tryBuild(RobotType.LANDSCAPER);
         }
 

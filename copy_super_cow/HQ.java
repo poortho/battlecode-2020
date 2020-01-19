@@ -252,6 +252,7 @@ public class HQ {
       gay_rush_alert = false;
       RobotInfo[] nearby = rc.senseNearbyRobots();
       int enemy_land = 0;
+      int friendly_land = 0;
       int enemy_design = 0;
 
       int min_dist = 999999;
@@ -265,6 +266,8 @@ public class HQ {
                 min_dist = dist;
                 closest_rush_enemy = nearby[i].location;
               }
+            } else {
+              friendly_land++;
             }
             break;
           case DESIGN_SCHOOL:
@@ -285,7 +288,7 @@ public class HQ {
             }
         }
       }
-      return ((enemy_land >= 1 || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design)) || gay_rush_alert;
+      return ((enemy_land > friendly_land || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design)) || gay_rush_alert;
     }
 
     static boolean queue_close_soup() throws GameActionException {
