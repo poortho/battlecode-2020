@@ -136,7 +136,6 @@ public class HQ {
         if (!rushed) {
           rushed = checkRush();
           if (rushed) {
-            System.out.println("RUSHED FUCKER");
             Comms.broadcast_being_rushed(gay_rush_alert);
           }
         } else {

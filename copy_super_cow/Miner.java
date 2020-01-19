@@ -213,7 +213,7 @@ public class Miner {
 		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
 		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner) {
 			System.out.println("DEFEND");
-			if (dist_to_hq > max_dist_from_hq) {
+			if (dist_to_hq > 4) {
 				miner_walk(HQ.our_hq);
 			} else {
 				for (int i = 0; i < directions.length; i++) {
@@ -417,7 +417,7 @@ public class Miner {
 			if (robots[i].team == rc.getTeam()) {
 				switch (robots[i].type) {
 					case REFINERY:
-						if (temp_dist < hq_dist || turtling || (rc.canSenseLocation(hq) && rc.senseRobotAtLocation(hq) == null)) {
+						if (!first_miner && (temp_dist < hq_dist || turtling || (rc.canSenseLocation(hq) && rc.senseRobotAtLocation(hq) == null))) {
 							hq = rob_loc;
 							hq_dist = temp_dist;
 						}
@@ -488,7 +488,7 @@ public class Miner {
 					tryBuild(RobotType.REFINERY);
 				}
 				tryDepositSoup(cur_loc.directionTo(hq));
-			} else if (((target_mine.distanceSquaredTo(hq) > 40 && target_mine.distanceSquaredTo(cur_loc) < 24
+			} else if (!first_miner && ((target_mine.distanceSquaredTo(hq) > 40 && target_mine.distanceSquaredTo(cur_loc) < 24
 					&& mine_count > 400 && num_enemy_landscapers == 0)) &&
 					(res = tryBuild(RobotType.REFINERY)) != -1) {
 				// build refinery
