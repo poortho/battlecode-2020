@@ -790,7 +790,7 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-  	if (near_hq && !nearby_design && gay_rush_alert) {
+  	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
