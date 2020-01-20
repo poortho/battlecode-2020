@@ -152,7 +152,8 @@ public class HQ {
         } else if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           handle_miners();
         }*/
-        if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
+        if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3) &&
+                !(Miner.gay_rush_alert || Miner.all_in)) {
           if (Comms.design_school_idx != 0 || miner_count < 4) {
             handle_miners();
           }
