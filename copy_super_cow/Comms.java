@@ -144,6 +144,7 @@ public class Comms {
 								}
 								if (temp_msg[j] >> 4 == 1) {
 									Miner.gay_rush_alert = true;
+									Miner.gay_rush_round = blockRound;
 								}
 								break;
 

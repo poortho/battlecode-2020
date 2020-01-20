@@ -17,6 +17,7 @@ public class Miner {
   static int drone_factories_built = 0;
   static MapLocation find_mine_loc;
   static boolean rush = false;
+  static int only_enemy_landscapers = 0;
 
   static int timeout_mine = 0, timeout_explore = 0;
   static int TIMEOUT_THRESHOLD = 100;
@@ -52,6 +53,7 @@ public class Miner {
   static boolean[] turtle_blocked = new boolean[directions.length];
   static int blocked = 0;
   static int mine_count = -1;
+  static int gay_rush_round = 0;
   static boolean duplicate_building, gay_rush_alert = false, all_in = false;
   static MapLocation gay_rush_design_school = null;
 
@@ -113,7 +115,7 @@ public class Miner {
 			target_mine = null;
 		}
 
-		if (rush && num_enemy_landscapers >= 4) {
+		if (rush && only_enemy_landscapers >= 4) {
 			rush = false;
 		}
 
@@ -153,7 +155,7 @@ public class Miner {
 					//System.out.println("IDK");
 				}
 			} else {
-				if (!all_in && !gay_rush_alert) {
+				if (!all_in && round - gay_rush_round <= 2) {
 					// broadcast all in
 					all_in = true;
 					Comms.broadcast_all_in();
@@ -426,6 +428,7 @@ public class Miner {
 						num_enemy_drones++;
 						break;
 					case LANDSCAPER:
+						only_enemy_landscapers++;
 						num_enemy_landscapers++;
 						if (HQ.our_hq != null) {
 							int tmp_dist = robots[i].location.distanceSquaredTo(HQ.our_hq);
