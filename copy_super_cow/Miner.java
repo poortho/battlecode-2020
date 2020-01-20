@@ -166,8 +166,10 @@ public class Miner {
 							}
 						}
 					}
-					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
+					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2 && !built_rush_design) {
 						miner_walk(HQ.enemy_hq);
+					} else if (built_rush_design && cur_loc.distanceSquaredto(HQ.enemy_hq) <= 2) {
+						Helper.greedy_move_away(HQ.enemy_hq, cur_loc);
 					}
 					boolean enemy_fulfill = false;
 					for (int i = robots.length; --i >= 0; ) {
