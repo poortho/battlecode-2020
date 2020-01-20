@@ -115,7 +115,7 @@ public class Miner {
 			target_mine = null;
 		}
 
-		if (rush && only_enemy_landscapers >= 4) {
+		if (rush && HQ.enemy_hq != null && rc.canSenseLocation(HQ.enemy_hq) && only_enemy_landscapers >= 4) {
 			rush = false;
 		}
 
@@ -155,7 +155,7 @@ public class Miner {
 					//System.out.println("IDK");
 				}
 			} else {
-				if (!all_in && round - gay_rush_round <= 2) {
+				if (!all_in && (!gay_rush_alert || round - gay_rush_round <= 2)) {
 					// broadcast all in
 					all_in = true;
 					Comms.broadcast_all_in();
@@ -253,19 +253,23 @@ public class Miner {
 		// build thing
 		int min_distance_from_hq = HQ.surrounded_by_flood && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
 		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
-		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner && rc.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost) {
+		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner && rc.getTeamSoup() >= toBuild.cost) {
 			//System.out.println("DEFEND");
 			if (dist_to_hq > 4) {
 				miner_walk(HQ.our_hq);
 			} else {
-				for (int i = 0; i < directions.length; i++) {
-					MapLocation new_loc = cur_loc.add(directions[i]);
-					int temp_dist = new_loc.distanceSquaredTo(hq);
-					if (temp_dist >= 4 && temp_dist <= 8) {
-						boolean res = Helper.tryBuild(toBuild, directions[i]);
-						if (res) {
-							Comms.broadcast_building(hq, toBuild);
-							break;
+				if (toBuild == RobotType.FULFILLMENT_CENTER && (friendy_landscapers < 2 || round > 150))  {
+					// do nothing
+				} else {
+					for (int i = 0; i < directions.length; i++) {
+						MapLocation new_loc = cur_loc.add(directions[i]);
+						int temp_dist = new_loc.distanceSquaredTo(hq);
+						if (temp_dist >= 4 && temp_dist <= 8) {
+							boolean res = Helper.tryBuild(toBuild, directions[i]);
+							if (res) {
+								Comms.broadcast_building(hq, toBuild);
+								break;
+							}
 						}
 					}
 				}
@@ -407,6 +411,7 @@ public class Miner {
 		near_hq = false;
 		friendy_landscapers = 0;
 		int min_dist = 999999;
+		only_enemy_landscapers = 0;
 		for (int i = robots.length; --i >= 0; ) {
 			MapLocation rob_loc = robots[i].location;
 			int temp_dist = rob_loc.distanceSquaredTo(cur_loc);
@@ -805,9 +810,11 @@ public class Miner {
   static RobotType calcBuilding() {
   	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
   		return RobotType.DESIGN_SCHOOL;
+  	} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
+  		return RobotType.FULFILLMENT_CENTER;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if (((num_enemy_landscapers > 0 && (!near_hq || friendy_landscapers >= 2)) || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
+  	} else if (((num_enemy_landscapers > 0 && !gay_rush_alert) || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
