@@ -34,184 +34,188 @@ public class Comms {
 
 	public static void getBlocks() throws GameActionException {
 		// received all new messages
-		while (blockRound < round) {
-			boolean removed = false;
+		try {
+			while (blockRound < round) {
+				boolean removed = false;
 
-			// miners get their first target
-			if (rc.getType() == RobotType.MINER) {
-				/*
-				if (blockRound == round - 1 && !Miner.first_target) {
-					if (miner_queue_peek() != null) {
-						//System.out.println("First target: " + miner_queue_peek().toString());
-						Miner.target_explore = miner_queue_peek();
-						Miner.must_reach_dest = true;
-					}
-					Miner.first_target = true;
-				}*/
-			}
-
-			Transaction[] messages = rc.getBlock(blockRound);
-
-			if (seed == -1) {
-				// find seed
-				for (int i = 0; i < messages.length; i++) {
-					int[] temp_msg = messages[i].getMessage();
-					if (blockRound == 1 && (temp_msg[0] ^ HARDCODE) % 0x69696969 == temp_msg[1]) {
-						seed = temp_msg[0];
-						//System.out.println("Set seed: " + Integer.toString(seed));
-
-						// unpack explore locations
-						explore[0] = new MapLocation((temp_msg[2] >> 8) & 0xff, temp_msg[2] & 0xff);
-						explore[1] = new MapLocation((temp_msg[2] >> 24) & 0xff, (temp_msg[2] >> 16) & 0xff);
-						explore[2] = new MapLocation((temp_msg[3] >> 8) & 0xff, temp_msg[3] & 0xff);
-						explore[3] = new MapLocation((temp_msg[3] >> 24) & 0xff, (temp_msg[3] >> 16) & 0xff);
-						explore[4] = new MapLocation((temp_msg[4] >> 8) & 0xff, temp_msg[4] & 0xff);
-						explore[5] = new MapLocation((temp_msg[4] >> 24) & 0xff, (temp_msg[4] >> 16) & 0xff);
-						break;
-					}
-				}
-			}
-
-
-			for (int i = messages.length; --i >= 0; ) {
-				int[] temp_msg = messages[i].getMessage();
-				//System.out.println(blockRound);
-				//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
-				//System.out.println("Hardcode: " + Integer.toString(HARDCODE));
-				if (temp_msg.length == 7) {
-					// read messages
-					int key = xorKey(blockRound);
-					if (temp_msg[6] != key) {
-						// bad message
-						continue;
-					}
-					for (int j = temp_msg.length; --j >= 0; ) {
-						// process message
-						temp_msg[j] ^= key;
-						// System.out.println("Received message: " + Integer.toString(temp_msg[j]));
-
-						int opcode = temp_msg[j] & 0xf;
-						int x, y, n;
-
-						switch (opcode) {
-							case 0x1:
-								x = (temp_msg[j] >> 16) & 0xff;
-								y = (temp_msg[j] >> 8) & 0xff;
-								n = (temp_msg[j] >> 4) & 0xf;
-								HQ.TOTAL_MINERS = Math.max(HQ.TOTAL_MINERS, n);
-								int reach_dest = (temp_msg[j] >> 24) & 1;
-								if (n > 0) {
-									miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
-								}
-
-								if (rc.getType() == RobotType.MINER) {
-									// this is so we don't broadcast patches near locations that are already going to be explored
-									Miner.explored[Miner.explored_count] = new MapLocation(x, y);
-									//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
-									Miner.explored_count++;
-								}
-								break;
-
-							case 0x2:
-								//miner_queue_remove();
-								if (!removed) {
-									n = temp_msg[j] >> 4;
-									poll_idx = n;
-									Miner.new_loc = true;
-									removed = true;
-								}
-								break;
-
-							case 0x3:
-								x = (temp_msg[j] >> 12) & 0xff;
-								y = (temp_msg[j] >> 4) & 0xff;
-								HQ.enemy_hq = new MapLocation(x, y);
-								//System.out.println("Received enemy HQ: " + HQ.enemy_hq.toString());
-								break;
-
-							case 0x4:
-								// friendy HQ
-								x = (temp_msg[j] >> 12) & 0xff;
-								y = (temp_msg[j] >> 4) & 0xff;
-								HQ.our_hq = new MapLocation(x, y);
-								//System.out.println("Received our HQ: " + HQ.our_hq.toString());
-								break;
-
-							case 0x5:
-								HQ.rushed = true;
-								if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
-									HQ.rushed = false;
-								}
-								if (temp_msg[j] >> 4 == 1) {
-									Miner.gay_rush_alert = true;
-								}
-								break;
-
-							case 0x6:
-								HQ.rushed = false;
-								Miner.gay_rush_alert = false;
-								break;
-
-							case 0x7:
-								HQ.patrol_broadcast_round = blockRound;
-								HQ.broadcasted_patrol = true;
-								break;
-
-							case 0x8:
-								x = (temp_msg[j] >> 12) & 0xff;
-								y = (temp_msg[j] >> 4) & 0xff;
-								if (x < netgun_map.length && y < netgun_map[0].length) {
-									RobotPlayer.netgun_map[x][y] = (temp_msg[j] >> 20);
-								}
-								break;
-
-							case 0x9:
-								x = (temp_msg[j] >> 12) & 0xff;
-								y = (temp_msg[j] >> 4) & 0xff;
-								int val1 = (temp_msg[j] >> 20) & 0x1;
-								int val2 = (temp_msg[j] >> 21) & 0x1;
-								int val3 = (temp_msg[j] >> 22) & 0x1;
-								if (val1 == 1) {
-									design_schools[design_school_idx] = new MapLocation(x, y);
-									design_school_idx++;
-								} else if (val2 == 1) {
-									fulfillment_centers[fulfillment_center_idx] = new MapLocation(x, y);
-									fulfillment_center_idx++;
-								} else if (val3 == 1) {
-									netguns[netgun_idx] = new MapLocation(x, y);
-									netgun_idx++;
-								}
-								break;
-							case 0xa:
-								HQ.done_turtling = true;
-								break;
-
-							case 0xb:
-								if (blockRound == round - 1 && RobotPlayer.turnCount == 1) {
-									Miner.rush = true;
-								}
-								break;
-
-							case 0xc:
-								HQ.surrounded_by_flood = true;
-								for (int k = Comms.design_school_idx; --k >= 0; ) {
-									if (Comms.design_schools[k].equals(HQ.our_hq)) {
-										Comms.design_schools[k] = new MapLocation(0,0);
-									}
-								}
-								break;
-
-							case 0xd:
-								Miner.all_in = true;
-								break;
+				// miners get their first target
+				if (rc.getType() == RobotType.MINER) {
+					/*
+					if (blockRound == round - 1 && !Miner.first_target) {
+						if (miner_queue_peek() != null) {
+							//System.out.println("First target: " + miner_queue_peek().toString());
+							Miner.target_explore = miner_queue_peek();
+							Miner.must_reach_dest = true;
 						}
+						Miner.first_target = true;
+					}*/
+				}
 
-						temp_msg[j] ^= key;
+				Transaction[] messages = rc.getBlock(blockRound);
+
+				if (seed == -1) {
+					// find seed
+					for (int i = 0; i < messages.length; i++) {
+						int[] temp_msg = messages[i].getMessage();
+						if (blockRound == 1 && (temp_msg[0] ^ HARDCODE) % 0x69696969 == temp_msg[1]) {
+							seed = temp_msg[0];
+							//System.out.println("Set seed: " + Integer.toString(seed));
+
+							// unpack explore locations
+							explore[0] = new MapLocation((temp_msg[2] >> 8) & 0xff, temp_msg[2] & 0xff);
+							explore[1] = new MapLocation((temp_msg[2] >> 24) & 0xff, (temp_msg[2] >> 16) & 0xff);
+							explore[2] = new MapLocation((temp_msg[3] >> 8) & 0xff, temp_msg[3] & 0xff);
+							explore[3] = new MapLocation((temp_msg[3] >> 24) & 0xff, (temp_msg[3] >> 16) & 0xff);
+							explore[4] = new MapLocation((temp_msg[4] >> 8) & 0xff, temp_msg[4] & 0xff);
+							explore[5] = new MapLocation((temp_msg[4] >> 24) & 0xff, (temp_msg[4] >> 16) & 0xff);
+							break;
+						}
 					}
 				}
+
+
+				for (int i = messages.length; --i >= 0; ) {
+					int[] temp_msg = messages[i].getMessage();
+					//System.out.println(blockRound);
+					//System.out.println("New Message: " + Arrays.toString(messages[i].getMessage()));
+					//System.out.println("Hardcode: " + Integer.toString(HARDCODE));
+					if (temp_msg.length == 7) {
+						// read messages
+						int key = xorKey(blockRound);
+						if (temp_msg[6] != key) {
+							// bad message
+							continue;
+						}
+						for (int j = temp_msg.length; --j >= 0; ) {
+							// process message
+							temp_msg[j] ^= key;
+							// System.out.println("Received message: " + Integer.toString(temp_msg[j]));
+
+							int opcode = temp_msg[j] & 0xf;
+							int x, y, n;
+
+							switch (opcode) {
+								case 0x1:
+									x = (temp_msg[j] >> 16) & 0xff;
+									y = (temp_msg[j] >> 8) & 0xff;
+									n = (temp_msg[j] >> 4) & 0xf;
+									HQ.TOTAL_MINERS = Math.max(HQ.TOTAL_MINERS, n);
+									int reach_dest = (temp_msg[j] >> 24) & 1;
+									if (n > 0) {
+										miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
+									}
+
+									if (rc.getType() == RobotType.MINER) {
+										// this is so we don't broadcast patches near locations that are already going to be explored
+										Miner.explored[Miner.explored_count] = new MapLocation(x, y);
+										//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);
+										Miner.explored_count++;
+									}
+									break;
+
+								case 0x2:
+									//miner_queue_remove();
+									if (!removed) {
+										n = temp_msg[j] >> 4;
+										poll_idx = n;
+										Miner.new_loc = true;
+										removed = true;
+									}
+									break;
+
+								case 0x3:
+									x = (temp_msg[j] >> 12) & 0xff;
+									y = (temp_msg[j] >> 4) & 0xff;
+									HQ.enemy_hq = new MapLocation(x, y);
+									//System.out.println("Received enemy HQ: " + HQ.enemy_hq.toString());
+									break;
+
+								case 0x4:
+									// friendy HQ
+									x = (temp_msg[j] >> 12) & 0xff;
+									y = (temp_msg[j] >> 4) & 0xff;
+									HQ.our_hq = new MapLocation(x, y);
+									//System.out.println("Received our HQ: " + HQ.our_hq.toString());
+									break;
+
+								case 0x5:
+									HQ.rushed = true;
+									if (HQ.our_hq != null && !rc.canSenseLocation(HQ.our_hq)) {
+										HQ.rushed = false;
+									}
+									if (temp_msg[j] >> 4 == 1) {
+										Miner.gay_rush_alert = true;
+									}
+									break;
+
+								case 0x6:
+									HQ.rushed = false;
+									Miner.gay_rush_alert = false;
+									break;
+
+								case 0x7:
+									HQ.patrol_broadcast_round = blockRound;
+									HQ.broadcasted_patrol = true;
+									break;
+
+								case 0x8:
+									x = (temp_msg[j] >> 12) & 0xff;
+									y = (temp_msg[j] >> 4) & 0xff;
+									if (x < netgun_map.length && y < netgun_map[0].length) {
+										RobotPlayer.netgun_map[x][y] = (temp_msg[j] >> 20);
+									}
+									break;
+
+								case 0x9:
+									x = (temp_msg[j] >> 12) & 0xff;
+									y = (temp_msg[j] >> 4) & 0xff;
+									int val1 = (temp_msg[j] >> 20) & 0x1;
+									int val2 = (temp_msg[j] >> 21) & 0x1;
+									int val3 = (temp_msg[j] >> 22) & 0x1;
+									if (val1 == 1) {
+										design_schools[design_school_idx] = new MapLocation(x, y);
+										design_school_idx++;
+									} else if (val2 == 1) {
+										fulfillment_centers[fulfillment_center_idx] = new MapLocation(x, y);
+										fulfillment_center_idx++;
+									} else if (val3 == 1) {
+										netguns[netgun_idx] = new MapLocation(x, y);
+										netgun_idx++;
+									}
+									break;
+								case 0xa:
+									HQ.done_turtling = true;
+									break;
+
+								case 0xb:
+									if (blockRound == round - 1 && RobotPlayer.turnCount == 1) {
+										Miner.rush = true;
+									}
+									break;
+
+								case 0xc:
+									HQ.surrounded_by_flood = true;
+									for (int k = Comms.design_school_idx; --k >= 0; ) {
+										if (Comms.design_schools[k].equals(HQ.our_hq)) {
+											Comms.design_schools[k] = new MapLocation(0,0);
+										}
+									}
+									break;
+
+								case 0xd:
+									Miner.all_in = true;
+									break;
+							}
+
+							temp_msg[j] ^= key;
+						}
+					}
+				}
+				blockRound++;
+				c++;
 			}
+		} catch (Exception e) {
 			blockRound++;
-			c++;
 		}
 	}
 
