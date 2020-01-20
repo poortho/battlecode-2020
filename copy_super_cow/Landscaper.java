@@ -126,7 +126,7 @@ public class Landscaper {
                     if (closest_nonhq_enemy_build != null && closest_nonhq_enemy_build.distanceSquaredTo(cur_loc) <= 3 &&
                             rc.canDepositDirt(cur_loc.directionTo(closest_nonhq_enemy_build))) {
                         rc.depositDirt(cur_loc.directionTo(closest_nonhq_enemy_build));
-                    } else if (rc.canDepositDirt(Direction.CENTER)){
+                    } else if (rc.canDepositDirt(Direction.CENTER)) {
                         rc.depositDirt(Direction.CENTER);
                     }
                 } else if (closest_enemy_build_to_hq != null) {
@@ -308,7 +308,7 @@ public class Landscaper {
                 Direction cw = directions[next];
                 MapLocation next_loc = cur_loc.add(cw);
                 if (rc.canMove(cw) && !rc.senseFlooding(next_loc) && !blacklist[next] && !Helper.willFlood(next_loc) &&
-                    isLattice(cur_loc.add(directions[next]))) {
+                        isLattice(cur_loc.add(directions[next]))) {
                     if (next_loc.distanceSquaredTo(loc) < cur_loc.distanceSquaredTo(loc)) {
                         bugpath_blocked = false;
                     }
@@ -489,22 +489,20 @@ public class Landscaper {
 
         if (!near_flood || rc.getRoundNum() > 1000) {
             if (rc.getDirtCarrying() > 0) {
-                if (near_flood || HQ.done_turtling) {
+                int min_el = 999999999;
+                Direction min_d = null;
+                for (int i = 0; i < directions.length; i++) {
+                    MapLocation new_loc = cur_loc.add(directions[i]);
+                    if (rc.canSenseLocation(new_loc) && new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
+                            min_el > rc.senseElevation(new_loc) && rc.canDepositDirt(directions[i])) {
+                        min_el = rc.senseElevation(new_loc);
+                        //System.out.println(cur_loc.add(directions[i]));
+                        min_d = directions[i];
+                    }
+                }
+                if (min_d != null && (near_flood || HQ.done_turtling || rc.getRoundNum() > 600 || Helper.getLevel(rc.getRoundNum() + 6) > min_el)) {
                     // REEEE fill in lowest elevation adjacent to HQ
-                    int min_el = 999999999;
-                    Direction min_d = null;
-                    for (int i = 0; i < directions.length; i++) {
-                        MapLocation new_loc = cur_loc.add(directions[i]);
-                        if (rc.canSenseLocation(new_loc) && new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0 &&
-                                min_el > rc.senseElevation(new_loc)) {
-                            min_el = rc.senseElevation(new_loc);
-                            //System.out.println(cur_loc.add(directions[i]));
-                            min_d = directions[i];
-                        }
-                    }
-                    if (min_d != null && rc.canDepositDirt(min_d)) {
-                        rc.depositDirt(min_d);
-                    }
+                    rc.depositDirt(min_d);
                 } else {
                     // flood not nearby, just deposit near HQ
                     if (cur_loc.distanceSquaredTo(my_hq) <= 3) {
@@ -539,8 +537,8 @@ public class Landscaper {
         for (int i = 1; i < 25; i++) {
             MapLocation new_loc = my_hq.translate(distx_35[i], disty_35[i]);
             if (rc.canSenseLocation(new_loc) && rc.senseRobotAtLocation(new_loc) == null &&
-                new_loc.distanceSquaredTo(cur_loc) < min_dist && rc.senseElevation(new_loc) > -10 &&
-                new_loc.distanceSquaredTo(my_hq) <= threshold && !rc.senseFlooding(new_loc)) {
+                    new_loc.distanceSquaredTo(cur_loc) < min_dist && rc.senseElevation(new_loc) > -10 &&
+                    new_loc.distanceSquaredTo(my_hq) <= threshold && !rc.senseFlooding(new_loc)) {
                 min_dist = new_loc.distanceSquaredTo(cur_loc);
                 ret = new_loc;
             }
@@ -635,7 +633,7 @@ public class Landscaper {
                 MapLocation new_loc = my_hq.add(directions[i]);
                 MapLocation dep_loc = cur_loc.add(directions[i]);
                 if (rc.canSenseLocation(new_loc)) {
-                    RobotInfo r =  rc.senseRobotAtLocation(new_loc);
+                    RobotInfo r = rc.senseRobotAtLocation(new_loc);
                     RobotInfo r2 = rc.senseRobotAtLocation(dep_loc);
                     if (r == null) {
                         if (new_loc.distanceSquaredTo(cur_loc) < min_dist) {
@@ -644,7 +642,7 @@ public class Landscaper {
                         }
                     }
                     if (dep_loc.distanceSquaredTo(my_hq) <= 3 && (r2 == null || r2.type == RobotType.LANDSCAPER) &&
-                        best_dep_el > rc.senseElevation(dep_loc)) {
+                            best_dep_el > rc.senseElevation(dep_loc)) {
                         best_dep_dir = directions[i];
                         best_dep_el = rc.senseElevation(dep_loc);
                     }
@@ -773,7 +771,7 @@ public class Landscaper {
         nearby_enemy_landscapers = 0;
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team == rc.getTeam()) {
-                switch(robots[i].type) {
+                switch (robots[i].type) {
                     case HQ:
                         // defensive
                         defensive = true;
@@ -819,7 +817,7 @@ public class Landscaper {
                     case FULFILLMENT_CENTER:
                         // enemy building, go fk it
                         if (destination == null || (robots[i].type != RobotType.REFINERY &&
-                                 robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc))) {
+                                robots[i].location.distanceSquaredTo(cur_loc) < destination.distanceSquaredTo(cur_loc))) {
                             destination = robots[i].location;
                         }
                         if (robots[i].type != RobotType.HQ && (closest_nonhq_enemy_build == null ||
@@ -890,7 +888,7 @@ public class Landscaper {
                     previous_location = cur_loc;
                     break;
                 }
-            }   
+            }
         }
     }
 
