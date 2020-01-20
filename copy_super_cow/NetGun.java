@@ -8,6 +8,7 @@ public class NetGun {
     static MapLocation cur_loc;
 
     static void runNetGun() throws GameActionException {
+        Comms.getBlocks();
         cur_loc = rc.getLocation();
         shootNetGun();
     }
