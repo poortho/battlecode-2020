@@ -180,7 +180,7 @@ public class Miner {
 						}
 					}
 
-					if (enemy_fulfill) {
+					if (enemy_fulfill && !nearby_netgun) {
 						Helper.tryBuild(RobotType.NET_GUN);
 					}
 				}
