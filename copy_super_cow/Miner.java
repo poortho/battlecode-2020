@@ -70,7 +70,7 @@ public class Miner {
 		in_danger = false;
 
 		if (round == 3 && turnCount == 1) {
-			System.out.println("FIRST MINER");
+			//System.out.println("FIRST MINER");
 			first_miner = true;
 		}
 
@@ -146,7 +146,7 @@ public class Miner {
 				if (target_explore != null) {
 					miner_walk(target_explore);
 				} else {
-					System.out.println("IDK");
+					//System.out.println("IDK");
 				}
 			} else {
 				if (!all_in && !gay_rush_alert) {
@@ -245,7 +245,7 @@ public class Miner {
 		int min_distance_from_hq = HQ.surrounded_by_flood && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
 		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
 		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner) {
-			System.out.println("DEFEND");
+			//System.out.println("DEFEND");
 			if (dist_to_hq > 4) {
 				miner_walk(HQ.our_hq);
 			} else {
