@@ -381,7 +381,9 @@ public class Landscaper {
             // edge, stay
             // check if pair landscaper exists
             do_defense();
-        } else if (dist_from_hq <= 8) {
+        } /*else if (dist_from_hq == 4) {
+            do_turtle();
+        } */else if (dist_from_hq <= 8) {
             // second ring, not edge
             // first, check if there is an edge or 2nd ring edge that is empty...
             MapLocation dest = search_for_dest();
@@ -433,8 +435,8 @@ public class Landscaper {
         // check adjacent
         for (int i = 0; i < directions.length; i++) {
             MapLocation new_loc = cur_loc.add(directions[i]);
-            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
-                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) && rc.canSenseLocation(new_loc) &&
+            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) < 3) ||
+                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) < 3)) && rc.canSenseLocation(new_loc) &&
                     rc.senseElevation(new_loc) < lattice_elevation) {
                 if (rc.getDirtCarrying() > 0 && rc.canDepositDirt(directions[i])) {
                     rc.depositDirt(directions[i]);
@@ -449,8 +451,8 @@ public class Landscaper {
         // check adjacent to adjacent
         for (int i = 9; i < 25; i++) {
             MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) <= 3) ||
-                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) <= 3)) &&
+            if (((Math.abs(new_loc.x - my_hq.x) == 3 && Math.abs(new_loc.y - my_hq.y) < 3) ||
+                    (Math.abs(new_loc.y - my_hq.y) == 3 && Math.abs(new_loc.x - my_hq.x) < 3)) &&
                     rc.canSenseLocation(new_loc) && rc.senseElevation(new_loc) < lattice_elevation) {
                 bugpath_walk(new_loc);
                 return;
@@ -483,6 +485,20 @@ public class Landscaper {
                 if (rc.senseFlooding(new_loc)) {
                     near_flood = true;
                     break;
+                }
+            }
+        }
+
+        // if in 2nd ring, deposit at self lol
+        if (cur_loc.distanceSquaredTo(my_hq) > 3 && cur_loc.distanceSquaredTo(my_hq) <= 8) {
+            // dont do corners...
+            if (rc.senseElevation(cur_loc) <= Helper.getLevel(rc.getRoundNum() + 10)) {
+                if (rc.canDepositDirt(Direction.CENTER)) {
+                    rc.depositDirt(Direction.CENTER);
+                } else {
+                    if (!Helper.tryDigEdges()) {
+                        Helper.tryDigAway(my_hq);
+                    }
                 }
             }
         }
@@ -522,9 +538,7 @@ public class Landscaper {
             } else {
                 if (!Helper.tryDigEdges()) {
                     // in second ring corner... dig center
-                    if (rc.canDigDirt(Direction.CENTER)) {
-                        rc.digDirt(Direction.CENTER);
-                    }
+                    Helper.tryDigAway(my_hq);
                 }
             }
         }
@@ -900,9 +914,11 @@ public class Landscaper {
                 rc.depositDirt(dir);
             }
         } else {
-            if (loc.equals(my_hq)) {
+            if (my_hq != null && loc.distanceSquaredTo(my_hq) <= 3) {
                 // dig edges
-                Helper.tryDigEdges();
+                if (!Helper.tryDigEdges()) {
+                    Helper.tryDigAway(my_hq);
+                }
             } else {
                 if (!Helper.digLattice(loc) && rc.canSenseLocation(loc)) {
                     if (rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {

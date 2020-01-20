@@ -195,7 +195,7 @@ public class HQ {
             RobotInfo r;
             MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
             if (rc.canSenseLocation(new_loc)) {
-                if (i >= 9 && i < 13 && rc.senseElevation(new_loc) <= -10) {
+                if (rc.senseElevation(new_loc) <= -10) {
                     continue;
                 }
                 r = rc.senseRobotAtLocation(new_loc);
