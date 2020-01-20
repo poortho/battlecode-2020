@@ -258,7 +258,7 @@ public class Miner {
 			if (dist_to_hq > 4) {
 				miner_walk(HQ.our_hq);
 			} else {
-				if (toBuild == RobotType.FULFILLMENT_CENTER && (friendy_landscapers < 2 || round > 150))  {
+				if (toBuild == RobotType.FULFILLMENT_CENTER && (friendy_landscapers < 2 || round < 150))  {
 					// do nothing
 				} else {
 					for (int i = 0; i < directions.length; i++) {
@@ -479,6 +479,9 @@ public class Miner {
 						break;
 					case NET_GUN:
 						nearby_netgun = true;
+						break;
+					case LANDSCAPER:
+						friendy_landscapers++;
 						break;
 					case HQ:
 						if (turtling) {
