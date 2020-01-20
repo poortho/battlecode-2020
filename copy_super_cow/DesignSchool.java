@@ -92,7 +92,7 @@ public class DesignSchool {
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
         // build more if close to HQ
 
-        if (near_enemy_hq && !seen_enemy_drone && (num_enemy_fulfill == 0 || num_netguns > 0)
+        if (near_enemy_hq && ((!seen_enemy_drone && num_enemy_fulfill == 0)|| num_netguns > 0)
             && (!Miner.gay_rush_alert || (rc.getTeamSoup() > RobotType.DESIGN_SCHOOL.cost + RobotType.LANDSCAPER.cost) || Comms.design_school_idx > 0)) {
             Helper.tryBuildToward(RobotType.LANDSCAPER, enemy_hq);
             produce_attack++;
