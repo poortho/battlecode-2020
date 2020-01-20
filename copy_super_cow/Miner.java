@@ -91,6 +91,11 @@ public class Miner {
 			gay_rush_alert = false;
 		}
 
+/*
+		if (gay_rush_alert && near_hq && cur_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+			Helper.greedy_move_away(HQ.our_hq, cur_loc);
+		}*/
+
 		if (timeout_explore >= TIMEOUT_THRESHOLD) {
 			target_explore = get_explore_target();
 			timeout_explore = 0;
@@ -162,8 +167,24 @@ public class Miner {
 							}
 						}
 					}
-					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
+					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2 && !built_rush_design) {
 						miner_walk(HQ.enemy_hq);
+					} else if (built_rush_design && cur_loc.distanceSquaredTo(HQ.enemy_hq) <= 2) {
+						Helper.greedy_move_away(HQ.enemy_hq, cur_loc);
+					}
+					boolean enemy_fulfill = false;
+					for (int i = robots.length; --i >= 0; ) {
+						switch (robots[i].type) {
+							case FULFILLMENT_CENTER:
+								if (robots[i].team != rc.getTeam()) {
+									enemy_fulfill = true;
+								}
+								break;
+						}
+					}
+
+					if (enemy_fulfill && !nearby_netgun) {
+						Helper.tryBuild(RobotType.NET_GUN);
 					}
 				}
 			}
@@ -772,7 +793,7 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-  	if (near_hq && !nearby_design && gay_rush_alert) {
+  	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;

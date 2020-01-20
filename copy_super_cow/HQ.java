@@ -92,7 +92,7 @@ public class HQ {
           if (!queued_near) {
              int msg[] = {0, 0, 0, 0, 0, 0, 0};
             // initial broadcast miner request
-            for (int i = 3; i >= 0; i--) {
+            for (int i = 5; i >= 0; i--) {
               MapLocation loc = possible_enemy_locs[i];
               int val = (loc.x << 16) | (loc.y << 8) | (TOTAL_MINERS << 4) | 0x1;
               val |= 1 << 24;
@@ -110,7 +110,7 @@ public class HQ {
         if (turnCount == 2 && queued_near) {
           int msg[] = {0, 0, 0, 0, 0, 0, 0};
           // initial broadcast miner request
-          for (int i = 3; i >= 0; i--) {
+          for (int i = 5; i >= 0; i--) {
             MapLocation loc = possible_enemy_locs[i];
             int val = (loc.x << 16) | (loc.y << 8) | (1 << 4) | 0x1;
             val |= 3 << 24;

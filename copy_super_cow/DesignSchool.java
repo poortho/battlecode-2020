@@ -18,6 +18,7 @@ public class DesignSchool {
     static MapLocation enemy_hq = null;
     static int mine_count;
     static int produce_attack = 0;
+    static int produce_defense = 0;
 
     static void runDesignSchool() throws GameActionException {
         Comms.getBlocks();
@@ -76,11 +77,15 @@ public class DesignSchool {
             Miner.gay_rush_alert = false;
         }
 
-        if (HQ.rushed && Miner.gay_rush_alert && near_hq) {
+        if (HQ.rushed && Miner.gay_rush_alert && near_hq && produce_defense < 4) {
             if (HQ.our_hq != null) {
-                Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq);
+                if (Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq)) {
+                    produce_defense++;
+                }
             } else {
-                Helper.tryBuild(RobotType.LANDSCAPER);
+                if (Helper.tryBuild(RobotType.LANDSCAPER) != -1) {
+                    produce_defense++;
+                }
             }
         }
 
