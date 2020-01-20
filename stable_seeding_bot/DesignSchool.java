@@ -1,13 +1,13 @@
-package copy_super_cow;
+package stable_seeding_bot;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.MapLocation;
 
-import static copy_super_cow.RobotPlayer.rc;
-import static copy_super_cow.Helper.distx_35;
-import static copy_super_cow.Helper.disty_35;
+import static stable_seeding_bot.RobotPlayer.rc;
+import static stable_seeding_bot.Helper.distx_35;
+import static stable_seeding_bot.Helper.disty_35;
 
 public class DesignSchool {
 
@@ -77,7 +77,7 @@ public class DesignSchool {
             Miner.gay_rush_alert = false;
         }
 
-        if (HQ.rushed && Miner.gay_rush_alert && near_hq && produce_defense < 3) {
+        if (HQ.rushed && Miner.gay_rush_alert && near_hq && produce_defense < 4) {
             if (HQ.our_hq != null) {
                 if (Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq)) {
                     produce_defense++;
@@ -87,10 +87,6 @@ public class DesignSchool {
                     produce_defense++;
                 }
             }
-            /*
-            if (produce_defense == 2) {
-                Comms.broadcast_all_in();
-            }*/
         }
 
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high

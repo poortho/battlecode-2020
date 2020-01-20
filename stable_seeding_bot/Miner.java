@@ -1,11 +1,11 @@
-package copy_super_cow;
+package stable_seeding_bot;
 
 import battlecode.common.*;
 
-import static copy_super_cow.Helper.*;
-import static copy_super_cow.RobotPlayer.rc;
-import static copy_super_cow.RobotPlayer.round;
-import static copy_super_cow.RobotPlayer.turnCount;
+import static stable_seeding_bot.Helper.*;
+import static stable_seeding_bot.RobotPlayer.rc;
+import static stable_seeding_bot.RobotPlayer.round;
+import static stable_seeding_bot.RobotPlayer.turnCount;
 
 public class Miner {
 
@@ -113,10 +113,6 @@ public class Miner {
 			target_mine = null;
 		}
 
-		if (rush && num_enemy_landscapers >= 4) {
-			rush = false;
-		}
-
 		if (rush) {
 			if (locs == null) {
 				locs = new MapLocation[3];
@@ -189,7 +185,6 @@ public class Miner {
 						}
 					}
 
-
 					if (enemy_fulfill && !nearby_netgun) {
 						Helper.tryBuildToward(RobotType.NET_GUN, fulfill_loc);
 					}
@@ -251,7 +246,7 @@ public class Miner {
 		// build thing
 		int min_distance_from_hq = HQ.surrounded_by_flood && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
 		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
-		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner && rc.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost) {
+		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner) {
 			//System.out.println("DEFEND");
 			if (dist_to_hq > 4) {
 				miner_walk(HQ.our_hq);
@@ -804,7 +799,7 @@ public class Miner {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if ((num_enemy_landscapers > 0 || (first_miner && round > 150 && near_hq && friendy_landscapers >= 2)) && !nearby_fulfillment) {
+  	} else if ((num_enemy_landscapers > 0 || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
