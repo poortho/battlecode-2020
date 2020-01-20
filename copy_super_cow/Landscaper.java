@@ -381,7 +381,9 @@ public class Landscaper {
             // edge, stay
             // check if pair landscaper exists
             do_defense();
-        } else if (dist_from_hq <= 8) {
+        } /*else if (dist_from_hq == 4) {
+            do_turtle();
+        } */else if (dist_from_hq <= 8) {
             // second ring, not edge
             // first, check if there is an edge or 2nd ring edge that is empty...
             MapLocation dest = search_for_dest();
@@ -483,6 +485,20 @@ public class Landscaper {
                 if (rc.senseFlooding(new_loc)) {
                     near_flood = true;
                     break;
+                }
+            }
+        }
+
+        // if in 2nd ring, deposit at self lol
+        if (cur_loc.distanceSquaredTo(my_hq) > 3 && cur_loc.distanceSquaredTo(my_hq) <= 7) {
+            // dont do corners...
+            if (rc.senseElevation(cur_loc) <= Helper.getLevel(rc.getRoundNum() + 10)) {
+                if (rc.canDepositDirt(Direction.CENTER)) {
+                    rc.depositDirt(Direction.CENTER);
+                } else {
+                    if (!Helper.tryDigEdges()) {
+                        Helper.tryDigAway(my_hq);
+                    }
                 }
             }
         }
@@ -900,9 +916,11 @@ public class Landscaper {
                 rc.depositDirt(dir);
             }
         } else {
-            if (loc.equals(my_hq)) {
+            if (my_hq != null && loc.distanceSquaredTo(my_hq) <= 3) {
                 // dig edges
-                Helper.tryDigEdges();
+                if (!Helper.tryDigEdges()) {
+                    Helper.tryDigAway(my_hq);
+                }
             } else {
                 if (!Helper.digLattice(loc) && rc.canSenseLocation(loc)) {
                     if (rc.senseElevation(loc) < rc.senseElevation(cur_loc)) {
