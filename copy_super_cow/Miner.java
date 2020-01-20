@@ -169,6 +169,20 @@ public class Miner {
 					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2) {
 						miner_walk(HQ.enemy_hq);
 					}
+					boolean enemy_fulfill = false;
+					for (int i = robots.length; --i >= 0; ) {
+						switch (robots[i].type) {
+							case FULFILLMENT_CENTER:
+								if (robots[i].team != rc.getTeam()) {
+									enemy_fulfill = true;
+								}
+								break;
+						}
+					}
+
+					if (enemy_fulfill) {
+						Helper.tryBuild(RobotType.NET_GUN);
+					}
 				}
 			}
 			return;
