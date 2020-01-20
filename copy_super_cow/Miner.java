@@ -373,6 +373,7 @@ public class Miner {
 		nearby_netgun = false;
 		nearby_design = false;
 		near_refinery = false;
+		near_hq = false;
 		friendy_landscapers = 0;
 		int min_dist = 999999;
 		for (int i = robots.length; --i >= 0; ) {
@@ -774,7 +775,7 @@ public class Miner {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if ((num_enemy_landscapers > 0 || (first_miner && round > 150)) && !nearby_fulfillment) {
+  	} else if ((num_enemy_landscapers > 0 || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
