@@ -145,9 +145,12 @@ public class DeliveryDrone {
             nearest_flood_curloc = null;
         }
 
-        if (explore_locs != null) {
+        if (explore_locs != null && !Miner.gay_rush_alert) {
             // near hq, set to our hq
             hq = explore_locs[rc.getID() % explore_locs.length];
+        }
+        if (Miner.gay_rush_alert && HQ.our_hq != null) {
+            hq = HQ.our_hq;
         }
 
         // if i'm ever next to hq, move away

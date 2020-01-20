@@ -77,7 +77,11 @@ public class DesignSchool {
         }
 
         if (HQ.rushed && Miner.gay_rush_alert && near_hq) {
-            Helper.tryBuild(RobotType.LANDSCAPER);
+            if (HQ.our_hq != null) {
+                Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq);
+            } else {
+                Helper.tryBuild(RobotType.LANDSCAPER);
+            }
         }
 
         // build when (enemies nearby & soup high scaling on nearby landscapers) | soup high
