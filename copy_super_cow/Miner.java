@@ -91,6 +91,10 @@ public class Miner {
 			gay_rush_alert = false;
 		}
 
+		if (gay_rush_alert && near_hq && cur_loc.distanceSquaredTo(HQ.our_hq) <= 2) {
+			Helper.greedy_move_away(HQ.our_hq, cur_loc);
+		}
+
 		if (timeout_explore >= TIMEOUT_THRESHOLD) {
 			target_explore = get_explore_target();
 			timeout_explore = 0;
