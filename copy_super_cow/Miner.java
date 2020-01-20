@@ -173,18 +173,20 @@ public class Miner {
 						Helper.greedy_move_away(HQ.enemy_hq, cur_loc);
 					}
 					boolean enemy_fulfill = false;
+					MapLocation fulfill_loc = null;
 					for (int i = robots.length; --i >= 0; ) {
 						switch (robots[i].type) {
 							case FULFILLMENT_CENTER:
 								if (robots[i].team != rc.getTeam()) {
 									enemy_fulfill = true;
+									fulfill_loc = robots[i].location;
 								}
 								break;
 						}
 					}
 
 					if (enemy_fulfill && !nearby_netgun) {
-						Helper.tryBuild(RobotType.NET_GUN);
+						Helper.tryBuildToward(RobotType.NET_GUN, fulfill_loc);
 					}
 				}
 			}
