@@ -16,8 +16,8 @@ public class Comms {
 	private static int c = 0;
 	//public static Transaction[][] trans = new Transaction[500][7];
 	private static int seed = -1;
-	public static MapLocation[] explore = new MapLocation[6];
-	public static boolean[] map_explore = new boolean[6];
+	public static MapLocation[] explore = new MapLocation[100];
+	public static boolean[] map_explore = new boolean[100];
 
 	static int arr_len = 60;
   static MapLocation[] miner_queue = new MapLocation[arr_len];
@@ -104,7 +104,7 @@ public class Comms {
 									miner_queue_push(new MapLocation(x, y), n | (reach_dest << 16));
 								}
 
-								if (rc.getType() == RobotType.MINER) {
+								if (rc.getType() == RobotType.MINER && blockRound > 2) {
 									// this is so we don't broadcast patches near locations that are already going to be explored
 									Miner.explored[Miner.explored_count] = new MapLocation(x, y);
 									//System.out.println("explored " + Integer.toString(blockRound) + " " + Miner.explored[Miner.explored_count]);

@@ -14,7 +14,7 @@ public class HQ {
 
     static boolean surrounded_by_flood = false;
 
-    static int TOTAL_MINERS = 4;
+    static int TOTAL_MINERS = 2;
     static boolean done_turtling = false;
     static boolean broadcast_rush = false;
 
@@ -152,9 +152,8 @@ public class HQ {
         } else if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3)) {
           handle_miners();
         }*/
-        if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 3) &&
-                !(Miner.gay_rush_alert || Miner.all_in)) {
-          if (Comms.design_school_idx != 0 || miner_count < 4) {
+        if (!turtling && miner_count < TOTAL_MINERS && rc.getTeamSoup() >= RobotType.MINER.cost * (miner_count - 2)) {
+          if (Comms.design_school_idx != 0 || miner_count < TOTAL_MINERS) {
             handle_miners();
           }
         }
@@ -320,7 +319,7 @@ public class HQ {
           //System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
-            Comms.broadcast_rushing_miner();
+            // Comms.broadcast_rushing_miner();
           }
         }
       }

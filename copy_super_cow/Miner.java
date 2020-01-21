@@ -115,6 +115,7 @@ public class Miner {
 			target_mine = null;
 		}
 
+/*
 		if (rush && HQ.enemy_hq != null && rc.canSenseLocation(HQ.enemy_hq) && only_enemy_landscapers >= 4) {
 			rush = false;
 		}
@@ -198,7 +199,7 @@ public class Miner {
 				}
 			}
 			return;
-		}
+		}*/
 
 		if (in_danger) {
 			for (int i = directions.length; --i >= 0; ) {
@@ -251,8 +252,8 @@ public class Miner {
 		int dist_to_hq = cur_loc.distanceSquaredTo(hq);
 
 		// build thing
-		int min_distance_from_hq = HQ.surrounded_by_flood && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
-		int max_dist_from_hq = (HQ.surrounded_by_flood && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
+		int min_distance_from_hq = (HQ.surrounded_by_flood || Comms.design_school_idx == 0) && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
+		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
 		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner && rc.getTeamSoup() >= toBuild.cost) {
 			//System.out.println("DEFEND");
 			if (dist_to_hq > 4) {
@@ -314,7 +315,6 @@ public class Miner {
 				}
 			}
 		}
-
 /*
 		if (first_miner && hq.equals(HQ.our_hq) && dist_to_hq > max_dist_from_hq) {
 			miner_walk(hq);
@@ -323,6 +323,11 @@ public class Miner {
 
 		//System.out.println(Clock.getBytecodesLeft());
 		mine_count = count_mine();
+		if (target_mine != null && cur_loc.distanceSquaredTo(target_mine) <= 5) {
+			System.out.println(target_mine);
+			System.out.println(mine_count);
+			broadcast_patch();
+		}
 		//System.out.println(Clock.getBytecodesLeft());
 
 		if (target_mine != null) {
@@ -570,9 +575,8 @@ public class Miner {
 		//       XY   <- patch location / 4
 
 		// make sure this patch wasn't already broadcasted
-		//System.out.println("broadcast patch: " + target_mine.toString());
 		for (int c = explored_count; --c >= 0; ) {
-			if (target_mine.distanceSquaredTo(explored[c]) <= 25) {
+			if (target_mine.distanceSquaredTo(explored[c]) <= 55) {
 				return;
 			}
 		}
@@ -584,7 +588,7 @@ public class Miner {
 	}
 
 	static int get_num_workers_needed() throws GameActionException {
-		return mine_count / 50;
+		return mine_count / 1000;
 	}
 
 	// get next target coordinate to explore to
@@ -615,24 +619,15 @@ public class Miner {
 	}
 
 	static int count_mine() throws GameActionException {
+		MapLocation[] soups = rc.senseNearbySoup();
 		int total_soup = 0;
+		int closest_dist = 9999999;
 		find_mine_loc = null;
-		for (int i = 0; i < distx_35.length; i++) {
-			MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
-			if (rc.canSenseLocation(next_loc)) {
-				int count = rc.senseSoup(next_loc);
-				total_soup += count;
-				if (find_mine_loc == null && count > 0) {
-					boolean good = true;
-					for (int j = 0; j < timeout_mine_idx; j++) {
-						if (next_loc.distanceSquaredTo(timeout_mines[j]) <= 35) {
-							good = false;
-							break;
-						}
-					}
-					if (good)
-						find_mine_loc = next_loc;
-				}
+		for (int i = 0; i < soups.length; i++) {
+			total_soup += rc.senseSoup(soups[i]);
+			if (cur_loc.distanceSquaredTo(soups[i]) < closest_dist) {
+				closest_dist = cur_loc.distanceSquaredTo(soups[i]);
+				find_mine_loc = soups[i];
 			}
 		}
 		return total_soup;
@@ -642,7 +637,6 @@ public class Miner {
 		if (find_mine_loc != null) {
 			check_new_patch = true;
 			target_mine = find_mine_loc;
-			broadcast_patch();
 			return target_mine;
 		}
 		return null;
@@ -811,7 +805,7 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-  	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
+  	if (near_hq && !nearby_design) {
   		return RobotType.DESIGN_SCHOOL;
   	} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
   		return RobotType.FULFILLMENT_CENTER;
