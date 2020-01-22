@@ -712,7 +712,6 @@ public class Landscaper {
                             && new_loc.distanceSquaredTo(my_hq) > 0 && rc.senseElevation(new_loc) < min_el) {
                         min_el = rc.senseElevation(new_loc);
                         min_dir = i;
-                        return;
                     }
                 }
                 if (rc.canSenseLocation(new_loc) && rc.canSenseLocation(my_hq) &&
