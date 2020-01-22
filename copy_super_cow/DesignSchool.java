@@ -77,7 +77,7 @@ public class DesignSchool {
             Miner.gay_rush_alert = false;
         }
 
-        if (HQ.rushed && Miner.gay_rush_alert && near_hq && produce_defense < 4) {
+        if (HQ.rushed && Miner.gay_rush_alert && near_hq && produce_defense < 6) {
             if (HQ.our_hq != null) {
                 if (Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq)) {
                     produce_defense++;

@@ -288,7 +288,7 @@ public class HQ {
             }
         }
       }
-      return ((enemy_land > friendly_land || enemy_design >= 1) && friendly_drones < (enemy_land + enemy_design)) || gay_rush_alert;
+      return (enemy_land > 0 || enemy_design >= 1) || gay_rush_alert;
     }
 
     static boolean queue_close_soup() throws GameActionException {

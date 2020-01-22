@@ -324,8 +324,8 @@ public class Miner {
 		//System.out.println(Clock.getBytecodesLeft());
 		mine_count = count_mine();
 		if (target_mine != null && cur_loc.distanceSquaredTo(target_mine) <= 5) {
-			System.out.println(target_mine);
-			System.out.println(mine_count);
+			//System.out.println(target_mine);
+			//System.out.println(mine_count);
 			broadcast_patch();
 		}
 		//System.out.println(Clock.getBytecodesLeft());

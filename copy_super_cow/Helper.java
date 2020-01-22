@@ -251,6 +251,22 @@ public class Helper {
     return false;
   }
 
+  static boolean tryDigFriendlyBuildings() throws GameActionException {
+    for (int i = 0; i < directions.length; i++) {
+      MapLocation new_loc = Landscaper.cur_loc.add(directions[i]);
+      if (rc.canSenseLocation(new_loc)) {
+        RobotInfo r = rc.senseRobotAtLocation(new_loc);
+        if (r != null && r.type.isBuilding() && r.team == rc.getTeam() && rc.canDigDirt(directions[i])) {
+          // can dig friendly building, do it W
+          rc.digDirt(directions[i]);
+          return true;
+        }
+      }
+
+    }
+    return false;
+  }
+
   static boolean tryDig(Direction dir) throws GameActionException {
     if (rc.isReady() && rc.canDigDirt(dir)) {
       rc.digDirt(dir);
