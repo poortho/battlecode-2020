@@ -276,7 +276,7 @@ public class Miner {
 			}
 		}
 		int min_distance_from_hq = (HQ.surrounded_by_flood || Comms.design_school_idx == 0) && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 8;
-		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
+		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 15 : 40;
 
 		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*1.5) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
@@ -377,9 +377,9 @@ public class Miner {
 					miner_walk(target_explore);
 				} else {
 					hq = HQ.our_hq;
-					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 18) {
+					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
 						Helper.greedy_move_away(hq, cur_loc);
-					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 25) {
+					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
 						lattice_walk(hq);
 					}
 				}
