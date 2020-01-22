@@ -319,7 +319,7 @@ public class HQ {
           //System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
-            Comms.broadcast_rushing_miner();
+            // Comms.broadcast_rushing_miner();
           }
         }
       }
