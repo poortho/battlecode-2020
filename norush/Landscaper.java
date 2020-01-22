@@ -684,6 +684,8 @@ public class Landscaper {
             // check if there exists adjacent spot with lower elevation
             // if so fill it in
             // unless im empty, in which case move do it...
+            int min_el = 9999999;
+            int min_dir = -1;
             for (int i = 0; i < directions.length; i++) {
                 MapLocation new_loc = cur_loc.add(directions[i]);
                 int num_nearby_nonadjacent = 0;
@@ -707,8 +709,9 @@ public class Landscaper {
                     } else if ((num_nearby_nonadjacent == 0 || rc.senseFlooding(new_loc))
                             && rc.senseElevation(new_loc) < rc.senseElevation(cur_loc) && rc.getDirtCarrying() > 0
                             && rc.canDepositDirt(directions[i]) && new_loc.distanceSquaredTo(my_hq) <= 3
-                            && new_loc.distanceSquaredTo(my_hq) > 0) {
-                        rc.depositDirt(directions[i]);
+                            && new_loc.distanceSquaredTo(my_hq) > 0 && rc.senseElevation(new_loc) < min_el) {
+                        min_el = rc.senseElevation(new_loc);
+                        min_dir = i;
                         return;
                     }
                 }
@@ -726,6 +729,9 @@ public class Landscaper {
                     rc.move(directions[i]);
                     return;
                 }
+            }
+            if (rc.isReady() && min_dir != -1 && rc.canDepositDirt(directions[min_dir])) {
+                rc.depositDirt(directions[min_dir]);
             }
 
             // directly adjacent, dig from away and put under
