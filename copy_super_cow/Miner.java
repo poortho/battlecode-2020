@@ -534,7 +534,6 @@ public class Miner {
 		}
 		// try mining it lol
 		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || (target_mine == null && rc.getSoupCarrying() > 0)) {
-			System.out.println("DEPOSIT");
 			// check if HQ has landscapers around it
 			/*
 			if (!turtling && HQ.our_hq != null && hq.equals(HQ.our_hq) && rc.canSenseLocation(hq)) {
