@@ -77,7 +77,7 @@ public class Miner {
 		in_danger = false;
 
 		if (round == 3 && turnCount == 1) {
-			//System.out.println("FIRST MINER");
+			// System.out.println("FIRST MINER");
 			first_miner = true;
 		}
 
@@ -587,6 +587,7 @@ public class Miner {
 							hq_dist = temp_dist;
 						}
 						near_refinery = true;
+						break;
 					case FULFILLMENT_CENTER:
 						nearby_fulfillment = true;
 						break;
@@ -926,8 +927,8 @@ public class Miner {
 
   static RobotType calcBuilding() {
   	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
-		return RobotType.DESIGN_SCHOOL;
-	} if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
+			return RobotType.DESIGN_SCHOOL;
+		} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
   		return RobotType.FULFILLMENT_CENTER;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
