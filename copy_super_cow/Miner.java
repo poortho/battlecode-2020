@@ -21,6 +21,7 @@ public class Miner {
 
   static int timeout_mine = 0, timeout_explore = 0;
   static int TIMEOUT_THRESHOLD = 100;
+  static int TIMEOUT_THRESHOLD_MINE = 30;
   static MapLocation[] timeout_mines = new MapLocation[20];
   static int timeout_mine_idx = 0;
 
@@ -108,7 +109,7 @@ public class Miner {
 			}
 		}
 
-		if (timeout_mine >= TIMEOUT_THRESHOLD && target_mine != null) {
+		if (timeout_mine >= TIMEOUT_THRESHOLD_MINE && target_mine != null) {
 			timeout_mines[timeout_mine_idx] = target_mine;
 			timeout_mine_idx++;
 			timeout_mine = 0;
@@ -568,10 +569,12 @@ public class Miner {
 		} else {
 			if (cur_loc.distanceSquaredTo(target_mine) <= 2) {
 				// mine lmao
+				timeout_mine = 0;
 				boolean result = tryMine(cur_loc.directionTo(target_mine));
 				int count = rc.senseSoup(target_mine);
 				if (count == 0) {
-					target_mine = null;
+					mine_count = count_mine();
+					target_mine = find_mine();
 				}
 			} else {
 				miner_walk(target_mine);
@@ -638,7 +641,15 @@ public class Miner {
 			total_soup += rc.senseSoup(soups[i]);
 			if (cur_loc.distanceSquaredTo(soups[i]) < closest_dist) {
 				closest_dist = cur_loc.distanceSquaredTo(soups[i]);
-				find_mine_loc = soups[i];
+				boolean good = true;
+				for (int j = 0; j < timeout_mine_idx; j++) {
+					if (soups[i].equals(timeout_mines[j])) {
+						good = false;
+						break;
+					}
+				}
+				if (good)
+					find_mine_loc = soups[i];
 			}
 		}
 		return total_soup;
@@ -680,7 +691,6 @@ public class Miner {
 
 		if (!bugpath_blocked && next != -1) {
 			rc.move(directions[next]);
-			previous_location = cur_loc;
 		} else {
 			if (bugpath_blocked) {
 				Direction start_dir = cur_loc.directionTo(previous_location);
@@ -698,7 +708,7 @@ public class Miner {
 				next = greedy_idx;
 			}
 
-			for (int i = 0; i < 7; i++) {
+			for (int i = 0; i < directions.length; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
