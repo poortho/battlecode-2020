@@ -712,7 +712,8 @@ public class Landscaper {
                         return;
                     }
                 }
-                if (rc.canSenseLocation(new_loc) && rc.senseElevation(new_loc) < rc.senseElevation(my_hq) + 2 && rc.canDepositDirt(directions[i]) &&
+                if (rc.canSenseLocation(new_loc) && rc.canSenseLocation(my_hq) &&
+                        rc.senseElevation(new_loc) < rc.senseElevation(my_hq) + 2 && rc.canDepositDirt(directions[i]) &&
                         new_loc.distanceSquaredTo(my_hq) <= 3 && new_loc.distanceSquaredTo(my_hq) > 0) {
                     rc.depositDirt(directions[i]);
                     return;
