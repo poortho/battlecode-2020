@@ -171,6 +171,15 @@ public class Miner {
 					if (!gay_rush_alert && !built_rush_design) {
 						for (int i = 0; i < directions.length; i++) {
 							MapLocation temp_loc = cur_loc.add(directions[i]);
+							if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 1 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
+								built_rush_design = Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
+								break;
+							}
+						}
+					}
+					if (!gay_rush_alert && !built_rush_design) {
+						for (int i = 0; i < directions.length; i++) {
+							MapLocation temp_loc = cur_loc.add(directions[i]);
 							if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
 								built_rush_design = Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
 								break;
