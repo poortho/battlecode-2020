@@ -194,7 +194,7 @@ public class HQ {
             RobotInfo r;
             MapLocation new_loc = cur_loc.translate(distx_35[i], disty_35[i]);
             if (rc.canSenseLocation(new_loc)) {
-                if (rc.senseElevation(new_loc) <= -10) {
+                if (rc.senseElevation(new_loc) <= -10 || rc.senseFlooding(new_loc)) {
                     continue;
                 }
                 r = rc.senseRobotAtLocation(new_loc);
@@ -277,7 +277,7 @@ public class HQ {
               if (dist < min_dist) {
                 min_dist = dist;
                 closest_rush_enemy = nearby[i].location;
-                if (dist <= 4) {
+                if (dist <= 8) {
                   gay_rush_alert = true;
                 }
               }
@@ -288,7 +288,7 @@ public class HQ {
             }
         }
       }
-      return (enemy_land > 0 || enemy_design >= 1) || gay_rush_alert;
+      return (((enemy_land > 0) || enemy_design >= 1) && cur_loc.distanceSquaredTo(closest_rush_enemy) <= 8) || gay_rush_alert;
     }
 
     static boolean queue_close_soup() throws GameActionException {

@@ -18,6 +18,7 @@ public class DesignSchool {
     static MapLocation enemy_hq = null;
     static int mine_count;
     static int produce_attack = 0;
+    static int total_produced = 0;
     static int produce_defense = 0;
 
     static void runDesignSchool() throws GameActionException {
@@ -81,10 +82,12 @@ public class DesignSchool {
             if (HQ.our_hq != null) {
                 if (Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq)) {
                     produce_defense++;
+                    total_produced++;
                 }
             } else {
                 if (Helper.tryBuild(RobotType.LANDSCAPER) != -1) {
                     produce_defense++;
+                    total_produced++;
                 }
             }
             /*
@@ -104,11 +107,20 @@ public class DesignSchool {
 
         if (mine_count > 200 && num_enemy_buildings > 0 && !seen_enemy_drone && num_enemy_fulfill == 0 &&
                 num_landscapers == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1))) {
-            Helper.tryBuild(RobotType.LANDSCAPER);
+            if (Helper.tryBuild(RobotType.LANDSCAPER) != -1) {
+                total_produced++;
+            }
+
         }
 
-        if (rc.getTeamSoup() >= 2000 || (!HQ.done_turtling && rc.getRoundNum() > 400 && HQ.our_hq != null && rc.getLocation().distanceSquaredTo(HQ.our_hq) < 100)) {
-            Helper.tryBuild(RobotType.LANDSCAPER);
+        if (rc.getTeamSoup() >= 700 || (!HQ.done_turtling && rc.getRoundNum() > 400 && HQ.our_hq != null && rc.getLocation().distanceSquaredTo(HQ.our_hq) < 100 && total_produced < 20)) {
+            if (Helper.tryBuildToward(RobotType.LANDSCAPER, HQ.our_hq)) {
+                total_produced++;
+            }
+        }
+
+        if (total_produced >= 20 && !HQ.done_turtling) {
+            Comms.broadcast_done_turtle();
         }
 
         /*if ((num_enemy_design > 0 && num_enemy_drones == 0 && rc.getTeamSoup() >= RobotType.LANDSCAPER.cost*(1+num_landscapers*(near_hq ? 0.5 : 1)))

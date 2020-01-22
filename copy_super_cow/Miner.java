@@ -252,8 +252,6 @@ public class Miner {
 		int dist_to_hq = cur_loc.distanceSquaredTo(hq);
 
 		// build thing
-		int min_distance_from_hq = (HQ.surrounded_by_flood || Comms.design_school_idx == 0) && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 18;
-		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
 		if (gay_rush_alert && hq.equals(HQ.our_hq) && first_miner && rc.getTeamSoup() >= toBuild.cost) {
 			//System.out.println("DEFEND");
 			if (dist_to_hq > 4) {
@@ -276,6 +274,9 @@ public class Miner {
 				}
 			}
 		}
+		int min_distance_from_hq = (HQ.surrounded_by_flood || Comms.design_school_idx == 0) && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 8;
+		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 9 : 40;
+
 		if (!duplicate_building && toBuild != null && ((rc.getTeamSoup() >= toBuild.cost*1.5) ||
 				rc.getTeamSoup() >= toBuild.cost*(near_hq ? 2 : 4) || (toBuild == RobotType.VAPORATOR && rc.getTeamSoup() > RobotType.VAPORATOR.cost))) {
 			// build if none nearby and (nearby enemies or close to hq)
@@ -299,6 +300,13 @@ public class Miner {
 						if (valid > valid_adjacents) {
 							continue;
 						}
+						int elevation = rc.senseElevation(new_loc);
+						if (toBuild == RobotType.VAPORATOR && elevation < GameConstants.getWaterLevel(rc.getRoundNum() + 300)) {
+							continue;
+						}
+						if (HQ.our_hq != null && new_loc.distanceSquaredTo(HQ.our_hq) > 18 && elevation < 2) {
+							continue;
+						}
 						if (rc.canBuildRobot(toBuild, directions[i]) && rc.canSenseLocation(new_loc) &&
 								rc.senseElevation(new_loc) > highest_elevation) {
 							highest_elevation = rc.senseElevation(new_loc);
@@ -306,6 +314,7 @@ public class Miner {
 						}
 					}
 				}
+
 
 				if (best_dir != null) {
 					boolean res = Helper.tryBuild(toBuild, best_dir);
@@ -811,7 +820,7 @@ public class Miner {
   		return RobotType.FULFILLMENT_CENTER;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
-  	} else if (((num_enemy_landscapers > 0 && !gay_rush_alert) || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
+  	} else if (((num_enemy_landscapers > 0) || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {
 		  // build fulfillment
 		  return RobotType.FULFILLMENT_CENTER;
 	  } else if (((num_enemy_buildings > num_enemy_drones && num_enemy_buildings > num_enemy_landscapers) || (round > 200 && near_hq)) && !nearby_design) {
