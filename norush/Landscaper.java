@@ -209,7 +209,7 @@ public class Landscaper {
                         }
                     }
                 } else {
-                    System.out.println("not adjacent");
+                    //System.out.println("not adjacent");
                     // move
                     bugpath_walk(closest_enemy_build_to_hq);
                 }
