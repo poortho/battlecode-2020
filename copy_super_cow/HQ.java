@@ -238,7 +238,7 @@ public class HQ {
             }
             index++;
         } while (next_loc.distanceSquaredTo(cur_loc) <= 15);
-        if (flooded_count > nonflooded_count) {
+        if (flooded_count > nonflooded_count && friendly_drones > 10) {
             //System.out.println("broadcasted!");
             Comms.broadcast_patrol_enemy_hq();
         }

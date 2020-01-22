@@ -18,6 +18,7 @@ public class DeliveryDrone {
     static RobotInfo[] robots;
     static RobotType carried_type = null;
     static MapLocation nearest_flood_curloc;
+    static MapLocation my_fulfil;
 
     static MapLocation previous_location;
     static boolean bugpath_blocked = false;
@@ -36,6 +37,14 @@ public class DeliveryDrone {
 
         // compute blacklist (dont move adjacent to enemy drones, and stay out of shooting range of HQ/netgun
         for (int i = 0; i < robots.length; i++) {
+            if (robots[i].team == rc.getTeam()) {
+                switch (robots[i].type) {
+                    case FULFILLMENT_CENTER:
+                        if (my_fulfil == null) {
+                            my_fulfil = robots[i].location;
+                        }
+                }
+            }
             if (robots[i].team != rc.getTeam()) {
                 MapLocation temp_loc = robots[i].getLocation();
                 switch (robots[i].type) {
@@ -145,13 +154,7 @@ public class DeliveryDrone {
             nearest_flood_curloc = null;
         }
 
-        if (explore_locs != null && !Miner.gay_rush_alert) {
-            // near hq, set to our hq
-            hq = explore_locs[rc.getID() % explore_locs.length];
-        }
-        if (Miner.gay_rush_alert && HQ.our_hq != null) {
-            hq = HQ.our_hq;
-        }
+        hq = HQ.our_hq;
 
         // if i'm ever next to hq, move away
         /*if (HQ.our_hq != null && hq.equals(HQ.our_hq) && cur_loc.distanceSquaredTo(hq) <= 2) {
@@ -176,21 +179,6 @@ public class DeliveryDrone {
             k++;
         } while (rc.canSenseLocation(new_loc) || (!Helper.onTheMap(new_loc)));
         //System.out.println(Clock.getBytecodesLeft());
-
-        // if enemy HQ was never found
-        if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq == null) {
-            HQ.patrol_broadcast_round = round;
-            // explore
-            if (search_idx < 6) {
-                if (cur_loc.distanceSquaredTo(Comms.explore[search_idx]) <= 10) {
-                    search_idx++;
-                }
-                if (search_idx < 6) {
-                    drone_walk(Comms.explore[search_idx]);
-                }
-            }
-            return;
-        }
 
         if (!rc.isCurrentlyHoldingUnit()) {
             // look for enemy units
@@ -219,6 +207,31 @@ public class DeliveryDrone {
                     rc.pickUpUnit(closest_robot.ID);
                     carried_type = closest_robot.type;
                 }
+            } else if (num_enemies > 0 && closest_robot != null) {
+                //System.out.println(cur_loc.toString() + " collapse onto them " + closest_robot.getLocation());
+                //System.out.println("Chase: " + closest_robot.getLocation().toString());
+                if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null) {
+                    //bugpath_ignore_blacklist(closest_robot.getLocation());
+                    greedy_walk(closest_robot.getLocation());
+                } else {
+                    //drone_walk(closest_robot.getLocation());
+                    greedy_walk(closest_robot.getLocation());
+                }
+            } else if (HQ.patrol_broadcast_round != -1 && rc.getID() % 5 == 0) {
+                drone_walk(hq);
+            } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq == null) {
+                // if enemy HQ was never found
+                HQ.patrol_broadcast_round = round;
+                // explore
+                if (search_idx < 6) {
+                    if (cur_loc.distanceSquaredTo(Comms.explore[search_idx]) <= 10) {
+                        search_idx++;
+                    }
+                    if (search_idx < 6) {
+                        drone_walk(Comms.explore[search_idx]);
+                    }
+                }
+                return;
             } else if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null && round < HQ.patrol_broadcast_round + 130) {
                 //System.out.println("!!!");
                 if (cur_loc.distanceSquaredTo(HQ.enemy_hq) < 50) {
@@ -244,45 +257,72 @@ public class DeliveryDrone {
                 } else {
                     drone_walk(HQ.enemy_hq);
                 }
-            } else if (num_enemies > 0 && closest_robot != null) {
-                //System.out.println(cur_loc.toString() + " collapse onto them " + closest_robot.getLocation());
-                //System.out.println("Chase: " + closest_robot.getLocation().toString());
-                if (HQ.patrol_broadcast_round != -1 && HQ.enemy_hq != null) {
-                    //bugpath_ignore_blacklist(closest_robot.getLocation());
-                    greedy_walk(closest_robot.getLocation());
-                } else {
-                    //drone_walk(closest_robot.getLocation());
-                    greedy_walk(closest_robot.getLocation());
-                }
             } else if (cur_loc.distanceSquaredTo(hq) < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared) {
-                // patrol area
-                int best_dst = -1;
-                Direction best_dir = Direction.CENTER;
-                for (int i = 0; i < directions.length; i++) {
-                    if (blacklist[i]) {
-                        continue;
-                    }
-                    int dst = cur_loc.add(directions[i]).distanceSquaredTo(hq);
-
-                    if (rc.canMove(directions[i]) && dst < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared
-                        && dst > best_dst) {
-                        boolean valid = true;
-                        for (int j = 0; j < prev_loc.length; j++) {
-                            if (cur_loc.add(directions[i]).equals(prev_loc[j])) {
-                                valid = false;
-                                break;
+                if (HQ.our_hq.equals(hq)) {
+                    // do drone hug...
+                    if (((Math.abs(cur_loc.x - hq.x) == 3 && Math.abs(cur_loc.y - hq.y) <= 3) ||
+                            (Math.abs(cur_loc.y - hq.y) == 3 && Math.abs(cur_loc.x - hq.x) <= 3))) {
+                        // search for valid spot that is further from fulfillment
+                        for (int i = 0; i < directions.length; i++) {
+                            MapLocation next_loc = cur_loc.add(directions[i]);
+                            if (my_fulfil != null && ((Math.abs(next_loc.x - hq.x) == 3 && Math.abs(next_loc.y - hq.y) <= 3) ||
+                                    (Math.abs(next_loc.y - hq.y) == 3 && Math.abs(next_loc.x - hq.x) <= 3)) &&
+                                next_loc.distanceSquaredTo(my_fulfil) > cur_loc.distanceSquaredTo(my_fulfil) && rc.canMove(directions[i])) {
+                                rc.move(directions[i]);
                             }
                         }
-                        if (valid) {
-                            best_dst = dst;
-                            best_dir = directions[i];
+                        return;
+                    } else {
+                        // search for dest lol
+                        int min_dist = 999999;
+                        MapLocation best_loc = null;
+                        for (int i = 9; i < 25; i++) {
+                            MapLocation next_loc = cur_loc.translate(distx_35[i], disty_35[i]);
+                            if (((Math.abs(next_loc.x - hq.x) == 3 && Math.abs(next_loc.y - hq.y) < 3) ||
+                                    (Math.abs(next_loc.y - hq.y) == 3 && Math.abs(next_loc.x - hq.x) < 3)) &&
+                                    min_dist > cur_loc.distanceSquaredTo(next_loc) &&
+                                    rc.canSenseLocation(next_loc) && rc.senseRobotAtLocation(next_loc) == null) {
+                                min_dist = cur_loc.distanceSquaredTo(next_loc);
+                                best_loc = next_loc;
+                            }
+                        }
+                        if (best_loc != null) {
+                            drone_walk(best_loc);
+                        } else {
+                            drone_walk(hq);
                         }
                     }
-                }
+                } else {
 
-                prev_loc[prev_loc_i % prev_loc.length] = cur_loc.add(best_dir);
-                prev_loc_i++;
-                Helper.tryMove(best_dir);
+                    // patrol area
+                    int best_dst = -1;
+                    Direction best_dir = Direction.CENTER;
+                    for (int i = 0; i < directions.length; i++) {
+                        if (blacklist[i]) {
+                            continue;
+                        }
+                        int dst = cur_loc.add(directions[i]).distanceSquaredTo(hq);
+
+                        if (rc.canMove(directions[i]) && dst < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared
+                                && dst > best_dst) {
+                            boolean valid = true;
+                            for (int j = 0; j < prev_loc.length; j++) {
+                                if (cur_loc.add(directions[i]).equals(prev_loc[j])) {
+                                    valid = false;
+                                    break;
+                                }
+                            }
+                            if (valid) {
+                                best_dst = dst;
+                                best_dir = directions[i];
+                            }
+                        }
+                    }
+
+                    prev_loc[prev_loc_i % prev_loc.length] = cur_loc.add(best_dir);
+                    prev_loc_i++;
+                    Helper.tryMove(best_dir);
+                }
             } else {
                 drone_walk(hq);
             }

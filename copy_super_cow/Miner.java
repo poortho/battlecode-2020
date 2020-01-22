@@ -300,12 +300,14 @@ public class Miner {
 						if (valid > valid_adjacents) {
 							continue;
 						}
-						int elevation = rc.senseElevation(new_loc);
-						if (toBuild == RobotType.VAPORATOR && elevation < GameConstants.getWaterLevel(rc.getRoundNum() + 300)) {
-							continue;
-						}
-						if (HQ.our_hq != null && new_loc.distanceSquaredTo(HQ.our_hq) > 18 && elevation < 2) {
-							continue;
+						if (rc.canSenseLocation(new_loc)) {
+							int elevation = rc.senseElevation(new_loc);
+							if (toBuild == RobotType.VAPORATOR && elevation < GameConstants.getWaterLevel(rc.getRoundNum() + 300)) {
+								continue;
+							}
+							if (HQ.our_hq != null && new_loc.distanceSquaredTo(HQ.our_hq) > 18 && elevation < 2) {
+								continue;
+							}
 						}
 						if (rc.canBuildRobot(toBuild, directions[i]) && rc.canSenseLocation(new_loc) &&
 								rc.senseElevation(new_loc) > highest_elevation) {

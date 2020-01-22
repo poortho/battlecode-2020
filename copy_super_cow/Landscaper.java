@@ -435,8 +435,12 @@ public class Landscaper {
             if (turtle_dest == null) {
                 turtle_dest = search_for_dest();
             }
-            if (turtle_dest != null && !cur_loc.equals(turtle_dest) && rc.getRoundNum() < 600 && cur_loc.distanceSquaredTo(turtle_dest) <= 3) {
-                aggressive_landscaper_walk(turtle_dest);
+            if (turtle_dest != null && !cur_loc.equals(turtle_dest) && rc.getRoundNum() < 600) {
+                if (cur_loc.distanceSquaredTo(turtle_dest) <= 3) {
+                    aggressive_landscaper_walk(turtle_dest);
+                } else {
+                    bugpath_walk(turtle_dest);
+                }
             } else {
                 // can start digging!
                 do_turtle();
@@ -602,6 +606,18 @@ public class Landscaper {
                     new_loc.distanceSquaredTo(my_hq) > min_threshold) {
                 min_dist = new_loc.distanceSquaredTo(cur_loc);
                 ret = new_loc;
+            }
+        }
+
+        // if i can move to another tile in 8 ring thats further from design school, do it W
+        if (cur_loc.distanceSquaredTo(my_hq) <= 8 && (ret == null || ret.distanceSquaredTo(my_hq) > 3)) {
+            int max_dist = cur_loc.distanceSquaredTo(my_design);
+            for (int i = 0; i < directions.length; i++) {
+                MapLocation new_loc = cur_loc.add(directions[i]);
+                if (new_loc.distanceSquaredTo(my_hq) <= 8 && rc.canMove(directions[i]) && max_dist < new_loc.distanceSquaredTo(my_design)) {
+                    max_dist = new_loc.distanceSquaredTo(my_design);
+                    ret = new_loc;
+                }
             }
         }
 
