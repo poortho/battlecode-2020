@@ -1,11 +1,11 @@
-package copy_super_cow;
+package norush;
 
 import battlecode.common.*;
 
-import static copy_super_cow.Helper.*;
-import static copy_super_cow.RobotPlayer.rc;
-import static copy_super_cow.RobotPlayer.round;
-import static copy_super_cow.RobotPlayer.turnCount;
+import static norush.Helper.*;
+import static norush.RobotPlayer.rc;
+import static norush.RobotPlayer.round;
+import static norush.RobotPlayer.turnCount;
 
 public class Miner {
 
@@ -378,7 +378,7 @@ public class Miner {
 					miner_walk(target_explore);
 				} else {
 					hq = HQ.our_hq;
-					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 9) {
+					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
 						Helper.greedy_move_away(hq, cur_loc);
 					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
 						lattice_walk(hq);
