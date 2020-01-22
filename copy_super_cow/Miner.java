@@ -275,6 +275,7 @@ public class Miner {
 				}
 			}
 		}
+
 		int min_distance_from_hq = (HQ.surrounded_by_flood || Comms.design_school_idx == 0) && toBuild == RobotType.DESIGN_SCHOOL ? 3 : 8;
 		int max_dist_from_hq = ((HQ.surrounded_by_flood || Comms.design_school_idx == 0) && HQ.our_hq.equals(hq) && toBuild == RobotType.DESIGN_SCHOOL) ? 15 : 40;
 
@@ -532,7 +533,8 @@ public class Miner {
 			}
 		}
 		// try mining it lol
-		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || target_mine == null) {
+		if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || (target_mine == null && rc.getSoupCarrying() > 0)) {
+			System.out.println("DEPOSIT");
 			// check if HQ has landscapers around it
 			/*
 			if (!turtling && HQ.our_hq != null && hq.equals(HQ.our_hq) && rc.canSenseLocation(hq)) {
@@ -662,7 +664,7 @@ public class Miner {
 			target_mine = find_mine_loc;
 			return target_mine;
 		}
-		return null;
+		return target_mine;
 	}
 
 	static void bugpath_walk(MapLocation loc) throws GameActionException {
@@ -692,6 +694,7 @@ public class Miner {
 
 		if (!bugpath_blocked && next != -1) {
 			rc.move(directions[next]);
+			previous_location = cur_loc;
 		} else {
 			if (bugpath_blocked) {
 				Direction start_dir = cur_loc.directionTo(previous_location);
@@ -709,7 +712,7 @@ public class Miner {
 				next = greedy_idx;
 			}
 
-			for (int i = 0; i < directions.length; i++) {
+			for (int i = 0; i < 7; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
