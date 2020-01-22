@@ -793,7 +793,7 @@ public class Miner {
 			if (next == -1) {
 				next = greedy_idx;
 			}
-			for (int i = 0; i < 7; i++) {
+			for (int i = 0; i < directions.length; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
