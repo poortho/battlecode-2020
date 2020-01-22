@@ -454,10 +454,43 @@ public class Landscaper {
                 turtle_dest = search_for_dest();
             }
             if (turtle_dest != null && !cur_loc.equals(turtle_dest)) {
+                int min_dist = cur_loc.distanceSquaredTo(my_hq);
+                int best_dir = -1;
+                int dig_dir = -1;
+                for (int i = 0; i < directions.length; i++) {
+                    MapLocation new_loc = cur_loc.add(directions[i]);
+                    if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc) && rc.senseElevation(new_loc) > -10
+                            && min_dist > new_loc.distanceSquaredTo(my_hq)) {
+                        best_dir = i;
+                        min_dist = new_loc.distanceSquaredTo(my_hq);
+                    }
+                }
+                for (int i = 0; i < directions.length; i++) {
+                    MapLocation new_loc = cur_loc.add(directions[i]);
+                    if (rc.canSenseLocation(new_loc) && rc.senseFlooding(new_loc) && i != best_dir) {
+                        dig_dir = i;
+                        break;
+                    }
+                }
+
                 if (cur_loc.distanceSquaredTo(turtle_dest) <= 3) {
                     aggressive_landscaper_walk(turtle_dest);
+                    if (rc.isReady() && best_dir != -1) {
+                        if (rc.canDepositDirt(directions[best_dir])) {
+                            rc.depositDirt(directions[best_dir]);
+                        } else if (rc.canDigDirt(directions[dig_dir])) {
+                            rc.digDirt(directions[dig_dir]);
+                        }
+                    }
                 } else {
                     bugpath_walk(turtle_dest);
+                    if (rc.isReady() && best_dir != -1 && dig_dir != -1) {
+                        if (rc.canDepositDirt(directions[best_dir])) {
+                            rc.depositDirt(directions[best_dir]);
+                        } else if (rc.canDigDirt(directions[dig_dir])) {
+                            rc.digDirt(directions[dig_dir]);
+                        }
+                    }
                 }
             } else {
                 bugpath_walk(my_hq);
@@ -971,7 +1004,7 @@ public class Landscaper {
                     previous_location = cur_loc;
                     break;
                 }
-            }   
+            }
         }
     }
 
