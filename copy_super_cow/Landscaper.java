@@ -99,7 +99,7 @@ public class Landscaper {
             do_rush_defense();
         } else if (rushing && rc.getRoundNum() < 200) {
             do_rush();
-        } else if (destination != null) {
+        } else if (destination != null && (my_hq == null || cur_loc.distanceSquaredTo(my_hq) > 8)) {
             do_offense();
         } else if (my_hq != null) {
             do_defense_new();
