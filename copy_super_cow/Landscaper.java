@@ -192,8 +192,8 @@ public class Landscaper {
             if (closest != null && friendly_landscaper_count < 4) {
                 bugpath_walk(closest);
             } else if (closest_enemy_build_to_hq != null) {
-                System.out.println(closest_enemy_build_to_hq);
-                System.out.println(cur_loc);
+                //System.out.println(closest_enemy_build_to_hq);
+                //System.out.println(cur_loc);
                 // no open adjacent spots... try to find nearest enemy building and kill it
                 if (cur_loc.distanceSquaredTo(closest_enemy_build_to_hq) <= 3) {
                     // kill it
@@ -449,7 +449,7 @@ public class Landscaper {
             // third ring...
             // basically, set elevation of third ring to lattice elevation lol
 
-            System.out.println(turtle_dest);
+            //System.out.println(turtle_dest);
             if (turtle_dest == null) {
                 turtle_dest = search_for_dest();
             }
