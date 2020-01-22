@@ -115,7 +115,7 @@ public class Miner {
 			target_mine = null;
 		}
 
-/*
+
 		if (rush && HQ.enemy_hq != null && rc.canSenseLocation(HQ.enemy_hq) && only_enemy_landscapers >= 4) {
 			rush = false;
 		}
@@ -199,7 +199,7 @@ public class Miner {
 				}
 			}
 			return;
-		}*/
+		}
 
 		if (in_danger) {
 			for (int i = directions.length; --i >= 0; ) {
@@ -816,9 +816,7 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
-  	if (near_hq && !nearby_design) {
-  		return RobotType.DESIGN_SCHOOL;
-  	} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
+  	if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
   		return RobotType.FULFILLMENT_CENTER;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;

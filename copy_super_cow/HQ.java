@@ -14,7 +14,7 @@ public class HQ {
 
     static boolean surrounded_by_flood = false;
 
-    static int TOTAL_MINERS = 2;
+    static int TOTAL_MINERS = 4;
     static boolean done_turtling = false;
     static boolean broadcast_rush = false;
 
@@ -319,7 +319,7 @@ public class HQ {
           //System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
-            // Comms.broadcast_rushing_miner();
+            Comms.broadcast_rushing_miner();
           }
         }
       }
