@@ -326,14 +326,41 @@ public class HQ {
     }
 
     static void shootNetGun() throws GameActionException {
+        // shoot closest enemy, prioritizing those carrying units
+        boolean shooting_carrying = false;
+        int min_dist = 999999;
+        int attack_id = -1;
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (int i = 0; i < robots.length; i++) {
             if (robots[i].team != rc.getTeam() && robots[i].type == RobotType.DELIVERY_DRONE &&
                     rc.canShootUnit(robots[i].ID)) {
-                // TODO: base on distance or something to units
-                rc.shootUnit(robots[i].ID);
-                break;
+                if (shooting_carrying && !robots[i].currentlyHoldingUnit) {
+                    continue;
+                } else {
+                    if (robots[i].currentlyHoldingUnit) {
+                        if (!shooting_carrying) {
+                            // first carrying unit, set regardless
+                            min_dist = cur_loc.distanceSquaredTo(robots[i].location);
+                            attack_id = robots[i].getID();
+                            shooting_carrying = true;
+                        } else {
+                            // only change if closer
+                            if (min_dist > cur_loc.distanceSquaredTo(robots[i].location)) {
+                                min_dist = cur_loc.distanceSquaredTo(robots[i].location);
+                                attack_id = robots[i].getID();
+                            }
+                        }
+                    } else {
+                        if (min_dist > cur_loc.distanceSquaredTo(robots[i].location)) {
+                            min_dist = cur_loc.distanceSquaredTo(robots[i].location);
+                            attack_id = robots[i].getID();
+                        }
+                    }
+                }
             }
-        }        
+        }
+        if (attack_id != -1) {
+            rc.shootUnit(attack_id);
+        }
     }
 }
