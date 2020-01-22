@@ -415,7 +415,7 @@ public class Miner {
 				}
 				int dst = cur_loc.add(directions[i]).distanceSquaredTo(hq);
 
-				if (rc.canMove(directions[i]) && dst < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared
+				if (rc.canMove(directions[i]) && !rc.senseFlooding(cur_loc.add(directions[i])) && dst < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared
 						&& dst > best_dst) {
 					boolean valid = true;
 					for (int j = 0; j < prev_loc.length; j++) {
