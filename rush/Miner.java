@@ -924,6 +924,9 @@ public class Miner {
   }
 
   static RobotType calcBuilding() {
+  	if (all_in && round < 200) {
+  		return RobotType.VAPORATOR;
+  	}
   	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
 			return RobotType.DESIGN_SCHOOL;
 		} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
