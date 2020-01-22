@@ -22,7 +22,7 @@ public class Miner {
   static int timeout_mine = 0, timeout_explore = 0;
   static int TIMEOUT_THRESHOLD = 100;
   static int TIMEOUT_THRESHOLD_MINE = 30;
-  static MapLocation[] timeout_mines = new MapLocation[20];
+  static MapLocation[] timeout_mines = new MapLocation[100];
   static int timeout_mine_idx = 0;
 
   static boolean new_loc = false;
@@ -115,7 +115,6 @@ public class Miner {
 			timeout_mine = 0;
 			target_mine = null;
 		}
-
 
 		if (rush && HQ.enemy_hq != null && rc.canSenseLocation(HQ.enemy_hq) && only_enemy_landscapers >= 4) {
 			rush = false;
@@ -353,6 +352,7 @@ public class Miner {
 			//System.out.println(mine_count);
 			broadcast_patch();
 		}
+
 		//System.out.println(Clock.getBytecodesLeft());
 
 		if (target_mine != null) {
@@ -586,8 +586,7 @@ public class Miner {
 				boolean result = tryMine(cur_loc.directionTo(target_mine));
 				int count = rc.senseSoup(target_mine);
 				if (count == 0) {
-					mine_count = count_mine();
-					target_mine = find_mine();
+					target_mine = null;
 				}
 			} else {
 				miner_walk(target_mine);
@@ -722,7 +721,7 @@ public class Miner {
 				next = greedy_idx;
 			}
 
-			for (int i = 0; i < 7; i++) {
+			for (int i = 0; i < directions.length; i++) {
 				next = (next + 1) % directions.length;
 				Direction cw = directions[next];
 				MapLocation next_loc = cur_loc.add(cw);
