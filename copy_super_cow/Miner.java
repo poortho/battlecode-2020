@@ -333,7 +333,7 @@ public class Miner {
 		// first miner should walk back to hq
 		if (first_miner && round > 200) {
 			hq = HQ.our_hq;
-			if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 8) {
+			if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 9) {
 				Helper.greedy_move_away(hq, cur_loc);
 			} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
 				lattice_walk(hq);
