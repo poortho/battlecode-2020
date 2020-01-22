@@ -18,6 +18,8 @@ public class Miner {
   static MapLocation find_mine_loc;
   static boolean rush = false;
   static int only_enemy_landscapers = 0;
+	static MapLocation[] prev_loc = new MapLocation[5];
+	static int prev_loc_i = 0;
 
   static int timeout_mine = 0, timeout_explore = 0;
   static int TIMEOUT_THRESHOLD = 100;
@@ -403,7 +405,36 @@ public class Miner {
 			Helper.greedy_move_away(hq, cur_loc);
 		} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
 			bugpath_walk(hq);
-		}	
+		} else {
+			// patrol hq
+			int best_dst = -1;
+			Direction best_dir = Direction.CENTER;
+			for (int i = 0; i < directions.length; i++) {
+				if (blacklist[i]) {
+					continue;
+				}
+				int dst = cur_loc.add(directions[i]).distanceSquaredTo(hq);
+
+				if (rc.canMove(directions[i]) && dst < RobotType.FULFILLMENT_CENTER.sensorRadiusSquared
+						&& dst > best_dst) {
+					boolean valid = true;
+					for (int j = 0; j < prev_loc.length; j++) {
+						if (cur_loc.add(directions[i]).equals(prev_loc[j])) {
+							valid = false;
+							break;
+						}
+					}
+					if (valid) {
+						best_dst = dst;
+						best_dir = directions[i];
+					}
+				}
+			}
+
+			prev_loc[prev_loc_i % prev_loc.length] = cur_loc.add(best_dir);
+			prev_loc_i++;
+			Helper.tryMove(best_dir);
+		}
 	}
 
 	static void explore_corners() throws GameActionException {
