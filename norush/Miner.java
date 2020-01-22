@@ -65,6 +65,8 @@ public class Miner {
   static int rush_idx;
   static boolean built_rush_design = false;
 
+  static int corners_explored = 0;
+
 
 	static void runMiner() throws GameActionException {
 		timeout_mine++;
@@ -331,11 +333,7 @@ public class Miner {
 		// first miner should walk back to hq
 		if (first_miner && round > 200) {
 			hq = HQ.our_hq;
-			if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 9) {
-				Helper.greedy_move_away(hq, cur_loc);
-			} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
-				lattice_walk(hq);
-			}
+			hang_around_hq();
 			return;
 		}
 /*
@@ -388,14 +386,71 @@ public class Miner {
 				if (target_explore != null && (!first_miner || target_explore.distanceSquaredTo(hq) < 48)) {
 					miner_walk(target_explore);
 				} else {
-					hq = HQ.our_hq;
-					if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 9) {
-						Helper.greedy_move_away(hq, cur_loc);
-					} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
-						lattice_walk(hq);
+					if (!first_miner) {
+						// explore corners lol
+						explore_corners();
+					} else {
+						hang_around_hq();
 					}
 				}
 			}
+		}
+	}
+
+	static void hang_around_hq() throws GameActionException {
+		hq = HQ.our_hq;
+		if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) < 9) {
+			Helper.greedy_move_away(hq, cur_loc);
+		} else if (HQ.our_hq != null && HQ.our_hq.equals(hq) && cur_loc.distanceSquaredTo(hq) > 18) {
+			lattice_walk(hq);
+		}	
+	}
+
+	static void explore_corners() throws GameActionException {
+    int width = rc.getMapWidth();
+    int height = rc.getMapHeight();
+    MapLocation middle = new MapLocation(width / 2, height / 2);
+
+    // set locations
+    int delta_x = middle.x + (middle.x - HQ.our_hq.x);
+    int delta_y = middle.y + (middle.y - HQ.our_hq.y);
+    MapLocation close = new MapLocation((HQ.our_hq.x / (width / 2)) * (width - 1), (HQ.our_hq.x / (height / 2)) * (height - 1));
+    MapLocation far = new MapLocation((delta_x / (width / 2)) * (width - 1), (delta_y / (height / 2)) * (height - 1));
+    MapLocation next;
+		switch (corners_explored) {
+			case 0x0:
+				if (cur_loc.distanceSquaredTo(close) <= 10) {
+					corners_explored++;
+				} else {
+					bugpath_walk(close);
+					break;
+				}
+			case 0x1:
+				next = new MapLocation(close.x, far.y);
+				if (cur_loc.distanceSquaredTo(next) <= 10) {
+					corners_explored++;
+				} else {
+					bugpath_walk(next);
+					break;
+				}
+			case 0x2:
+				next = new MapLocation(far.x, close.y);
+				if (cur_loc.distanceSquaredTo(next) <= 10) {
+					corners_explored++;
+				} else {
+					bugpath_walk(next);
+					break;
+				}
+			case 0x3:
+				if (cur_loc.distanceSquaredTo(far) <= 10) {
+					corners_explored++;
+				} else {
+					bugpath_walk(far);
+					break;
+				}
+			default:
+				hang_around_hq();
+				break;
 		}
 	}
 
