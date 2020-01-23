@@ -66,6 +66,7 @@ public class Miner {
   static MapLocation[] locs;
   static int rush_idx;
   static boolean built_rush_design = false;
+  static boolean built_rush_netgun = false;
 
   static int corners_explored = 0;
 
@@ -205,8 +206,8 @@ public class Miner {
 					}
 
 
-					if (enemy_fulfill && !nearby_netgun) {
-						Helper.tryBuildToward(RobotType.NET_GUN, fulfill_loc);
+					if (enemy_fulfill && !nearby_netgun && !built_rush_netgun) {
+						built_rush_netgun = Helper.tryBuildToward(RobotType.NET_GUN, fulfill_loc);
 					}
 				}
 			}
