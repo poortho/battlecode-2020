@@ -569,7 +569,9 @@ public class Miner {
 						num_enemy_drones++;
 						break;
 					case LANDSCAPER:
-						only_enemy_landscapers++;
+						if (HQ.enemy_hq != null && HQ.enemy_hq.distanceSquaredTo(robots[i].location) <= 2) {
+							only_enemy_landscapers++;
+						}
 						num_enemy_landscapers++;
 						if (HQ.our_hq != null) {
 							int tmp_dist = robots[i].location.distanceSquaredTo(HQ.our_hq);
