@@ -929,10 +929,10 @@ public class Miner {
   	if (all_in && round < 200) {
   		return RobotType.VAPORATOR;
   	}
-  	if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
-			return RobotType.DESIGN_SCHOOL;
-		} else if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
+ 		if (near_hq && !nearby_fulfillment && gay_rush_alert && first_miner) {
   		return RobotType.FULFILLMENT_CENTER;
+  	} else if (near_hq && !nearby_design && gay_rush_alert && first_miner) {
+			return RobotType.DESIGN_SCHOOL;
   	} else if (num_enemy_drones >= 1 && !nearby_netgun) {
   		return RobotType.NET_GUN;
   	} else if (((num_enemy_landscapers > 0) || (first_miner && round > 150 && near_hq)) && !nearby_fulfillment) {

@@ -50,6 +50,7 @@ public class Miner {
   static boolean nearby_netgun = false;
   static boolean nearby_design = false;
   static boolean near_hq = false;
+  static MapLocation miner_stand_loc;
 
   static boolean turtling = false;
   static boolean bugpath_blocked = false;
@@ -173,23 +174,24 @@ public class Miner {
 							MapLocation temp_loc = cur_loc.add(directions[i]);
 							if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 1 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
 								built_rush_design = Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
-								break;
-							}
-						}
-					}
-					if (!gay_rush_alert && !built_rush_design) {
-						for (int i = 0; i < directions.length; i++) {
-							MapLocation temp_loc = cur_loc.add(directions[i]);
-							if (temp_loc.distanceSquaredTo(HQ.enemy_hq) <= 2 && rc.canBuildRobot(RobotType.DESIGN_SCHOOL, directions[i])) {
-								built_rush_design = Helper.tryBuild(RobotType.DESIGN_SCHOOL, directions[i]);
+								if (built_rush_design) {
+									Direction d2 = HQ.enemy_hq.directionTo(cur_loc.add(directions[i]));
+									Direction d = null;
+									for (int j = 0; j < directions.length; j++) {
+										if (directions[j] == d2) {
+											d = directions[(j + 4) % directions.length];
+										}
+									}
+									miner_stand_loc = HQ.enemy_hq.add(d);
+								}
 								break;
 							}
 						}
 					}
 					if (cur_loc.distanceSquaredTo(HQ.enemy_hq) > 2 && !built_rush_design) {
 						miner_walk(HQ.enemy_hq);
-					} else if (built_rush_design && cur_loc.distanceSquaredTo(HQ.enemy_hq) <= 2) {
-						Helper.greedy_move_away(HQ.enemy_hq, cur_loc);
+					} else if (built_rush_design && !cur_loc.equals(miner_stand_loc)) {
+						greedy_walk(miner_stand_loc);
 					}
 					boolean enemy_fulfill = false;
 					MapLocation fulfill_loc = null;
@@ -205,8 +207,19 @@ public class Miner {
 					}
 
 
-					if (enemy_fulfill && !nearby_netgun) {
-						Helper.tryBuildToward(RobotType.NET_GUN, fulfill_loc);
+					if (enemy_fulfill && !nearby_netgun && cur_loc.equals(miner_stand_loc)) {
+						Direction d = HQ.enemy_hq.directionTo(cur_loc);
+						int idx = -1;
+						for (int i = 0; i < directions.length; i++) {
+							if (directions[i] == d) {
+								idx = i;
+								break;
+							}
+						}
+						int idx2 = (idx + 1) % directions.length;
+						int idx3 = (idx - 1 + directions.length) % directions.length;
+						if (Helper.tryBuild(RobotType.NET_GUN, cur_loc.directionTo(HQ.enemy_hq.add(directions[idx2]))) || Helper.tryBuild(RobotType.NET_GUN, cur_loc.directionTo(HQ.enemy_hq.add(directions[idx3])))) {
+						}
 					}
 				}
 			}
