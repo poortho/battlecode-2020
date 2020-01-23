@@ -835,7 +835,7 @@ public class Landscaper {
                 //System.out.println("tryna dump");
                 //System.out.println(rc.getDirtCarrying());
                 //System.out.println(rc.isReady());
-                if (rc.canDepositDirt(cur_loc.directionTo(destination))) {
+                if (rc.canDepositDirt(cur_loc.directionTo(destination)) && rc.canSenseLocation(destination)) {
                     //System.out.println("dumped");
                     RobotInfo r = rc.senseRobotAtLocation(destination);
                     rc.depositDirt(cur_loc.directionTo(destination));

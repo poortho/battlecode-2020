@@ -168,9 +168,11 @@ public class Helper {
           }
         }
 
-        RobotInfo rob = rc.senseRobotAtLocation(new_loc);
-        if (rob != null && HQ.our_hq != null && rob.type == RobotType.MINER && rob.team == rc.getTeam()) {
-          continue;
+        if (rc.canSenseLocation(new_loc)) {
+          RobotInfo rob = rc.senseRobotAtLocation(new_loc);
+          if (rob != null && HQ.our_hq != null && rob.type == RobotType.MINER && rob.team == rc.getTeam()) {
+            continue;
+          }
         }
 
         if ((allow_design_adjacent && !adjacent) ||
@@ -223,7 +225,8 @@ public class Helper {
     int highest_el = -99999999;
     Direction best = null;
     for (int i = 0; i < directions.length; i++) {
-      if (rc.canDigDirt(directions[i]) && rc.senseElevation(Landscaper.cur_loc.add(directions[i])) > highest_el) {
+      if (rc.canDigDirt(directions[i]) && rc.canSenseLocation(Landscaper.cur_loc.add(directions[i])) &&
+              rc.senseElevation(Landscaper.cur_loc.add(directions[i])) > highest_el) {
         highest_el = rc.senseElevation(Landscaper.cur_loc.add(directions[i]));
         best = directions[i];
       }
