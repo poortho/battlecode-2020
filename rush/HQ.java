@@ -39,6 +39,7 @@ public class HQ {
     static boolean gay_rush_alert = false;
 
     static MapLocation closest_rush_enemy = null;
+    static MapLocation middle;
 
     static void runHQ() throws GameActionException {
       cur_loc = rc.getLocation();
@@ -71,7 +72,7 @@ public class HQ {
       if (turnCount == 1) {
           int width = rc.getMapWidth();
           int height = rc.getMapHeight();
-          MapLocation middle = new MapLocation(width / 2, height / 2);
+          middle = new MapLocation(width / 2, height / 2);
 
           // set locations
           int delta_x = middle.x + (middle.x - cur_loc.x);
@@ -314,8 +315,8 @@ public class HQ {
     static void handle_miners() throws GameActionException {
       // handle building miners from queue
       if (Comms.miner_queue_peek() != null || miner_count == 0) {
-        int res = Helper.tryBuild(RobotType.MINER);
-        if (res != -1) {
+        boolean res = Helper.tryBuildToward(RobotType.MINER, middle);
+        if (res) {
           //System.out.println("PRODUCED");
           miner_count++;
           if (miner_count == 1) {
